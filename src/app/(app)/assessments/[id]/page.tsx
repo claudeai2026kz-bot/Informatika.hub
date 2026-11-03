@@ -8,6 +8,8 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import FavoriteButton from "@/components/FavoriteButton";
 import ShareButton from "@/components/ShareButton";
 import CommentForm from "@/components/CommentForm";
+import ViewTracker from "@/components/ViewTracker";
+import PdfFrame from "@/components/PdfFrame";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const a = await db.assessment.findUnique({ where: { id: (await params).id }, select: { title: true } });
@@ -22,8 +24,6 @@ export default async function AssessmentPage({ params }: { params: Promise<{ id:
     include: { quarter: true, topic: true, comments: { where: { hidden: false }, orderBy: { createdAt: "desc" }, include: { user: { select: { name: true } } } } },
   });
   if (!a || (!a.published && user?.role !== "ADMIN")) notFound();
-  await db.assessment.update({ where: { id }, data: { views: { increment: 1 } } });
-  if (user) await db.userHistory.create({ data: { userId: user.id, action: "VIEW", assessmentId: id } });
   const fav = user ? await db.favorite.findFirst({ where: { userId: user.id, assessmentId: id } }) : null;
   const src = `/api/files/assessment/${a.id}`;
   const canPreview = a.previewPath || a.fileMime === "application/pdf";
@@ -31,6 +31,7 @@ export default async function AssessmentPage({ params }: { params: Promise<{ id:
 
   return (
     <div>
+      <ViewTracker kind="assessment" id={a.id} />
       <Breadcrumbs items={[{ href: "/assessments", label: "БЖБ / ТЖБ" }, { href: `/assessments?kind=${a.kind}`, label }, { label: a.title }]} />
       <div className="mt-5 grid gap-6 lg:grid-cols-[1fr_320px]">
         <div className="min-w-0 space-y-6">
@@ -42,7 +43,7 @@ export default async function AssessmentPage({ params }: { params: Promise<{ id:
           </header>
 
           <div className="card overflow-hidden">
-            {canPreview ? <iframe src={`${src}#view=FitH`} title={a.title} className="w-full h-[70vh] min-h-[420px] bg-sky-50" /> : (
+            {canPreview ? <PdfFrame src={`${src}#view=FitH`} title={a.title} /> : (
               <div className="p-10 text-center"><FileWarning className="mx-auto h-10 w-10 text-gold-500" /><p className="mt-3 font-semibold">Алдын ала қарау нұсқасы жоқ</p><p className="text-sm muted">Файлды жүктеп алып ашыңыз.</p></div>
             )}
           </div>

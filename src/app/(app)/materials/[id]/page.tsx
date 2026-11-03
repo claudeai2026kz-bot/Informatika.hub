@@ -11,6 +11,8 @@ import RatingStars from "@/components/RatingStars";
 import CommentForm from "@/components/CommentForm";
 import ShareButton from "@/components/ShareButton";
 import MaterialCard, { TypeIcon, materialCardSelect } from "@/components/MaterialCard";
+import ViewTracker from "@/components/ViewTracker";
+import PdfFrame from "@/components/PdfFrame";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const m = await db.material.findUnique({ where: { id: (await params).id }, select: { title: true } });
@@ -29,13 +31,6 @@ export default async function MaterialPage({ params }: { params: Promise<{ id: s
   });
   if (!m || (!m.published && user?.role !== "ADMIN")) notFound();
 
-  // Қаралымды санау: жүйеге кірген пайдаланушы үшін сағатына бір рет.
-  const recent = user && (await db.userHistory.findFirst({ where: { userId: user.id, materialId: id, action: "VIEW", createdAt: { gt: new Date(Date.now() - 3600e3) } } }));
-  if (!recent) {
-    await db.material.update({ where: { id }, data: { views: { increment: 1 } } });
-    if (user) await db.userHistory.create({ data: { userId: user.id, action: "VIEW", materialId: id } });
-  }
-
   const [fav, mine, related] = await Promise.all([
     user ? db.favorite.findFirst({ where: { userId: user.id, materialId: id } }) : null,
     user ? db.review.findUnique({ where: { userId_materialId: { userId: user.id, materialId: id } } }) : null,
@@ -50,6 +45,7 @@ export default async function MaterialPage({ params }: { params: Promise<{ id: s
 
   return (
     <div>
+      <ViewTracker kind="material" id={m.id} />
       <Breadcrumbs items={[
         { href: "/materials", label: "Материалдар" },
         { href: `/grades/${m.gradeId}`, label: `${m.gradeId}-сынып` },
@@ -84,7 +80,7 @@ export default async function MaterialPage({ params }: { params: Promise<{ id: s
               // eslint-disable-next-line @next/next/no-img-element
               <img src={fileSrc} alt={m.title} className="w-full" />
             ) : isPdfLike ? (
-              <iframe src={`${fileSrc}#view=FitH`} title={m.title} className="w-full h-[70vh] min-h-[420px] bg-sky-50" />
+              <PdfFrame src={`${fileSrc}#view=FitH`} title={m.title} />
             ) : (
               <div className="p-10 text-center">
                 <FileWarning className="mx-auto h-10 w-10 text-gold-500" />
