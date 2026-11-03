@@ -1,0 +1,39 @@
+"use server";
+import { z } from "zod";
+import { db } from "@/lib/db";
+import { getCurrentUser } from "@/lib/auth";
+import { scoreGame, scoreQuestion, type QuestionRow } from "@/lib/games";
+
+async function loadGame(gameId: string) {
+  const g = await db.game.findFirst({ where: { id: z.string().cuid().parse(gameId), published: true }, include: { questions: { orderBy: { order: "asc" } } } });
+  if (!g) throw new Error("Ойын табылмады");
+  return g;
+}
+
+/** Бір сұрақты тексеру (тест пен жылдам сұрақтарда бірден нәтиже көрсету үшін). */
+export async function checkAnswer(gameId: string, questionId: string, given: unknown) {
+  const g = await loadGame(gameId);
+  const q = g.questions.find((x) => x.id === questionId);
+  if (!q) throw new Error("Сұрақ табылмады");
+  const r = scoreQuestion(g.type, q as QuestionRow, given);
+  return { correct: r.correct, answer: q.answer, explanation: q.explanation };
+}
+
+/** Ойынды аяқтау: ұпай серверде есептеледі, нәтиже сақталады. */
+export async function submitGame(gameId: string, answers: Record<string, unknown>) {
+  const g = await loadGame(gameId);
+  const res = scoreGame(g.type, g.questions as QuestionRow[], answers ?? {});
+  const user = await getCurrentUser();
+  await db.game.update({ where: { id: g.id }, data: { plays: { increment: 1 } } });
+  let best: number | null = null;
+  if (user) {
+    await db.gameResult.create({ data: { userId: user.id, gameId: g.id, score: res.score, maxScore: res.max } });
+    best = (await db.gameResult.aggregate({ where: { userId: user.id, gameId: g.id }, _max: { score: true } }))._max.score;
+  }
+  return {
+    ...res,
+    best,
+    saved: !!user,
+    solutions: g.questions.map((q) => ({ id: q.id, answer: q.answer, explanation: q.explanation })),
+  };
+}
