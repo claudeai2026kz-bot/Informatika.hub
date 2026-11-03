@@ -1,0 +1,345 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Пайдаланушылар және рөлдер ----------
+
+model Role {
+  id    Int    @id @default(autoincrement())
+  key   String @unique // USER | ADMIN
+  name  String
+  users User[]
+}
+
+model User {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  avatarPath   String?
+  roleId       Int
+  role         Role      @relation(fields: [roleId], references: [id])
+  blocked      Boolean   @default(false)
+  soundOn      Boolean   @default(true)
+  notifyOn     Boolean   @default(true)
+  profilePublic Boolean  @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  sessions      Session[]
+  materials     Material[]     @relation("MaterialAuthor")
+  favorites     Favorite[]
+  reviews       Review[]
+  comments      Comment[]
+  history       UserHistory[]
+  notifications Notification[]
+  gameResults   GameResult[]
+  resetTokens   PasswordResetToken[]
+}
+
+model Session {
+  id        String   @id // sha256(token)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model PasswordResetToken {
+  id        String   @id // sha256(token)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+}
+
+// ---------- Оқу бағдарламасы ----------
+
+model Grade {
+  id          Int          @id // 5..11
+  title       String
+  quarters    Quarter[]
+  materials   Material[]
+  assessments Assessment[]
+  games       Game[]
+}
+
+model Quarter {
+  id          Int          @id @default(autoincrement())
+  gradeId     Int
+  grade       Grade        @relation(fields: [gradeId], references: [id], onDelete: Cascade)
+  number      Int // 1..4
+  topics      Topic[]
+  materials   Material[]
+  assessments Assessment[]
+
+  @@unique([gradeId, number])
+}
+
+model Topic {
+  id          Int          @id @default(autoincrement())
+  quarterId   Int
+  quarter     Quarter      @relation(fields: [quarterId], references: [id], onDelete: Cascade)
+  section     String? // бөлім, мысалы «Python программалау»
+  title       String
+  order       Int          @default(0)
+  createdAt   DateTime     @default(now())
+  materials   Material[]
+  assessments Assessment[]
+  games       Game[]
+
+  @@index([quarterId])
+}
+
+// ---------- Материалдар ----------
+
+model MaterialType {
+  id        Int        @id @default(autoincrement())
+  key       String     @unique // PRESENTATION | VIDEO | PRACTICE | KMZH | RESOURCE | INTERACTIVE
+  name      String
+  materials Material[]
+}
+
+model Material {
+  id          String       @id @default(cuid())
+  title       String
+  description String       @default("")
+  typeId      Int
+  type        MaterialType @relation(fields: [typeId], references: [id])
+  gradeId     Int
+  grade       Grade        @relation(fields: [gradeId], references: [id])
+  quarterId   Int
+  quarter     Quarter      @relation(fields: [quarterId], references: [id])
+  topicId     Int?
+  topic       Topic?       @relation(fields: [topicId], references: [id], onDelete: SetNull)
+
+  filePath    String? // storage ішіндегі жол
+  fileName    String?
+  fileMime    String?
+  fileSize    Int?
+  previewPath String? // PDF алдын ала қарау нұсқасы (PPTX/DOCX үшін)
+  videoUrl    String? // YouTube т.б. сілтеме
+  externalUrl String?
+
+  views       Int          @default(0)
+  downloads   Int          @default(0)
+  ratingAvg   Float        @default(0)
+  ratingCount Int          @default(0)
+  published   Boolean      @default(false)
+
+  authorId    String?
+  author      User?        @relation("MaterialAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  favorites   Favorite[]
+  reviews     Review[]
+  comments    Comment[]
+  history     UserHistory[]
+
+  @@index([gradeId, quarterId])
+  @@index([typeId])
+  @@index([published, createdAt])
+}
+
+// ---------- БЖБ / ТЖБ ----------
+
+enum AssessmentKind {
+  BZHB
+  TZHB
+}
+
+model Assessment {
+  id          String         @id @default(cuid())
+  kind        AssessmentKind
+  title       String
+  description String         @default("")
+  gradeId     Int
+  grade       Grade          @relation(fields: [gradeId], references: [id])
+  quarterId   Int
+  quarter     Quarter        @relation(fields: [quarterId], references: [id])
+  topicId     Int?
+  topic       Topic?         @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  variant     String         @default("1-нұсқа")
+
+  filePath    String?
+  fileName    String?
+  fileMime    String?
+  fileSize    Int?
+  previewPath String?
+
+  answers     String? // жауаптар мәтіні
+  answersPath String? // жауаптар файлы
+  criteria    String? // бағалау критерийлері
+  descriptors String? // дескрипторлар
+
+  views       Int            @default(0)
+  downloads   Int            @default(0)
+  published   Boolean        @default(false)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  favorites   Favorite[]
+  comments    Comment[]
+  history     UserHistory[]
+
+  @@index([kind, gradeId, quarterId])
+}
+
+// ---------- Ойындар ----------
+
+enum GameType {
+  QUIZ
+  MATCHING
+  CROSSWORD
+  RAPID
+  LOGIC
+  CODING
+}
+
+model Game {
+  id          String         @id @default(cuid())
+  type        GameType
+  title       String
+  description String         @default("")
+  gradeId     Int
+  grade       Grade          @relation(fields: [gradeId], references: [id])
+  topicId     Int?
+  topic       Topic?         @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  timeLimit   Int? // секунд (RAPID үшін бір сұраққа)
+  published   Boolean        @default(false)
+  plays       Int            @default(0)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  questions   GameQuestion[]
+  favorites   Favorite[]
+  results     GameResult[]
+
+  @@index([type, gradeId])
+}
+
+model GameQuestion {
+  id          String   @id @default(cuid())
+  gameId      String
+  game        Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  order       Int      @default(0)
+  prompt      String
+  // Түріне қарай: options (string[]), pairs ({left,right}[]), т.б.
+  data        Json     @default("{}")
+  // Дұрыс жауап: индекс, мәтін, т.б. Клиентке ойын кезінде жіберілмейді.
+  answer      Json
+  explanation String?
+  points      Int      @default(1)
+
+  @@index([gameId])
+}
+
+model GameResult {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gameId    String
+  game      Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  score     Int
+  maxScore  Int
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// ---------- Пайдаланушы әрекеттері ----------
+
+model Favorite {
+  id           String      @id @default(cuid())
+  userId       String
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  materialId   String?
+  material     Material?   @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  assessmentId String?
+  assessment   Assessment? @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  gameId       String?
+  game         Game?       @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  createdAt    DateTime    @default(now())
+
+  @@unique([userId, materialId])
+  @@unique([userId, assessmentId])
+  @@unique([userId, gameId])
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  materialId String
+  material   Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  rating     Int // 1..5
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, materialId])
+}
+
+model Comment {
+  id           String      @id @default(cuid())
+  userId       String
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  materialId   String?
+  material     Material?   @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  assessmentId String?
+  assessment   Assessment? @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  text         String
+  hidden       Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+
+  @@index([materialId])
+  @@index([assessmentId])
+}
+
+enum HistoryAction {
+  VIEW
+  DOWNLOAD
+}
+
+model UserHistory {
+  id           String        @id @default(cuid())
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action       HistoryAction
+  materialId   String?
+  material     Material?     @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  assessmentId String?
+  assessment   Assessment?   @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  createdAt    DateTime      @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  body      String   @default("")
+  link      String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, read])
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  action    String
+  target    String?
+  createdAt DateTime @default(now())
+}

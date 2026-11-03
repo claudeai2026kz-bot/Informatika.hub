@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #f7fbff;
+  --ink: #20304d;
+}
+
+@layer base {
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  body {
+    @apply bg-[var(--bg)] text-ink antialiased font-sans;
+    background-image:
+      radial-gradient(1200px 600px at 100% -10%, #ede8ff 0%, transparent 60%),
+      radial-gradient(900px 500px at -10% 10%, #eaf5ff 0%, transparent 60%);
+    background-attachment: fixed;
+  }
+  h1, h2, h3 { @apply tracking-tight; }
+  :focus-visible { outline: 3px solid #67b7f7; outline-offset: 2px; border-radius: 10px; }
+  ::selection { background: #cfe8fd; }
+}
+
+@layer components {
+  .glass {
+    @apply bg-white/70 backdrop-blur-xl border border-white/80 shadow-glass;
+  }
+  .card {
+    @apply rounded-xl2 bg-white border border-sky-100 shadow-soft transition duration-300;
+  }
+  .card-hover {
+    @apply hover:-translate-y-1 hover:shadow-lift hover:border-sky-200;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 h-11 font-semibold text-sm
+           transition duration-200 select-none active:scale-[.97] disabled:opacity-60 disabled:pointer-events-none whitespace-nowrap;
+  }
+  .btn-primary {
+    @apply btn text-white bg-gradient-to-r from-sky-500 to-lilac-500 shadow-lift hover:brightness-110 hover:shadow-[0_18px_40px_-14px_rgba(139,108,240,.55)];
+  }
+  .btn-ghost {
+    @apply btn bg-white text-ink border border-sky-200 hover:bg-sky-50 hover:border-sky-400;
+  }
+  .btn-soft {
+    @apply btn bg-sky-100 text-sky-600 hover:bg-sky-200;
+  }
+  .btn-danger {
+    @apply btn bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100;
+  }
+  .btn-sm { @apply h-9 px-3.5 text-[13px] rounded-lg; }
+  .input {
+    @apply w-full h-11 rounded-xl border border-sky-200 bg-white px-4 text-[15px] text-ink placeholder:text-ink-mute
+           transition focus:outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100;
+  }
+  textarea.input { @apply h-auto py-3; }
+  select.input { @apply pr-9 appearance-none bg-no-repeat bg-[right_.75rem_center] bg-[length:16px];
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%237C8AA5' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); }
+  .label { @apply block text-sm font-medium text-ink-soft mb-1.5; }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium bg-sky-100 text-sky-600;
+  }
+  .section-title { @apply text-2xl sm:text-3xl font-bold text-ink; }
+  .muted { @apply text-ink-mute; }
+  .gradient-text { @apply bg-gradient-to-r from-sky-500 via-sky-400 to-lilac-500 bg-clip-text text-transparent; }
+  .skeleton {
+    @apply rounded-xl bg-[linear-gradient(90deg,#eef6ff_25%,#f8fbff_50%,#eef6ff_75%)] bg-[length:200%_100%] animate-shimmer;
+  }
+}
+
+/* Scroll кезінде пайда болу */
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1); }
+.reveal.is-visible { opacity: 1; transform: none; }
+
+.page-enter { animation: fadeUp .45s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(12px) } to { opacity: 1; transform: none } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+  .reveal { opacity: 1; transform: none; }
+}
