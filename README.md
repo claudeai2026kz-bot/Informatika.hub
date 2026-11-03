@@ -4,6 +4,13 @@
 
 **Стек:** Next.js 15 (App Router), TypeScript, Tailwind CSS, PostgreSQL, Prisma.
 
+## GitHub Codespaces арқылы бір батырмамен ашу
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/claudeai2026kz-bot/Informatika.hub)
+
+Codespace ашылғанда база мен үлгі деректер өзі орнатылады, сайт 3000-портта ашылады.
+Сынақ әкімші: `admin@informatika.kz` / `Admin12345` (тек осы сынақ ортасы үшін).
+
 ## Іске қосу
 
 ```bash
