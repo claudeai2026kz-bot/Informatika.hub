@@ -78,3 +78,24 @@
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
   .reveal { opacity: 1; transform: none; }
 }
+
+/* ===== Ойнақы стиль (fun) ===== */
+.fun { font-family: "Nunito Variable", "Inter Variable", system-ui, sans-serif; --line: #1E1B4B; }
+.fun h1, .fun h2 { letter-spacing: -.01em; }
+.sticker { border: 3px solid var(--line); box-shadow: 6px 6px 0 var(--line); }
+.sticker-sm { border: 2.5px solid var(--line); box-shadow: 3px 3px 0 var(--line); }
+.fun .input {
+  height: 3.25rem; border: 2.5px solid var(--line); border-radius: 1rem; font-size: 1.05rem; font-weight: 600; background: #fff;
+  box-shadow: 3px 3px 0 var(--line); transition: transform .15s, box-shadow .15s;
+}
+.fun .input:focus { border-color: #7C5CFF; box-shadow: 5px 5px 0 #7C5CFF; transform: translate(-2px,-2px); outline: none; --tw-ring-shadow: 0 0 #0000; }
+.fun .label { font-size: 1rem; font-weight: 800; color: var(--line); }
+.fun .btn-primary {
+  height: 3.5rem; border-radius: 1rem; font-size: 1.15rem; font-weight: 900; background: #7C5CFF; color: #fff;
+  border: 3px solid var(--line); box-shadow: 5px 5px 0 var(--line); transition: transform .12s, box-shadow .12s;
+}
+.fun .btn-primary:hover { transform: translate(-2px,-2px); box-shadow: 7px 7px 0 var(--line); filter: none; }
+.fun .btn-primary:active { transform: translate(3px,3px); box-shadow: 2px 2px 0 var(--line); }
+.fun a { font-weight: 800; }
+@keyframes funBob { 0%,100% { transform: translateY(0) rotate(var(--r,0deg)) } 50% { transform: translateY(-14px) rotate(calc(var(--r,0deg) + 8deg)) } }
+.fun-bob { animation: funBob var(--d,5s) ease-in-out infinite; }
