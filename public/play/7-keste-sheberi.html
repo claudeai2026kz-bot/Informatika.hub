@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Кесте шебері · 7-сынып</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Nunito:wght@500;700;800&display=swap">
+<style>
+:root{
+  --sky:#3A4FD8; --violet:#6A45DD; --mist:#86B6F6;
+  --ink:#1E1B4B; --ink-soft:#4A4672; --paper:#FBFBFE; --line:#D9DCF0; --tint:#F1EEFF;
+  --sun:#FFD43B; --mint:#63E6BE; --coral:#FF8E8E; --red:#E03131; --ok:#0B7A5A; --warn:#B76E00;
+  --display:'Montserrat','Arial Black',Arial,sans-serif;
+  --body:'Nunito','Trebuchet MS',Arial,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{margin:0;background:linear-gradient(140deg,var(--sky) 0%,var(--violet) 55%,var(--mist) 100%) fixed;background-color:var(--violet);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.45}
+.wrap{max-width:860px;margin:0 auto;padding:20px 16px 40px;display:flex;flex-direction:column;gap:16px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;color:var(--paper)}
+.brand{font-family:var(--display);font-weight:900;font-size:clamp(22px,4vw,30px);letter-spacing:-.5px;margin:0}
+.brand small{display:block;font-family:var(--body);font-weight:700;font-size:14px;opacity:.85;letter-spacing:.3px}
+.back{color:var(--paper);font-weight:800;text-decoration:none;background:rgba(255,255,255,.18);border-radius:999px;padding:6px 14px;font-size:14px}
+.back:hover{background:rgba(255,255,255,.3)}
+.score{background:var(--paper);color:var(--ink);border-radius:999px;padding:6px 16px;font-weight:800;font-variant-numeric:tabular-nums}
+.steps{display:flex;gap:8px;flex-wrap:wrap}
+.step{flex:1 1 120px;background:rgba(255,255,255,.18);color:var(--paper);border-radius:14px;padding:8px 12px;font-weight:800;font-size:14px;border:2px solid transparent}
+.step.now{background:var(--paper);color:var(--ink);border-color:var(--sun)}
+.step.done{background:var(--mint);color:var(--ink)}
+.card{background:var(--paper);border-radius:28px;padding:clamp(18px,4vw,32px);box-shadow:0 24px 50px rgba(20,16,80,.28);display:flex;flex-direction:column;gap:18px;min-width:0}
+.robo{display:flex;align-items:center;gap:14px}
+.robo svg{flex:none;width:72px;height:85px}
+.bubble{background:var(--tint);border-radius:20px 20px 20px 6px;padding:12px 16px;font-weight:700;min-width:0;margin:0}
+h2{font-family:var(--display);font-weight:900;font-size:clamp(21px,3.4vw,28px);margin:0;text-wrap:balance}
+h3{font-family:var(--display);font-weight:800;font-size:19px;margin:0}
+.kicker{font-family:var(--display);font-weight:800;font-size:13px;letter-spacing:1.2px;text-transform:uppercase;color:var(--violet);margin:0}
+.how{background:#EEF6FF;border-left:6px solid var(--sky);border-radius:14px;padding:10px 14px;margin:0;font-weight:700;color:var(--ink-soft)}
+button{font:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:4px solid var(--sun);outline-offset:2px}
+.btn{border:0;border-radius:16px;padding:14px 22px;font-weight:800;font-size:17px;background:var(--ink);color:var(--paper);transition:transform .12s}
+.btn:hover{transform:translateY(-2px)}
+.btn.alt{background:var(--sun);color:var(--ink)}
+.btn.ghost{background:var(--tint);color:var(--ink)}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.opt{border:3px solid var(--line);background:var(--paper);color:var(--ink);border-radius:16px;padding:14px;font-weight:800;text-align:left;transition:border-color .12s,background .12s}
+.opt:hover:not(:disabled){border-color:var(--violet)}
+.opt.right{background:#D3F9EA;border-color:var(--ok)}
+.opt.wrong{background:#FFE3E3;border-color:var(--red)}
+.opt:disabled{cursor:default}
+.fb{min-height:26px;margin:0;font-weight:800}
+.fb.good{color:var(--ok)} .fb.bad{color:var(--red)}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.spacer{flex:1}
+.counter{font-weight:800;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.tbl{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:3px solid var(--ink);border-radius:6px;overflow:hidden;max-width:440px;width:100%;align-self:center}
+.tbl div{border-right:2px solid #9AA0C8;border-bottom:2px solid #9AA0C8;padding:10px 6px;text-align:center;font-weight:700;font-size:15px;min-height:44px;display:flex;align-items:center;justify-content:center}
+.tbl div:nth-child(4n){border-right:0}
+.tbl .h{background:var(--tint);font-weight:800}
+.hl{background:var(--sun)!important;outline:3px solid #C27C00;outline-offset:-3px}
+.tbl.glow{border-color:var(--red);box-shadow:0 0 0 6px rgba(224,49,49,.25)}
+.action{font-family:var(--display);font-weight:800;font-size:clamp(20px,3.2vw,26px);background:var(--tint);border-radius:20px;padding:22px;text-align:center;text-wrap:balance}
+.tabs3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.tabs3 .opt{text-align:center}
+.word{border:2px solid var(--line);border-radius:18px;overflow:hidden}
+.wbar{background:#2B579A;color:#fff;padding:8px 14px;font-weight:800;font-size:15px}
+.ribtabs{display:flex;gap:4px;background:#EEF0FA;padding:6px 8px 0;flex-wrap:wrap}
+.rtab{border:0;background:transparent;color:var(--ink-soft);padding:8px 12px;border-radius:10px 10px 0 0;font-weight:800;font-size:15px}
+.rtab.on{background:var(--paper);color:#2B579A;box-shadow:inset 0 -3px 0 #2B579A}
+.ribbon{background:var(--paper);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:10px;display:flex;flex-wrap:wrap;gap:8px;min-height:62px;align-items:center}
+.cmd{border:2px solid var(--line);background:var(--paper);color:var(--ink);border-radius:12px;padding:8px 12px;font-weight:800;font-size:14px;display:inline-flex;gap:6px;align-items:center}
+.cmd:hover{border-color:#2B579A}
+.sw{width:18px;height:18px;border-radius:5px;border:2px solid var(--ink);display:inline-block}
+.grp{font-size:12px;font-weight:800;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.8px;width:100%}
+.doc{padding:18px;background:#F4F5FA;display:flex;justify-content:center}
+.wt{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));width:100%;max-width:460px;background:#fff;border:1px solid #9AA0C8}
+.wt div{border:1px solid #9AA0C8;padding:9px 8px;font-size:15px;min-height:40px;display:flex;align-items:center;justify-content:flex-start;font-weight:600}
+.wt.thick{border:4px solid var(--ink)}
+.wt .title{font-weight:800}
+.wt .title.merged{grid-column:span 4}
+.wt .center{justify-content:center}
+.wt .fill-coral{background:var(--coral)} .wt .fill-sun{background:var(--sun)} .wt .fill-mint{background:var(--mint)}
+.check{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.check li{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:14px;background:var(--tint);font-weight:700}
+.box{flex:none;width:24px;height:24px;border-radius:7px;border:3px solid var(--ink);display:grid;place-items:center;font-weight:900;font-size:15px;line-height:1}
+.check li.ok{background:#D3F9EA}
+.check li.ok .box{background:var(--ok);border-color:var(--ok);color:#fff}
+.two{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px;align-items:start}
+.timer{height:12px;border-radius:999px;background:var(--line);overflow:hidden}
+.timer i{display:block;height:100%;background:linear-gradient(90deg,var(--mint),var(--sun),var(--coral));width:100%;transition:width 1s linear}
+.stmt{font-family:var(--display);font-weight:800;font-size:clamp(19px,3vw,24px);text-align:center;padding:18px;background:var(--tint);border-radius:20px;text-wrap:balance}
+.yn{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.yn .opt{text-align:center;font-size:20px;padding:18px}
+.intro-list{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.intro-list li{background:var(--tint);border-radius:16px;padding:12px 14px;font-weight:700}
+.intro-list b{font-family:var(--display);display:block}
+input[type=text]{font:inherit;font-weight:800;font-size:18px;padding:14px 16px;border-radius:16px;border:3px solid var(--line);width:100%;max-width:420px;color:var(--ink);background:var(--paper)}
+/* нәтиже */
+.level{border-radius:24px;padding:20px;text-align:center;display:flex;flex-direction:column;gap:6px}
+.level.hi{background:#D3F9EA;border:3px solid var(--ok)}
+.level.mid{background:#FFF3BF;border:3px solid #E8A400}
+.level.lo{background:#FFE3E3;border:3px solid var(--red)}
+.level .big{font-family:var(--display);font-weight:900;font-size:clamp(26px,5vw,38px);margin:0}
+.stars{font-size:38px;letter-spacing:6px;color:var(--sun);-webkit-text-stroke:1.5px #C27C00}
+.stars .off{color:var(--line);-webkit-text-stroke:1.5px #B0B4D0}
+.skills{display:grid;gap:10px}
+.skill{background:var(--tint);border-radius:16px;padding:12px 14px;display:grid;gap:6px}
+.skill .head{display:flex;justify-content:space-between;gap:10px;font-weight:800;flex-wrap:wrap}
+.bar{height:12px;border-radius:999px;background:#fff;overflow:hidden;border:1px solid var(--line)}
+.bar i{display:block;height:100%}
+.tag{font-size:13px;font-weight:800;border-radius:999px;padding:2px 10px}
+.tag.ok{background:#D3F9EA;color:var(--ok)} .tag.mid{background:#FFF3BF;color:var(--warn)} .tag.lo{background:#FFE3E3;color:var(--red)}
+.tip{font-size:15px;color:var(--ink-soft);font-weight:700;margin:0}
+.cert{border:6px double var(--violet);border-radius:24px;padding:20px;text-align:center;display:flex;flex-direction:column;gap:8px;background:radial-gradient(circle at 15% 10%,#FFF6CC 0,transparent 40%),radial-gradient(circle at 90% 90%,#DDFBF0 0,transparent 45%),var(--paper)}
+.cert .name{font-family:var(--display);font-weight:900;font-size:clamp(22px,4vw,30px);margin:0;border-bottom:3px solid var(--sun);align-self:center;padding:0 10px 4px}
+.note{background:#FFF3BF;border-radius:16px;padding:12px 14px;font-weight:700;margin:0}
+.desc{margin:0;padding-left:20px;display:grid;gap:4px;font-weight:700;color:var(--ink-soft)}
+.desc li.ok::marker{content:"✓  ";color:var(--ok)}
+.desc li.no::marker{content:"✗  ";color:var(--red)}
+.pop{animation:pop .35s ease}
+@keyframes pop{0%{transform:scale(.97)}60%{transform:scale(1.01)}100%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:640px){
+  .opts,.intro-list,.two,.tabs3{grid-template-columns:1fr}
+  .robo svg{width:56px;height:66px}
+}
+@media print{body{background:#fff}.top,.steps,.row,.note{display:none!important}.card{box-shadow:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <p class="brand">Кесте шебері<small>Информатика · 7-сынып · 2-тоқсан · Мәтіндік процессордағы кестелер</small></p>
+    <div class="row">
+      <a class="back" id="back" href="/">← Сабаққа оралу</a>
+      <span class="score" id="score">0 / 24 ұпай</span>
+    </div>
+  </header>
+  <nav class="steps" aria-label="Деңгейлер">
+    <span class="step" data-i="1">1 · Атын ата</span>
+    <span class="step" data-i="2">2 · Қойындыны тап</span>
+    <span class="step" data-i="3">3 · Шеберхана</span>
+    <span class="step" data-i="4">4 · Жылдам раунд</span>
+  </nav>
+  <main class="card pop" id="card" aria-live="polite"></main>
+</div>
+
+<script>
+// Сабақ бетінен ашылса, «Сабаққа оралу» сол бетке қайтарады.
+try { if (document.referrer && new URL(document.referrer).origin === location.origin) document.getElementById('back').href = document.referrer; } catch (e) {}
+
+const ROBO = `<svg viewBox="0 0 220 260" aria-hidden="true"><line x1="110" y1="14" x2="110" y2="46" stroke="#1E1B4B" stroke-width="6" stroke-linecap="round"/><circle cx="110" cy="14" r="12" fill="#FFD43B" stroke="#1E1B4B" stroke-width="5"/><rect x="40" y="46" width="140" height="104" rx="34" fill="#FBFBFE" stroke="#1E1B4B" stroke-width="6"/><rect x="58" y="66" width="104" height="60" rx="24" fill="#1E1B4B"/><ellipse cx="88" cy="94" rx="11" ry="14" fill="#63E6BE"/><ellipse cx="132" cy="94" rx="11" ry="14" fill="#63E6BE"/><path d="M96 114 Q110 124 124 114" stroke="#63E6BE" stroke-width="5" fill="none" stroke-linecap="round"/><circle cx="34" cy="98" r="10" fill="#FF8E8E" stroke="#1E1B4B" stroke-width="5"/><circle cx="186" cy="98" r="10" fill="#FF8E8E" stroke="#1E1B4B" stroke-width="5"/><path d="M62 176 Q30 180 24 150" stroke="#1E1B4B" stroke-width="7" fill="none" stroke-linecap="round"/><circle cx="24" cy="146" r="11" fill="#FFD43B" stroke="#1E1B4B" stroke-width="5"/><path d="M158 180 Q186 196 192 222" stroke="#1E1B4B" stroke-width="7" fill="none" stroke-linecap="round"/><rect x="62" y="158" width="96" height="76" rx="26" fill="#63E6BE" stroke="#1E1B4B" stroke-width="6"/><rect x="88" y="178" width="44" height="34" rx="6" fill="#FBFBFE" stroke="#1E1B4B" stroke-width="4"/><line x1="88" y1="195" x2="132" y2="195" stroke="#1E1B4B" stroke-width="3"/><line x1="110" y1="178" x2="110" y2="212" stroke="#1E1B4B" stroke-width="3"/><rect x="76" y="232" width="20" height="22" rx="8" fill="#1E1B4B"/><rect x="124" y="232" width="20" height="22" rx="8" fill="#1E1B4B"/></svg>`;
+const robo = (t) => `<div class="robo">${ROBO}<p class="bubble">${t}</p></div>`;
+const $ = (s, r = document) => r.querySelector(s);
+const card = $('#card');
+const esc = (s) => s.replace(/[<>&"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
+
+// Әр деңгей бір дағдыны тексереді. Ұпай + қате басулар деңгейді анықтауға қолданылады.
+const SKILLS = [
+  { name: 'Кесте элементтерін білу', what: 'жол, баған, ұяшық, жиек, біріктіру, құйма', max: 6,
+    tip: 'Слайдтағы кесте бөліктерін қайталап, әр бөліктің атын дәптерге сызба арқылы жаз.' },
+  { name: 'Word қойындыларын білу', what: 'Кірістіру, Макет, Кесте конструкторы', max: 8,
+    tip: 'Word-та кесте құрып, «Макет» және «Кесте конструкторы» қойындыларындағы командаларды бір-бірлеп басып көр.' },
+  { name: 'Кестені пішімдеу (практика)', what: 'біріктіру, құйма, туралау, жиек', max: 4,
+    tip: 'Жұмыс парағындағы практикалық тапсырманы Word-та қайта орында.' },
+  { name: 'Теорияны түсіну', what: 'тұжырымдардың дұрыс/қатесін ажырату', max: 6,
+    tip: 'Сабақтағы анықтамаларды қайта оқып, «Иә/Жоқ» сұрақтарын досыңмен бірге талда.' },
+];
+const DESCRIPTORS = [
+  ['Кестенің элементтерін (жол, баған, ұяшық, жиек) атайды', 0],
+  ['Кесте командаларының қай қойындыда екенін біледі', 1],
+  ['Ұяшықтарды біріктіреді, бояйды, туралайды, жиек қояды', 2],
+  ['Кесте туралы тұжырымдардың дұрысын ажыратады', 3],
+];
+const S = { name: '', score: 0, lv: [0, 0, 0, 0], miss: [0, 0, 0, 0] };
+
+function setScore() { $('#score').textContent = `${S.score} / 24 ұпай`; }
+function setStep(n) {
+  document.querySelectorAll('.step').forEach(el => {
+    const i = +el.dataset.i;
+    el.classList.toggle('now', i === n);
+    el.classList.toggle('done', i < n);
+  });
+}
+function show(html) { card.innerHTML = html; card.classList.remove('pop'); void card.offsetWidth; card.classList.add('pop'); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function addPoint(level) { S.score++; S.lv[level]++; setScore(); }
+
+/* ---------- басталуы ---------- */
+function start() {
+  setStep(0);
+  show(`${robo('Сәлем! Мен — Робо. Бүгінгі сабақта не үйренгеніңді 4 деңгейлі ойынмен тексерейік. Соңында сенің деңгейіңді анықтап, нені қайталау керегін айтамын!')}
+    <p class="kicker">Сабақты бекіту ойыны · 24 ұпай · 10–12 минут</p>
+    <h2>Кесте шебері атағын ал!</h2>
+    <p class="how"><b>Қалай ойнаймыз?</b> Әр сұраққа бір жауап таңда. Жауап бергенде Робо дұрыс па, қате ме екенін және <b>неге</b> екенін түсіндіреді. Сосын «Келесі» батырмасын бас.</p>
+    <ul class="intro-list">
+      <li><b>1 · Атын ата</b>Кестенің сары түспен белгіленген бөлігінің атын тап. (6 сұрақ)</li>
+      <li><b>2 · Қойындыны тап</b>Әр команда Word-тың қай қойындысында тұр? (8 сұрақ)</li>
+      <li><b>3 · Шеберхана</b>Word таспасындағы командаларды басып, кестені өзің пішімде. (4 тапсырма)</li>
+      <li><b>4 · Жылдам раунд</b>90 секундта тұжырымға «Иә» не «Жоқ» деп жауап бер. (6 сұрақ)</li>
+    </ul>
+    <label for="nm" style="font-weight:800">Аты-жөнің және сыныбың</label>
+    <input type="text" id="nm" maxlength="50" placeholder="Мысалы: Айгерім Сейітова, 7А" autocomplete="name">
+    <p class="fb bad" id="nmErr"></p>
+    <div class="row"><button class="btn alt" id="go">Ойынды бастау</button></div>`);
+  const go = () => {
+    const v = $('#nm').value.trim();
+    if (v.length < 2) { $('#nmErr').textContent = 'Нәтиже парағына жазу үшін атыңды енгіз.'; $('#nm').focus(); return; }
+    S.name = v; level1();
+  };
+  $('#go').onclick = go;
+  $('#nm').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+  $('#nm').focus();
+}
+
+/* ---------- 1-деңгей ---------- */
+const L1 = [
+  { mode: 'row', q: 'Сары түспен белгіленген бөлік қалай аталады?', a: 'Жол', opts: ['Жол', 'Баған', 'Ұяшық', 'Жиек'], why: 'Жол — кестенің көлденең қатары.' },
+  { mode: 'col', q: 'Ал мына тік қатар ше?', a: 'Баған', opts: ['Жол', 'Баған', 'Ұяшық', 'Құйма'], why: 'Баған — кестенің тік қатары.' },
+  { mode: 'cell', q: 'Жол мен бағанның қиылысындағы бір тіктөртбұрыш қалай аталады?', a: 'Ұяшық', opts: ['Жиек', 'Баған', 'Ұяшық', 'Кесте'], why: 'Ұяшық — жол мен бағанның қиылысы.' },
+  { mode: 'border', q: 'Қызыл болып жанып тұрған кестенің сызықтары қалай аталады?', a: 'Жиек', opts: ['Құйма', 'Жиек', 'Жол', 'Туралау'], why: 'Жиек — кестенің сызықтары: түрі, қалыңдығы, түсі бар.' },
+  { mode: 'merge', q: 'Үстіңгі жолдағы төрт ұяшық біреуге айналды. Қандай әрекет орындалды?', a: 'Біріктіру', opts: ['Бөлу', 'Біріктіру', 'Туралау', 'Мәтін бағыты'], why: 'Ұяшықтарды біріктіру — Макет қойындысында.' },
+  { mode: 'fill', q: 'Тақырып жолының фоны боялды. Бұл қай команда?', a: 'Құйма', opts: ['Жиектер', 'Құйма', 'Біріктіру', 'Кесте салу'], why: 'Құйма — ұяшық фонының түсі (Кесте конструкторы).' },
+];
+function demoTable(mode) {
+  const cells = ['Аты', 'Сынып', 'Пән', 'Баға', 'Айгерім', '7А', 'Тарих', '5', 'Нұрлан', '7Ә', 'Алгебра', '4', 'Дана', '7А', 'Химия', '5'];
+  if (mode === 'merge') {
+    let h = `<div class="tbl"><div class="h hl" style="grid-column:span 4;border-right:0">Сынып бағалары</div>`;
+    cells.slice(4).forEach(c => h += `<div>${c}</div>`);
+    return h + '</div>';
+  }
+  let h = `<div class="tbl ${mode === 'border' ? 'glow' : ''}">`;
+  cells.forEach((c, i) => {
+    const r = Math.floor(i / 4), k = i % 4;
+    let cls = r === 0 ? 'h' : '';
+    if ((mode === 'row' && r === 2) || (mode === 'col' && k === 2) || (mode === 'cell' && r === 3 && k === 1) || (mode === 'fill' && r === 0)) cls += ' hl';
+    h += `<div class="${cls}">${c}</div>`;
+  });
+  return h + '</div>';
+}
+function level1(i = 0) {
+  setStep(1);
+  if (i >= L1.length) return between(1, level2);
+  const q = L1[i];
+  show(`${robo(i === 0 ? '1-деңгей! Кестенің белгіленген бөлігіне мұқият қарап, атауын таңда.' : 'Жарайсың, келесі сұрақ!')}
+    <div class="row"><p class="kicker">1-деңгей · Атын ата</p><span class="spacer"></span><span class="counter">${i + 1} / ${L1.length}</span></div>
+    ${demoTable(q.mode)}
+    <h2>${q.q}</h2>
+    <div class="opts">${shuffle(q.opts).map(o => `<button class="opt">${o}</button>`).join('')}</div>
+    <p class="fb" id="fb"></p>
+    <div class="row"><span class="spacer"></span><button class="btn" id="nx" hidden>Келесі →</button></div>`);
+  answerable(q.a, q.why, 0, () => level1(i + 1));
+}
+function answerable(correct, why, lvl, next) {
+  const btns = card.querySelectorAll('.opt');
+  btns.forEach(b => b.onclick = () => {
+    btns.forEach(x => { x.disabled = true; if (x.textContent === correct) x.classList.add('right'); });
+    const fb = $('#fb');
+    if (b.textContent === correct) { addPoint(lvl); fb.className = 'fb good'; fb.textContent = 'Дұрыс! ' + why; }
+    else { b.classList.add('wrong'); S.miss[lvl]++; fb.className = 'fb bad'; fb.textContent = `Қате. Дұрыс жауап: «${correct}». ${why}`; }
+    const nx = $('#nx'); nx.hidden = false; nx.focus(); nx.onclick = next;
+  });
+}
+
+/* Деңгей арасындағы қысқа қорытынды */
+function between(lvl, next) {
+  const k = lvl - 1, got = S.lv[k], max = SKILLS[k].max, p = got / max;
+  const msg = p >= .85 ? 'Тамаша нәтиже!' : p >= .6 ? 'Жақсы! Келесі деңгейде одан да мұқият бол.' : 'Ештеңе етпейді, келесі деңгейде түзетеміз!';
+  show(`${robo(`${lvl}-деңгей аяқталды. ${msg}`)}
+    <h2>${lvl}-деңгей: ${got} / ${max} ұпай</h2>
+    <div class="bar"><i style="width:${p * 100}%;background:${p >= .85 ? 'var(--mint)' : p >= .6 ? 'var(--sun)' : 'var(--coral)'}"></i></div>
+    <p class="tip">Тексерілген дағды: <b>${SKILLS[k].name}</b> (${SKILLS[k].what}).</p>
+    <div class="row"><span class="spacer"></span><button class="btn alt" id="nx">${lvl + 1}-деңгейге өту →</button></div>`);
+  $('#nx').onclick = () => next(); $('#nx').focus();
+}
+
+/* ---------- 2-деңгей ---------- */
+const L2 = [
+  ['Жаңа кесте кірістіру', 'Кірістіру'],
+  ['Бірнеше ұяшықты бір ұяшыққа біріктіру', 'Макет'],
+  ['Бір ұяшықты бірнеше бөлікке бөлу', 'Макет'],
+  ['Ұяшықты түспен бояу (құйма)', 'Кесте конструкторы'],
+  ['Жиектің түсі мен қалыңдығын өзгерту', 'Кесте конструкторы'],
+  ['Мәтінді ұяшықтың ортасына туралау', 'Макет'],
+  ['Ұяшықтағы мәтін бағытын тік ету', 'Макет'],
+  ['Кестеге дайын стиль қолдану', 'Кесте конструкторы'],
+];
+function level2(i = 0, order = null) {
+  setStep(2);
+  order = order || shuffle(L2);
+  if (i >= order.length) return between(2, level3);
+  const [act, tab] = order[i];
+  show(`${robo(i === 0 ? '2-деңгей! Төменде бір әрекет жазылған. Оны орындайтын команда Word-тың қай қойындысында тұр?' : 'Тағы біреуі!')}
+    <div class="row"><p class="kicker">2-деңгей · Қойындыны тап</p><span class="spacer"></span><span class="counter">${i + 1} / ${order.length}</span></div>
+    <div class="action">${act}</div>
+    <div class="tabs3">${['Кірістіру', 'Макет', 'Кесте конструкторы'].map(o => `<button class="opt">${o}</button>`).join('')}</div>
+    <p class="fb" id="fb"></p>
+    <div class="row"><span class="spacer"></span><button class="btn" id="nx" hidden>Келесі →</button></div>`);
+  const why = tab === 'Кірістіру' ? 'Кесте Кірістіру → Кесте арқылы құрылады.' : tab === 'Макет' ? 'Біріктіру, бөлу, туралау және мәтін бағыты — Макет қойындысында.' : 'Жиектер, құйма және стильдер — Кесте конструкторы қойындысында.';
+  answerable(tab, why, 1, () => level2(i + 1, order));
+}
+
+/* ---------- 3-деңгей: шеберхана ---------- */
+function level3() {
+  setStep(3);
+  const st = { tab: 'Басты бет', merged: false, fill: '', center: false, thick: false };
+  const REQ = [
+    ['merged', 'Тақырып жолының 4 ұяшығын біріктір'],
+    ['coral', 'Тақырып жолын коралл түске боя (құйма)'],
+    ['center', 'Тақырып пен апта күндерін ортаға турала'],
+    ['thick', 'Кестеге қалың сыртқы жиек қой'],
+  ];
+  const done = { merged: false, coral: false, center: false, thick: false };
+  const TABS = {
+    'Басты бет': [['Қаріп', 'font'], ['Абзац', 'para']],
+    'Кірістіру': [['Кесте', 'ins-table'], ['Сурет', 'ins-pic'], ['Фигуралар', 'ins-shape']],
+    'Кесте конструкторы': [['grp', 'Құйма'], ['<span class="sw" style="background:#FFD43B"></span>Сары', 'fill-sun'], ['<span class="sw" style="background:#63E6BE"></span>Мята', 'fill-mint'], ['<span class="sw" style="background:#FF8E8E"></span>Коралл', 'fill-coral'], ['grp', 'Жиектер'], ['Жұқа жиек', 'b-thin'], ['Пунктир', 'b-dash'], ['Қалың сыртқы жиек', 'b-thick']],
+    'Макет': [['Ұяшықтарды біріктіру', 'merge'], ['Ұяшықтарды бөлу', 'split'], ['Солға', 'al-left'], ['Ортаға', 'al-center'], ['Оңға', 'al-right'], ['Мәтін бағыты', 'dir']],
+  };
+  const HINT = {
+    font: 'Қаріп мәтінге арналған. Кестенің бөлігін пішімдейтін қойындыны ізде.',
+    para: 'Абзац кестенің ұяшығын біріктірмейді. Кесте қойындыларына қара.',
+    'ins-table': 'Кесте дайын тұр. Енді оны пішімдеу керек.',
+    'ins-pic': 'Сурет кірістіру бұл тапсырмада қажет емес.',
+    'ins-shape': 'Фигура керек емес. Кесте қойындыларын қара.',
+    split: 'Бөлу — біріктіруге керісінше әрекет. Тақырып жолын біріктіру керек.',
+    'al-left': 'Тапсырмада ортаға туралау керек.',
+    'al-right': 'Тапсырмада ортаға туралау керек.',
+    dir: 'Мәтін бағыты бұл жолы қажет емес.',
+    'fill-sun': 'Әдемі! Бірақ тапсырмада коралл түсі сұралған.',
+    'fill-mint': 'Әдемі! Бірақ тапсырмада коралл түсі сұралған.',
+    'b-thin': 'Тапсырмада қалың сыртқы жиек сұралған.',
+    'b-dash': 'Тапсырмада қалың сыртқы жиек сұралған.',
+  };
+  function draw(msg, good) {
+    const titleCls = ['title', st.merged ? 'merged' : '', st.fill ? 'fill-' + st.fill : '', st.center ? 'center' : ''].join(' ');
+    let t = `<div class="${titleCls}">Менің сабақ кестем</div>`;
+    if (!st.merged) for (let k = 0; k < 3; k++) t += `<div class="${titleCls}"></div>`;
+    ['Дс', 'Сс', 'Ср', 'Бс'].forEach(dd => t += `<div class="${st.center ? 'center' : ''}" style="font-weight:800">${dd}</div>`);
+    ['Алгебра', 'Тарих', 'Инфо', 'Химия', 'Ағылш.', 'Физика', 'Әдебиет', 'Биол.'].forEach(x => t += `<div>${x}</div>`);
+    const doneN = Object.values(done).filter(Boolean).length;
+    show(`${robo('3-деңгей! Сен — дизайнерсің. Алдымен таспадан керекті <b>қойындыны</b> аш, сосын <b>команданы</b> бас. Оң жақтағы 4 талапты орында.')}
+      <div class="row"><p class="kicker">3-деңгей · Шеберхана</p><span class="spacer"></span><span class="counter">${doneN} / 4 орындалды</span></div>
+      <div class="two">
+        <div class="word">
+          <div class="wbar">Сабақ кестесі.docx – Word</div>
+          <div class="ribtabs" role="tablist">${Object.keys(TABS).map(k => `<button class="rtab ${k === st.tab ? 'on' : ''}" role="tab" aria-selected="${k === st.tab}">${k}</button>`).join('')}</div>
+          <div class="ribbon">${TABS[st.tab].map(([l, id]) => l === 'grp' ? `<span class="grp">${id}</span>` : `<button class="cmd" data-id="${id}">${l}</button>`).join('')}</div>
+          <div class="doc"><div class="wt ${st.thick ? 'thick' : ''}">${t}</div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+          <ul class="check">${REQ.map(([k, l]) => `<li class="${done[k] ? 'ok' : ''}"><span class="box">${done[k] ? '✓' : ''}</span>${l}</li>`).join('')}</ul>
+          <p class="fb ${good === undefined ? '' : good ? 'good' : 'bad'}" id="fb">${msg || ''}</p>
+          <button class="btn alt" id="nx" ${doneN === 4 ? '' : 'hidden'}>Қорытынды →</button>
+        </div>
+      </div>`);
+    card.querySelectorAll('.rtab').forEach(b => b.onclick = () => { st.tab = b.textContent; draw(); });
+    card.querySelectorAll('.cmd').forEach(b => b.onclick = () => run(b.dataset.id));
+    const nx = $('#nx'); nx.onclick = () => between(3, level4); if (doneN === 4) nx.focus();
+  }
+  function hit(key, msg) { if (!done[key]) { done[key] = true; addPoint(2); } draw(msg, true); }
+  function run(id) {
+    if (id === 'merge') { st.merged = true; return hit('merged', 'Тамаша! Тақырып жолы бір ұяшыққа айналды (Макет).'); }
+    if (id === 'fill-coral') { st.fill = 'coral'; return hit('coral', 'Керемет! Құйма — Кесте конструкторы қойындысында.'); }
+    if (id === 'al-center') { st.center = true; return hit('center', 'Дұрыс! Туралау — Макет қойындысында.'); }
+    if (id === 'b-thick') { st.thick = true; return hit('thick', 'Мықты! Жиектер — Кесте конструкторы қойындысында.'); }
+    if (id === 'split') st.merged = false;
+    if (id === 'fill-sun') st.fill = 'sun';
+    if (id === 'fill-mint') st.fill = 'mint';
+    if (id === 'al-left' || id === 'al-right') st.center = false;
+    S.miss[2]++;
+    draw(HINT[id] || 'Бұл команда бұл жолы керек емес.', false);
+  }
+  draw('Кеңес: алдымен керекті қойындыны таңда.');
+}
+
+/* ---------- 4-деңгей: жылдам раунд ---------- */
+const L4 = [
+  ['Тор арқылы ең көбі 10 баған × 8 жол кесте құруға болады.', true],
+  ['Ұяшық — кестенің тік қатары.', false],
+  ['Біріктірілген ұяшықты қайта бөлуге болады.', true],
+  ['Ұяшықтың фонын «Жиектер» командасы бояйды.', false],
+  ['Кесте «Кірістіру» қойындысы арқылы құрылады.', true],
+  ['Жиектің түрін, қалыңдығын және түсін өзгертуге болады.', true],
+];
+function level4() {
+  setStep(4);
+  const order = shuffle(L4);
+  const TIME = 90;
+  let i = 0, left = TIME, locked = false, over = false;
+  show(`${robo('Соңғы деңгей! 90 секунд бар. Тұжырым дұрыс болса — «Иә», қате болса — «Жоқ».')}
+    <div class="row"><p class="kicker">4-деңгей · Жылдам раунд</p><span class="spacer"></span><span class="counter" id="tm">${TIME} сек</span></div>
+    <div class="timer" aria-hidden="true"><i id="bar"></i></div>
+    <div class="counter" id="ct">1 / ${order.length}</div>
+    <div class="stmt" id="st"></div>
+    <div class="yn"><button class="opt" data-v="1">Иә ✓</button><button class="opt" data-v="0">Жоқ ✗</button></div>
+    <p class="fb" id="fb"></p>`);
+  const paint = () => { $('#st').textContent = order[i][0]; $('#ct').textContent = `${i + 1} / ${order.length}`; };
+  const end = () => { if (over) return; over = true; clearInterval(tick); S.miss[3] += order.length - i; finish(); };
+  paint();
+  const tick = setInterval(() => {
+    left--; $('#tm').textContent = `${left} сек`; $('#bar').style.width = (left / TIME * 100) + '%';
+    if (left <= 0) end();
+  }, 1000);
+  card.querySelectorAll('.yn .opt').forEach(b => b.onclick = () => {
+    if (locked || over) return; locked = true;
+    const ok = (b.dataset.v === '1') === order[i][1];
+    const fb = $('#fb');
+    if (ok) { addPoint(3); fb.className = 'fb good'; fb.textContent = 'Дұрыс!'; b.classList.add('right'); }
+    else { S.miss[3]++; fb.className = 'fb bad'; fb.textContent = order[i][1] ? 'Қате: бұл тұжырым дұрыс.' : 'Қате: бұл тұжырым жалған.'; b.classList.add('wrong'); }
+    setTimeout(() => {
+      if (over) return;
+      b.classList.remove('right', 'wrong'); fb.textContent = ''; locked = false; i++;
+      if (i >= order.length) { clearInterval(tick); over = true; finish(); } else paint();
+    }, 1100);
+  });
+}
+
+/* ---------- нәтиже: деңгейді анықтау ---------- */
+function skillState(k) {
+  // Шеберханада ұпай әрқашан 4 болады, сондықтан онда қате басулар ескеріледі.
+  let p = S.lv[k] / SKILLS[k].max;
+  if (k === 2) p = Math.max(0, 1 - S.miss[2] * 0.15);
+  return { p, tag: p >= .85 ? 'ok' : p >= .6 ? 'mid' : 'lo' };
+}
+function finish() {
+  setStep(5);
+  const pct = S.score / 24;
+  const states = SKILLS.map((_, k) => skillState(k));
+  const avg = states.reduce((a, s) => a + s.p, 0) / 4;
+  const total = (pct + avg) / 2;
+  const L = total >= .85 ? { c: 'hi', n: 'Жоғары деңгей', t: 'Кесте шебері', s: 3, m: 'Керемет! Сен мәтіндік процессорда кестені еркін пішімдейсің.' }
+          : total >= .6 ? { c: 'mid', n: 'Орта деңгей', t: 'Кесте шеберінің көмекшісі', s: 2, m: 'Жақсы нәтиже! Төмендегі сары/қызыл дағдыларды қайталасаң, шебер боласың.' }
+          : { c: 'lo', n: 'Бастапқы деңгей', t: 'Жас кесте құрастырушы', s: 1, m: 'Бастама жақсы! Төмендегі кеңестерді орындап, ойынды қайта ойна.' };
+  const d = new Date();
+  const date = `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`;
+  const tagText = { ok: 'Меңгерді', mid: 'Жартылай меңгерді', lo: 'Қайталау керек' };
+  const colors = { ok: 'var(--mint)', mid: 'var(--sun)', lo: 'var(--coral)' };
+  const weak = SKILLS.map((s, k) => ({ s, st: states[k] })).filter(x => x.st.tag !== 'ok');
+  show(`${robo(L.m)}
+    <div class="cert">
+      <p class="kicker">Нәтиже парағы · ${date}</p>
+      <p class="name">${esc(S.name)}</p>
+      <div class="level ${L.c}">
+        <p class="kicker" style="color:inherit">Сенің деңгейің</p>
+        <p class="big">${L.n}</p>
+        <div class="stars" aria-label="${L.s} жұлдыз">${'★'.repeat(L.s)}<span class="off">${'★'.repeat(3 - L.s)}</span></div>
+        <p style="margin:0;font-weight:800">${L.t} · ${S.score} / 24 ұпай (${Math.round(pct * 100)}%)</p>
+      </div>
+      <h3 style="text-align:left">Дағдылар бойынша</h3>
+      <div class="skills" style="text-align:left">
+        ${SKILLS.map((s, k) => `<div class="skill">
+          <div class="head"><span>${k + 1}. ${s.name}</span><span class="tag ${states[k].tag}">${tagText[states[k].tag]}</span></div>
+          <div class="bar"><i style="width:${Math.round(states[k].p * 100)}%;background:${colors[states[k].tag]}"></i></div>
+          <p class="tip">${k === 2 ? `4 / 4 тапсырма · қате басу: ${S.miss[2]}` : `${S.lv[k]} / ${s.max} дұрыс`} · ${s.what}</p>
+        </div>`).join('')}
+      </div>
+      <h3 style="text-align:left">Дескрипторлар (оқу мақсаты 7.2.2.1)</h3>
+      <ul class="desc" style="text-align:left">${DESCRIPTORS.map(([t, k]) => `<li class="${states[k].tag === 'lo' ? 'no' : 'ok'}">${t}</li>`).join('')}</ul>
+      ${weak.length ? `<h3 style="text-align:left">Не қайталау керек?</h3>
+      <ul class="desc" style="text-align:left">${weak.map(x => `<li>${x.s.tip}</li>`).join('')}</ul>` : '<p class="tip">Барлық дағдыны меңгердің. Жарайсың!</p>'}
+    </div>
+    <p class="note">Осы нәтиже парағының скриншотын жасап, мұғаліміңе жібер (немесе Google Classroom-ға тірке).</p>
+    <div class="row"><button class="btn alt" id="again">Қайта ойнау</button><button class="btn ghost" id="print">Басып шығару</button></div>`);
+  $('#again').onclick = () => { Object.assign(S, { score: 0, lv: [0, 0, 0, 0], miss: [0, 0, 0, 0] }); setScore(); level1(); };
+  $('#print').onclick = () => window.print();
+}
+
+setScore();
+start();
+</script>
+</body>
+</html>

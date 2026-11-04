@@ -8,7 +8,7 @@ import { randomBytes } from "crypto";
  * content/manifest.json ішіндегі файлдарды (әкімші жіберген материалдар) тиісті тақырыпқа қосады.
  * Бір файл екі рет қосылмайды (тақырып + түр + файл атауы бойынша тексеріледі).
  */
-type Entry = { grade: number; quarter: number; topic: string; type: string; file?: string; url?: string; title?: string };
+type Entry = { grade: number; quarter: number; topic: string; type: string; file?: string; url?: string; title?: string; replaces?: string };
 
 const MIME: Record<string, string> = {
   pdf: "application/pdf",
@@ -56,6 +56,7 @@ export async function importContent(db: PrismaClient) {
     const type = await db.materialType.findUnique({ where: { key: e.type } });
     if (!type) { console.log(`Түр табылмады: ${e.type}`); continue; }
     if (e.url) {
+      if (e.replaces) await db.material.deleteMany({ where: { topicId: topic.id, typeId: type.id, externalUrl: e.replaces } });
       if (await db.material.findFirst({ where: { topicId: topic.id, typeId: type.id, externalUrl: e.url } })) continue;
       await db.material.create({
         data: {

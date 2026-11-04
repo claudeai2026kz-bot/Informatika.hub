@@ -88,7 +88,7 @@ export default async function TopicPage({ params, searchParams }: { params: Prom
                       <div className="flex flex-wrap items-center gap-2">
                         <div className="min-w-0 basis-full sm:basis-0 flex-1">
                           <div className="font-semibold leading-snug">{m.title}{!m.published && <span className="chip ml-2 bg-amber-100 text-amber-700">жоба</span>}</div>
-                          <div className="text-xs muted">{m.fileName ? `${m.fileName.split(".").pop()?.toUpperCase()} · ${formatSize(m.fileSize)}` : m.externalUrl ? new URL(m.externalUrl).hostname.replace(/^www\./, "") : "Видео"}</div>
+                          <div className="text-xs muted">{m.fileName ? `${m.fileName.split(".").pop()?.toUpperCase()} · ${formatSize(m.fileSize)}` : m.externalUrl ? hostLabel(m.externalUrl) : "Видео"}</div>
                         </div>
                         <div className="flex flex-wrap gap-2">
                           {s.key === "GAME_LINK" && m.externalUrl ? (
@@ -127,4 +127,9 @@ export default async function TopicPage({ params, searchParams }: { params: Prom
       </nav>
     </div>
   );
+}
+
+function hostLabel(u: string) {
+  if (u.startsWith("/")) return "Сайттағы интерактивті ойын";
+  try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return "Сілтеме"; }
 }

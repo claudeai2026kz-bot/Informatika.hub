@@ -134,7 +134,8 @@
     "quarter": 2,
     "topic": "Мәтіндік процессордағы кестелер",
     "type": "GAME_LINK",
-    "url": "https://claude.ai/artifact/U1mzVdCUQ3rLcqSHmFqHLt",
-    "title": "Кесте шебері (4 деңгейлі ойын)"
+    "url": "/play/7-keste-sheberi.html",
+    "title": "Кесте шебері: деңгейді анықтайтын ойын",
+    "replaces": "https://claude.ai/artifact/U1mzVdCUQ3rLcqSHmFqHLt"
   }
 ]
