@@ -38,11 +38,11 @@ export function formatDate(d: Date) {
 }
 
 export const GRADE_STYLES = [
-  "from-rose-100 to-white text-rose-500 border-rose-100",
-  "from-orange-100 to-white text-orange-500 border-orange-100",
-  "from-amber-100 to-white text-amber-600 border-amber-100",
-  "from-emerald-100 to-white text-emerald-600 border-emerald-100",
-  "from-teal-100 to-white text-teal-600 border-teal-100",
-  "from-sky-100 to-white text-sky-600 border-sky-100",
-  "from-lilac-100 to-white text-lilac-500 border-lilac-100",
+  "from-[#3B6BFF] to-[#6E8CFF] text-white border-transparent shadow-[0_14px_30px_-14px_#3B6BFF]",
+  "from-[#2F86F6] to-[#5FB0FF] text-white border-transparent shadow-[0_14px_30px_-14px_#2F86F6]",
+  "from-[#0EA5E9] to-[#38C6F4] text-white border-transparent shadow-[0_14px_30px_-14px_#0EA5E9]",
+  "from-[#06B6D4] to-[#3FE0EC] text-white border-transparent shadow-[0_14px_30px_-14px_#06B6D4]",
+  "from-[#5B5CF0] to-[#8183FF] text-white border-transparent shadow-[0_14px_30px_-14px_#5B5CF0]",
+  "from-[#7C5CF5] to-[#A78BFA] text-white border-transparent shadow-[0_14px_30px_-14px_#7C5CF5]",
+  "from-[#9B4DEB] to-[#C084FC] text-white border-transparent shadow-[0_14px_30px_-14px_#9B4DEB]",
 ];

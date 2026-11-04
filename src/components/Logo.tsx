@@ -9,7 +9,7 @@ export default function Logo({ href = "/", small = false }: { href?: string; sma
         </svg>
         <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-gold-400 ring-2 ring-white" />
       </span>
-      <span className={`font-extrabold tracking-tight text-ink leading-none ${small ? "text-base" : "text-lg"}`}>
+      <span className={`font-extrabold tracking-tight leading-none ${small ? "text-base" : "text-lg"}`}>
         INFORMATIKA <span className="gradient-text">HUB</span>
       </span>
     </Link>

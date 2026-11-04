@@ -20,9 +20,9 @@ function Avatar({ user, size = 36 }: { user: NonNullable<NavUser>; size?: number
   const initials = user.name.split(/\s+/).map((p) => p[0]).slice(0, 2).join("").toUpperCase();
   return user.avatar ? (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={user.avatar} alt="" width={size} height={size} className="rounded-full object-cover ring-2 ring-white" style={{ width: size, height: size }} />
+    <img src={user.avatar} alt="" width={size} height={size} className="rounded-full object-cover ring-2 ring-cyan-300/60" style={{ width: size, height: size }} />
   ) : (
-    <span className="grid place-items-center rounded-full bg-gradient-to-br from-sky-400 to-lilac-500 text-white text-sm font-bold ring-2 ring-white" style={{ width: size, height: size }}>{initials}</span>
+    <span className="grid place-items-center rounded-full bg-gradient-to-br from-sky-400 to-lilac-500 text-white text-sm font-bold ring-2 ring-cyan-300/60" style={{ width: size, height: size }}>{initials}</span>
   );
 }
 
@@ -44,28 +44,28 @@ export default function AppNav({ user, unread }: { user: NavUser; unread: number
     <>
       <header className="sticky top-0 z-40">
         <div className="mx-auto max-w-7xl px-3 sm:px-6 pt-3">
-          <div className="glass rounded-2xl h-16 px-3 sm:px-4 flex items-center gap-3">
+          <div className="app-bar rounded-2xl h-16 px-3 sm:px-4 flex items-center gap-3 text-white">
             <Logo href={user ? "/dashboard" : "/"} small />
             <nav className="hidden lg:flex items-center gap-1 ml-6" aria-label="Негізгі мәзір">
               {LINKS.map(({ href, label }) => (
-                <Link key={href} href={href} className={`rounded-xl px-3.5 py-2 text-sm font-medium transition ${active(href) ? "bg-sky-100 text-sky-600" : "text-ink-soft hover:bg-white hover:text-ink"}`}>{label}</Link>
+                <Link key={href} href={href} className={`rounded-xl px-3.5 py-2 text-sm font-medium transition ${active(href) ? "bg-white/12 text-white shadow-[inset_0_-2px_0_#22D3EE]" : "text-white/70 hover:bg-white/10 hover:text-white"}`}>{label}</Link>
               ))}
             </nav>
             <div className="ml-auto flex items-center gap-1.5">
               {user ? (
                 <>
-                  <Link href="/notifications" className="relative grid h-10 w-10 place-items-center rounded-xl text-ink-soft hover:bg-white" aria-label={`Хабарламалар${unread ? `, ${unread} жаңа` : ""}`}>
+                  <Link href="/notifications" className="relative grid h-10 w-10 place-items-center rounded-xl text-white/80 hover:bg-white/10" aria-label={`Хабарламалар${unread ? `, ${unread} жаңа` : ""}`}>
                     <Bell className="h-5 w-5" />
                     {unread > 0 && <span className="absolute right-1.5 top-1.5 grid min-w-[18px] h-[18px] place-items-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">{unread > 9 ? "9+" : unread}</span>}
                   </Link>
                   <div className="relative" ref={menuRef}>
-                    <button onClick={() => setOpen((o) => !o)} className="flex items-center gap-2 rounded-xl p-1 pr-2 hover:bg-white" aria-haspopup="menu" aria-expanded={open}>
+                    <button onClick={() => setOpen((o) => !o)} className="flex items-center gap-2 rounded-xl p-1 pr-2 hover:bg-white/10" aria-haspopup="menu" aria-expanded={open}>
                       <Avatar user={user} />
                       <span className="hidden sm:block max-w-[120px] truncate text-sm font-semibold">{user.name.split(" ")[0]}</span>
-                      <ChevronDown className="h-4 w-4 text-ink-mute hidden sm:block" />
+                      <ChevronDown className="h-4 w-4 text-white/60 hidden sm:block" />
                     </button>
                     {open && (
-                      <div role="menu" className="absolute right-0 mt-2 w-56 card p-1.5 animate-fadeUp">
+                      <div role="menu" className="absolute right-0 mt-2 w-56 card p-1.5 animate-fadeUp text-ink">
                         <MenuLink href="/profile" icon={User}>Профиль</MenuLink>
                         <MenuLink href="/settings" icon={Settings}>Баптаулар</MenuLink>
                         {user.role === "ADMIN" && <MenuLink href="/admin" icon={Shield}>Әкімші панелі</MenuLink>}
@@ -88,12 +88,12 @@ export default function AppNav({ user, unread }: { user: NavUser; unread: number
       </header>
 
       {/* Мобильді төменгі мәзір */}
-      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 glass border-t border-sky-100 pb-[env(safe-area-inset-bottom)]" aria-label="Мобильді мәзір">
+      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 app-bar rounded-t-2xl pb-[env(safe-area-inset-bottom)]" aria-label="Мобильді мәзір">
         <div className="grid grid-cols-5">
           {LINKS.map(({ href, label, icon: I }) => (
-            <Link key={href} href={href} className={`flex flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium ${active(href) ? "text-sky-600" : "text-ink-mute"}`}>
+            <Link key={href} href={href} className={`flex flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium ${active(href) ? "text-cyan-300" : "text-white/60"}`}>
               <I className="h-5 w-5" />
-              <span className="truncate max-w-full px-1">{label === "Басты бет" ? "Басты" : label}</span>
+              <span className="truncate max-w-full px-1">{({ "Басты бет": "Басты", "Материалдар": "Материал", "Таңдаулылар": "Таңдаулы" } as Record<string, string>)[label] ?? label}</span>
             </Link>
           ))}
         </div>

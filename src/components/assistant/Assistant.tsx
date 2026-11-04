@@ -142,8 +142,8 @@ export default function Assistant({ soundOn = true }: { soundOn?: boolean }) {
         aria-label="Робот-көмекшіні ашу"
         aria-expanded={open}
       >
-        <span className="mb-1 rounded-full bg-white px-3 py-1 text-xs font-bold text-sky-700 shadow-soft opacity-0 transition group-hover:opacity-100">Көмек керек пе?</span>
-        <span className="relative">
+        <span className="mb-1 rounded-full bg-[#121a46] px-3 py-1 text-xs font-bold text-cyan-200 shadow-soft opacity-0 transition group-hover:opacity-100">Көмек керек пе?</span>
+        <span className="robot-pad relative isolate">
           <span className="absolute right-1 top-2 z-10 h-3.5 w-3.5 rounded-full bg-emerald-400 ring-2 ring-white" />
           <Robot size={78} track={false} />
         </span>
