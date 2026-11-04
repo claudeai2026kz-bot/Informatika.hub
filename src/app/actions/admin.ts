@@ -27,7 +27,9 @@ export async function signUpload(fileName: string, size: number): Promise<{ path
   try {
     return await signDirectUpload(String(fileName), Number(size));
   } catch (e) {
-    return { error: e instanceof UploadError ? e.message : "Жүктеу мүмкін болмады" };
+    if (e instanceof UploadError) return { error: e.message };
+    console.error("signUpload failed", e);
+    return { error: `Жүктеу мүмкін болмады: Supabase-ке қосылу қатесі (${e instanceof Error ? e.message.slice(0, 120) : "белгісіз"})` };
   }
 }
 

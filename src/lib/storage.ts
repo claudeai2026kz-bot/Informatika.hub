@@ -9,9 +9,11 @@ import { randomBytes } from "crypto";
  *  - Әйтпесе: жергілікті диск (STORAGE_DIR).
  */
 const ROOT = path.resolve(process.env.STORAGE_DIR ?? "./storage");
-const SB_URL = process.env.SUPABASE_URL?.replace(/\/$/, "");
-const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const BUCKET = process.env.SUPABASE_BUCKET ?? "files";
+// Көшіріп қойғанда кететін бос орын, тырнақша, жол соңы таңбаларын тазалаймыз.
+const clean = (v?: string) => v?.replace(/^[\s"']+|[\s"']+$/g, "").replace(/[\r\n]/g, "") || undefined;
+const SB_URL = clean(process.env.SUPABASE_URL)?.replace(/\/+$/, "");
+const SB_KEY = clean(process.env.SUPABASE_SERVICE_ROLE_KEY);
+const BUCKET = clean(process.env.SUPABASE_BUCKET) ?? "files";
 export const cloud = !!(SB_URL && SB_KEY);
 
 async function sb(pathname: string, init: RequestInit = {}) {
@@ -89,7 +91,11 @@ export async function signDirectUpload(fileName: string, size: number, allowed: 
   if (!KINDS.some((k) => k.ext === ext) || !allowed.includes(ext)) throw new UploadError(`Бұл файл түріне рұқсат жоқ. Рұқсат етілгені: ${allowed.join(", ")}`);
   const rel = newPath("uploads", ext);
   const r = await sb(`object/upload/sign/${BUCKET}/${objPath(rel)}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
-  if (!r.ok) throw new UploadError("Жүктеу сілтемесін алу мүмкін болмады");
+  if (!r.ok) {
+    const detail = await r.text().catch(() => "");
+    console.error("Supabase sign upload failed", r.status, detail.slice(0, 300));
+    throw new UploadError(r.status === 404 || /bucket/i.test(detail) ? `Supabase-те «${BUCKET}» bucket табылмады` : r.status === 401 || r.status === 403 ? "Supabase кілті дұрыс емес (SUPABASE_SERVICE_ROLE_KEY)" : `Жүктеу сілтемесін алу мүмкін болмады (${r.status})`);
+  }
   const { url } = (await r.json()) as { url: string };
   return { path: rel, url: `${SB_URL}/storage/v1${url}` };
 }
