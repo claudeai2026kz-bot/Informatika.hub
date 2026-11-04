@@ -19,7 +19,7 @@ export async function verifyPassword(pw: string, hash: string) {
 }
 
 /** Жаңа сессия жасап, httpOnly cookie орнатады. Базада тек токеннің хэші сақталады. */
-export async function createSession(userId: string) {
+export async function createSession(userId: string, remember = true) {
   const token = randomBytes(32).toString("base64url");
   const expiresAt = new Date(Date.now() + SESSION_DAYS * 864e5);
   await db.session.create({ data: { id: sha256(token), userId, expiresAt } });
@@ -28,7 +28,7 @@ export async function createSession(userId: string) {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    expires: expiresAt,
+    ...(remember && { expires: expiresAt }),
   });
 }
 

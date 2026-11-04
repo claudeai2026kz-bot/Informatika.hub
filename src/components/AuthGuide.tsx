@@ -25,7 +25,7 @@ const FIELD: Record<string, string> = {
   confirm: "Құпиясөзді тағы бір рет қайталап жазыңыз.",
 };
 
-export default function AuthGuide({ compact = false }: { compact?: boolean }) {
+export default function AuthGuide({ compact = false, dark = false }: { compact?: boolean; dark?: boolean }) {
   const path = usePathname();
   const lines = (INTRO[path] ?? ["Сәлеметсіз бе! Informatika Hub сайтына қош келдіңіз!"]).map((l) => (compact ? l.replace("қасымдағы", "төмендегі") : l));
   const [text, setText] = useState("");
@@ -113,19 +113,19 @@ export default function AuthGuide({ compact = false }: { compact?: boolean }) {
   }
 
   return (
-    <div className="relative flex flex-col items-center" style={{ animation: "ihubRise 1.2s cubic-bezier(.2,.9,.3,1.3) both" }}>
-      <div className="relative mb-5 w-full max-w-md rounded-3xl bg-white/95 px-6 py-5 text-ink shadow-lift backdrop-blur min-h-[112px]" aria-live="polite">
-        <p className="text-lg font-semibold leading-snug">{shown}<span className={talking ? "inline-block w-2 h-5 ml-1 bg-sky-400 align-middle animate-pulse rounded-sm" : "hidden"} /></p>
+    <div className="relative flex flex-col items-start" style={{ animation: "ihubRise 1.2s cubic-bezier(.2,.9,.3,1.3) both" }}>
+      <div className={`relative mb-4 w-[340px] rounded-2xl px-4 py-3.5 min-h-[96px] ${dark ? "border border-white/15 bg-[#141B45]/85 text-white backdrop-blur-md" : "bg-white/95 text-ink shadow-lift"}`} aria-live="polite">
+        <p className="text-[15px] font-semibold leading-snug">{shown}<span className={talking ? "inline-block w-2 h-5 ml-1 bg-sky-400 align-middle animate-pulse rounded-sm" : "hidden"} /></p>
         <div className="mt-3 flex items-center gap-2">
-          <button type="button" onClick={() => { stopSpeaking(); playIntro(0); }} className="inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-3 py-1.5 text-sm font-semibold text-sky-700 hover:bg-sky-100"><Volume2 className="h-4 w-4" /> Қайта тыңдау</button>
-          <button type="button" onClick={toggleMute} className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-ink-soft hover:bg-sky-50">{mute ? <><VolumeX className="h-4 w-4" /> Дауыс өшірулі</> : "Дауысты өшіру"}</button>
+          <button type="button" onClick={() => { stopSpeaking(); playIntro(0); }} className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1 text-[13px] font-semibold ${dark ? "bg-white/10 text-white hover:bg-white/20" : "bg-sky-50 text-sky-700 hover:bg-sky-100"}`}><Volume2 className="h-4 w-4" /> Қайта тыңдау</button>
+          <button type="button" onClick={toggleMute} className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[13px] ${dark ? "text-white/70 hover:bg-white/10" : "text-ink-soft hover:bg-sky-50"}`}>{mute ? <><VolumeX className="h-4 w-4" /> Дауыс өшірулі</> : "Дауысты өшіру"}</button>
           <span className="ml-auto flex gap-1">{lines.map((_, i) => <span key={i} className={`h-1.5 w-1.5 rounded-full ${i < idxRef.current ? "bg-sky-400" : "bg-sky-100"}`} />)}</span>
         </div>
-        <span className="absolute -bottom-2.5 left-1/2 h-5 w-5 -translate-x-1/2 rotate-45 bg-white/95" />
+        <span className={`absolute -bottom-2 left-16 h-4 w-4 rotate-45 ${dark ? "border-b border-r border-white/15 bg-[#141B45]" : "bg-white/95"}`} />
       </div>
-      <div className="relative">
-        {talking && [0, 1, 2].map((i) => <span key={i} aria-hidden className="absolute left-1/2 top-[30%] -translate-x-1/2 -translate-y-1/2 h-40 w-40 rounded-full border-2 border-sky-300/50" style={{ animation: `ihubRing 1.8s ${i * 0.6}s ease-out infinite` }} />)}
-        <Robot size={200} wave={wave} talking={talking} />
+      <div className="relative ml-2">
+        {talking && [0, 1, 2].map((i) => <span key={i} aria-hidden className="absolute left-1/2 top-[30%] -translate-x-1/2 -translate-y-1/2 h-32 w-32 rounded-full border-2 border-indigo-300/40" style={{ animation: `ihubRing 1.8s ${i * 0.6}s ease-out infinite` }} />)}
+        <Robot size={150} wave={wave} talking={talking} />
       </div>
       <style>{`@keyframes ihubRise{0%{transform:translateY(120px) scale(.6);opacity:0}70%{transform:translateY(-10px) scale(1.03);opacity:1}100%{transform:none}}@keyframes ihubRing{0%{transform:translate(-50%,-50%) scale(.6);opacity:.8}100%{transform:translate(-50%,-50%) scale(1.8);opacity:0}}@media (prefers-reduced-motion:reduce){[style*=ihubRise],[style*=ihubRing]{animation:none!important}}`}</style>
     </div>

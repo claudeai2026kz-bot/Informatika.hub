@@ -55,7 +55,7 @@ export async function loginAction(_: AuthState, fd: FormData): Promise<AuthState
   if (!user || !ok) return { errors: { form: "Email немесе құпиясөз қате. Қайта тексеріп көріңіз." }, values };
   if (user.blocked) return { errors: { form: "Бұл аккаунт бұғатталған. Қолдау қызметіне хабарласыңыз." }, values };
 
-  await createSession(user.id);
+  await createSession(user.id, fd.get("remember") !== null || fd.get("rememberSet") === null);
   redirect(safeNext(fd.get("next")));
 }
 

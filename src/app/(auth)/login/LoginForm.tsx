@@ -20,12 +20,16 @@ export default function LoginForm({ next, notice }: { next?: string; notice?: st
         <FieldError id="email-err" msg={e.email} />
       </div>
       <div>
-        <div className="flex items-center justify-between">
-          <label htmlFor="password" className="label">Құпиясөз</label>
-          <Link href="/forgot" className="text-sm font-medium text-sky-600 hover:underline mb-1.5">Құпиясөзді ұмыттыңыз ба?</Link>
-        </div>
+        <label htmlFor="password" className="label">Құпиясөз</label>
         <PasswordInput id="password" name="password" placeholder="Құпиясөзді енгізіңіз" autoComplete="current-password" invalid={!!e.password} />
         <FieldError msg={e.password} />
+      </div>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <input type="hidden" name="rememberSet" value="1" />
+        <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-ink-soft">
+          <input type="checkbox" name="remember" defaultChecked className="h-4 w-4 rounded border-sky-300 accent-[#2F6BFF]" /> Мені есте сақтау
+        </label>
+        <Link href="/forgot" className="text-sm font-medium text-[#2F6BFF] hover:underline">Құпиясөзді ұмыттыңыз ба?</Link>
       </div>
       <SubmitButton pendingText="Кіріп жатыр…">Кіру</SubmitButton>
       <p className="text-center text-sm muted">Аккаунтыңыз жоқ па? <Link href="/register" className="font-semibold text-sky-600 hover:underline">Тіркелу</Link></p>
