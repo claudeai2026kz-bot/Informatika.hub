@@ -1,5 +1,5 @@
 import Logo from "./Logo";
-import Robot from "./Robot";
+import AuthGuide from "./AuthGuide";
 
 export default function AuthShell({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
   return (
@@ -12,12 +12,13 @@ export default function AuthShell({ title, subtitle, children }: { title: string
           <h2 className="text-4xl font-extrabold leading-tight">Информатика мұғалімдеріне арналған <span className="text-sky-300">ақылды көмекші</span></h2>
           <p className="mt-4 text-white/70 max-w-md">Сапалы, дайын, жүйеленген материалдар уақытыңызды үнемдейді.</p>
         </div>
-        <div className="relative flex justify-center"><Robot size={250} /></div>
+        <div className="relative flex justify-center"><AuthGuide /></div>
       </aside>
       <main className="flex flex-col px-4 sm:px-6 py-8">
         <div className="lg:hidden"><Logo /></div>
         <div className="flex-1 grid place-items-center py-10">
           <div className="w-full max-w-md page-enter">
+            <div className="lg:hidden"><AuthGuide compact /></div>
             <h1 className="text-3xl font-extrabold">{title}</h1>
             <p className="mt-2 muted">{subtitle}</p>
             <div className="mt-8">{children}</div>

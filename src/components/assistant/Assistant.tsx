@@ -3,25 +3,11 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { X, Send, ArrowRight, Mic, Volume2, VolumeX } from "lucide-react";
 import Robot from "../Robot";
+import { speak } from "@/lib/speech";
 
 type Msg = { from: "bot" | "me"; text: string; items?: { title: string; href: string; meta: string }[]; links?: { href: string; label: string }[] };
 
-const WELCOME = "Қош келдіңіз! Көмек керек болса, маған айтсаңыз болады. Менің үстімді басыңыз, мен сізге көмектесемін.";
-
-/** Дауыспен оқу: қазақша дауыс болса соны, болмаса орысша/әдепкі дауысты алады. */
-function speak(text: string) {
-  try {
-    const ss = window.speechSynthesis;
-    if (!ss) return;
-    ss.cancel();
-    const u = new SpeechSynthesisUtterance(text.replace(/[🤖✨👋]/gu, ""));
-    const voices = ss.getVoices();
-    const v = voices.find((x) => x.lang.toLowerCase().startsWith("kk")) ?? voices.find((x) => x.lang.toLowerCase().startsWith("ru"));
-    if (v) { u.voice = v; u.lang = v.lang; } else u.lang = "kk-KZ";
-    u.rate = 0.9;
-    ss.speak(u);
-  } catch { /* дауыс қолжетімсіз */ }
-}
+const WELCOME = "Қош келдіңіз! Менің көмегім қажет болса, мен осында тұрамын. Маған басыңыз, мен сізге көмектесемін.";
 
 type Rec = { lang: string; interimResults: boolean; onresult: ((e: { results: { 0: { transcript: string } }[] }) => void) | null; onend: (() => void) | null; onerror: (() => void) | null; start(): void; stop(): void };
 function makeRecognizer(): Rec | null {
@@ -144,7 +130,7 @@ export default function Assistant({ soundOn = true }: { soundOn?: boolean }) {
               {WELCOME}
               <span className="absolute -bottom-2 left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 bg-white" />
             </div>
-            <Robot size={190} track={false} wave />
+            <Robot size={190} track={false} wave talking={intro === "center"} />
             <button onClick={(e) => { e.stopPropagation(); speak(WELCOME); }} className="btn-soft btn-sm bg-white"><Volume2 className="h-4 w-4" /> Тыңдау</button>
           </div>
           <style>{`@keyframes ihubWalkIn{0%{transform:translate(45vw,40vh) scale(.3);opacity:0}60%{transform:translate(0,0) scale(1.05);opacity:1}100%{transform:none}}@media (prefers-reduced-motion:reduce){[style*=ihubWalkIn]{animation:none!important}}`}</style>
