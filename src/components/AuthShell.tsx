@@ -1,14 +1,7 @@
 import Link from "next/link";
-import { GraduationCap, BookOpenCheck, ClipboardCheck, Presentation } from "lucide-react";
-import AuthScene from "./AuthScene";
+import AuthScene3D from "./AuthScene3D";
 import AuthGuide from "./AuthGuide";
 
-const CHIPS = [
-  { icon: GraduationCap, label: "5–11 сынып" },
-  { icon: BookOpenCheck, label: "Дайын сабақтар" },
-  { icon: ClipboardCheck, label: "ҚМЖ, БЖБ, ТЖБ" },
-  { icon: Presentation, label: "Презентациялар, бейнесабақтар" },
-];
 const NAV = [
   { href: "/", label: "Басты бет" },
   { href: "/#grades", label: "Сыныптар" },
@@ -19,8 +12,8 @@ const NAV = [
 export default function AuthShell({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#0B1230] text-white">
-      <AuthScene />
-      <div aria-hidden className="absolute inset-0 bg-gradient-to-r from-[#0B1230]/85 via-[#0B1230]/30 to-transparent" />
+      <AuthScene3D />
+      <div aria-hidden className="absolute inset-0 pointer-events-none bg-gradient-to-r from-[#0B1230]/70 via-transparent to-transparent" />
 
       <div className="relative mx-auto flex min-h-screen max-w-7xl flex-col px-4 sm:px-8">
         {/* жоғарғы мәзір */}
@@ -47,13 +40,6 @@ export default function AuthShell({ title, subtitle, children }: { title: string
 
             <div className="mt-auto pt-8 flex items-end gap-6">
               <div className="shrink-0 -mb-2"><AuthGuide dark /></div>
-              <div className="grid grid-cols-2 gap-3 pb-2">
-                {CHIPS.map((c) => (
-                  <span key={c.label} className="inline-flex items-center gap-3 rounded-2xl border border-white/10 bg-[#141B45]/75 px-4 py-3 text-[15px] font-medium backdrop-blur-md">
-                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[#2F6BFF]"><c.icon className="h-5 w-5" /></span>{c.label}
-                  </span>
-                ))}
-              </div>
             </div>
           </section>
 
