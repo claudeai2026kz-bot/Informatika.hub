@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import { CURRICULUM } from "./curriculum";
+import { CURRICULUM, REMOVED, SECTIONS } from "./curriculum";
 
 const db = new PrismaClient();
 
@@ -30,11 +30,23 @@ async function main() {
   for (const [g, quarters] of Object.entries(CURRICULUM))
     for (const [q, titles] of Object.entries(quarters)) {
       const quarter = await db.quarter.findUniqueOrThrow({ where: { gradeId_number: { gradeId: Number(g), number: Number(q) } } });
+      const section = SECTIONS[`${g}-${q}`] ?? null;
       for (const [i, title] of titles.entries()) {
         const found = await db.topic.findFirst({ where: { quarterId: quarter.id, title } });
-        if (!found) await db.topic.create({ data: { quarterId: quarter.id, title, order: i + 1 } });
+        if (!found) await db.topic.create({ data: { quarterId: quarter.id, title, order: i + 1, section } });
+        else if (found.order !== i + 1 || found.section !== section) await db.topic.update({ where: { id: found.id }, data: { order: i + 1, section } });
       }
     }
+
+  for (const r of REMOVED) {
+    const t = await db.topic.findFirst({
+      where: { title: r.title, quarter: { gradeId: r.grade, number: r.quarter } },
+      include: { _count: { select: { materials: true, assessments: true, games: true } } },
+    });
+    if (!t) continue;
+    if (t._count.materials + t._count.assessments + t._count.games === 0) await db.topic.delete({ where: { id: t.id } });
+    else console.log(`Өшірілмеді (материалы бар): ${r.title}`);
+  }
 
   // Бірінші әкімші тек осы жерде, ортаның айнымалылары арқылы жасалады.
   const email = process.env.ADMIN_EMAIL?.toLowerCase();
