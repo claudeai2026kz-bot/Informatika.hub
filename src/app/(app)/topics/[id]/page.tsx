@@ -11,6 +11,8 @@ import Abbr from "@/components/Abbr";
 import TopicUpload from "@/components/admin/TopicUpload";
 import ConfirmButton from "@/components/admin/ConfirmButton";
 import { deleteMaterial } from "@/app/actions/admin";
+import PdfFrame from "@/components/PdfFrame";
+import { officeViewerUrl } from "@/lib/storage";
 
 const SECTIONS = [
   { key: "PRESENTATION", label: "Презентация", icon: Presentation, color: "from-orange-100 to-orange-50 text-orange-500", mode: "file", accept: ".pptx,.ppt,.pdf" },
@@ -25,10 +27,11 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return { title: t?.title ?? "Сабақ" };
 }
 
-export default async function TopicPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ saved?: string }> }) {
+export default async function TopicPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ saved?: string; s?: string; m?: string }> }) {
   const id = Number((await params).id);
   if (!Number.isInteger(id)) notFound();
-  const { saved } = await searchParams;
+  const sp = await searchParams;
+  const { saved } = sp;
   const user = await getCurrentUser();
   const isAdmin = user?.role === "ADMIN";
   const topic = await db.topic.findUnique({
@@ -44,6 +47,14 @@ export default async function TopicPage({ params, searchParams }: { params: Prom
   const idx = siblings.findIndex((s) => s.id === id);
   const prev = siblings[idx - 1], next = siblings[idx + 1];
   const g = topic.quarter.gradeId, q = topic.quarter.number;
+  const counts = Object.fromEntries(SECTIONS.map((x) => [x.key, topic.materials.filter((m) => m.type.key === x.key).length + (x.key === "GAME_LINK" ? topic.games.length : 0)])) as Record<string, number>;
+  const ready = SECTIONS.filter((x) => counts[x.key]).length;
+  const active = SECTIONS.find((x) => x.key === sp.s) ?? SECTIONS.find((x) => counts[x.key]) ?? SECTIONS[0];
+  const items = topic.materials.filter((m) => m.type.key === active.key);
+  const sel = items.find((m) => m.id === sp.m) ?? items[0];
+  const selGame = !sel && active.key === "GAME_LINK" ? topic.games[0] : undefined;
+  const isPdfLike = sel && (sel.previewPath || sel.fileMime === "application/pdf");
+  const office = sel && sel.filePath && !isPdfLike && active.key !== "VIDEO" ? await officeViewerUrl(sel.filePath) : null;
 
   return (
     <div>
@@ -57,76 +68,99 @@ export default async function TopicPage({ params, searchParams }: { params: Prom
             <h1 className="mt-1 text-2xl sm:text-3xl font-extrabold">{topic.title}</h1>
           </div>
         </div>
-        <nav className="mt-5 flex flex-wrap gap-2" aria-label="Бөлімдер">
-          {SECTIONS.map((s) => {
-            const n = topic.materials.filter((m) => m.type.key === s.key).length + (s.key === "GAME_LINK" ? topic.games.length : 0);
-            return <a key={s.key} href={`#${s.key}`} className={`chip border ${n ? "bg-white border-sky-200 text-ink" : "bg-white/60 border-transparent text-ink-mute"}`}>{n > 0 && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />}{s.key === "KMZH" ? <Abbr k="ҚМЖ" /> : s.label}</a>;
-          })}
-        </nav>
+        <div className="mt-5 flex items-center gap-3">
+          <div className="h-2.5 flex-1 max-w-xs overflow-hidden rounded-full bg-white"><div className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-sky-400" style={{ width: `${(ready / SECTIONS.length) * 100}%` }} /></div>
+          <span className="text-sm font-semibold text-ink-soft">{SECTIONS.length} бөлімнің {ready}-і дайын</span>
+        </div>
       </header>
 
-      {saved && <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700" role="status">Материал қосылды ✓</div>}
+      {saved && <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-base text-emerald-700" role="status">Материал қосылды ✓</div>}
 
-      <div className="mt-6 grid gap-5 lg:grid-cols-2">
+      {/* Бөлім қойындылары */}
+      <div id="tabs" className="mt-6 scroll-mt-24 -mx-4 px-4 flex gap-2.5 overflow-x-auto pb-1 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-5 sm:overflow-visible" role="tablist" aria-label="Сабақ бөлімдері">
         {SECTIONS.map((s) => {
-          const items = topic.materials.filter((m) => m.type.key === s.key);
+          const n = counts[s.key];
           const I = s.icon;
-          const empty = items.length === 0 && !(s.key === "GAME_LINK" && topic.games.length);
+          const on = s.key === active.key;
           return (
-            <section key={s.key} id={s.key} className={`card p-5 sm:p-6 scroll-mt-24 ${s.key === "VIDEO" ? "lg:col-span-2" : ""}`}>
-              <div className="flex items-center gap-3">
-                <span className={`grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br ${s.color}`}><I className="h-6 w-6" /></span>
-                <h2 className="text-lg font-bold">{s.key === "KMZH" ? <><Abbr k="ҚМЖ" /> (қысқа мерзімді жоспар)</> : s.label}</h2>
-              </div>
-
-              <ul className="mt-4 space-y-3">
-                {items.map((m) => {
-                  const video = s.key === "VIDEO" ? embedUrl(m.videoUrl) : null;
-                  return (
-                    <li key={m.id} className="rounded-xl border border-sky-100 bg-sky-50/40 p-3">
-                      {video && <div className="mb-3 aspect-video overflow-hidden rounded-lg"><iframe src={video} title={m.title} className="h-full w-full" allow="encrypted-media; picture-in-picture; fullscreen" allowFullScreen loading="lazy" /></div>}
-                      {s.key === "VIDEO" && !video && m.fileMime === "video/mp4" && <video src={`/api/files/material/${m.id}`} controls preload="metadata" className="mb-3 w-full rounded-lg bg-black aspect-video" />}
-                      <div className="flex flex-wrap items-center gap-2">
-                        <div className="min-w-0 basis-full sm:basis-0 flex-1">
-                          <div className="font-semibold leading-snug">{m.title}{!m.published && <span className="chip ml-2 bg-amber-100 text-amber-700">жоба</span>}</div>
-                          <div className="text-xs muted">{m.fileName ? `${m.fileName.split(".").pop()?.toUpperCase()} · ${formatSize(m.fileSize)}` : m.externalUrl ? hostLabel(m.externalUrl) : "Видео"}</div>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {s.key === "GAME_LINK" && m.externalUrl ? (
-                            <>
-                              <a href={m.externalUrl} target="_blank" rel="noopener noreferrer nofollow" className="btn-primary btn-sm"><ExternalLink className="h-4 w-4" /> Ойнау</a>
-                              {m.externalUrl.startsWith("/play/") && (user
-                                ? <a href={m.externalUrl} download className="btn-ghost btn-sm"><Download className="h-4 w-4" /> Жүктеу</a>
-                                : <Link href={`/login?next=/topics/${id}`} className="btn-soft btn-sm"><Lock className="h-4 w-4" /> Жүктеу</Link>)}
-                              {m.externalUrl.startsWith("/play/") && <ShareButton title={m.title} url={m.externalUrl} />}
-                            </>
-                          ) : (
-                            <>
-                              {s.key !== "VIDEO" && <Link href={`/materials/${m.id}`} className="btn-ghost btn-sm"><Eye className="h-4 w-4" /> Ашу</Link>}
-                              {m.filePath && (user
-                                ? <a href={`/api/files/material/${m.id}?dl=1`} className="btn-primary btn-sm"><Download className="h-4 w-4" /> Жүктеу</a>
-                                : <Link href={`/login?next=/topics/${id}`} className="btn-soft btn-sm"><Lock className="h-4 w-4" /> Жүктеу</Link>)}
-                            </>
-                          )}
-                          {isAdmin && <ConfirmButton action={deleteMaterial.bind(null, m.id)} confirm={`«${m.title}» жою керек пе?`}>Жою</ConfirmButton>}
-                        </div>
-                      </div>
-                    </li>
-                  );
-                })}
-                {s.key === "GAME_LINK" && topic.games.map((gm) => (
-                  <li key={gm.id} className="flex items-center gap-2 rounded-xl border border-sky-100 bg-sky-50/40 p-3">
-                    <div className="flex-1 font-semibold">{gm.title} <span className="text-xs muted font-normal">· сайттағы ойын</span></div>
-                    <Link href={`/games/${gm.id}`} className="btn-primary btn-sm"><Gamepad2 className="h-4 w-4" /> Ойнау</Link>
-                  </li>
-                ))}
-              </ul>
-              {empty && <p className="mt-3 text-sm muted">Әзірге қосылмаған.</p>}
-              {isAdmin && <div className="mt-3"><TopicUpload typeKey={s.key} label={s.label} mode={s.mode} accept={s.accept} grade={g} quarter={q} topicId={id} topicTitle={topic.title} /></div>}
-            </section>
+            <Link key={s.key} href={`/topics/${id}?s=${s.key}#tabs`} scroll={false} role="tab" aria-selected={on}
+              className={`group relative flex shrink-0 items-center gap-3 rounded-2xl border-2 px-4 py-3.5 transition ${on ? "border-transparent bg-gradient-to-r from-sky-500 to-lilac-500 text-white shadow-lift" : "border-sky-100 bg-white hover:border-sky-300 hover:-translate-y-0.5"}`}>
+              <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${on ? "bg-white/20" : `bg-gradient-to-br ${s.color}`}`}><I className="h-6 w-6" /></span>
+              <span className="min-w-0">
+                <span className="block text-base font-bold leading-tight">{s.key === "KMZH" ? "ҚМЖ" : s.label}</span>
+                <span className={`block text-sm ${on ? "text-white/85" : n ? "text-emerald-600 font-medium" : "text-ink-mute"}`}>{n ? `${n} материал` : "әзірге жоқ"}</span>
+              </span>
+              {n > 0 && !on && <CheckCircle2 className="absolute right-2.5 top-2.5 h-4 w-4 text-emerald-500" />}
+            </Link>
           );
         })}
       </div>
+
+      {/* Таңдалған бөлім */}
+      <section className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]" aria-live="polite">
+        <div className="card overflow-hidden">
+          {sel ? <Preview m={sel} office={office} isGame={active.key === "GAME_LINK"} /> : selGame ? (
+            <GameHero title={selGame.title} href={`/games/${selGame.id}`} />
+          ) : (
+            <div className="grid place-items-center text-center px-6 py-16 min-h-[420px] bg-gradient-to-br from-sky-50 to-lilac-100/50">
+              <div>
+                <span className={`mx-auto grid h-20 w-20 place-items-center rounded-3xl bg-gradient-to-br ${active.color}`}><active.icon className="h-10 w-10" /></span>
+                <h2 className="mt-5 text-2xl font-extrabold">{active.key === "KMZH" ? "ҚМЖ" : active.label} әлі қосылмаған</h2>
+                <p className="mt-2 text-base muted max-w-sm mx-auto">Бұл бөлімге материал жақында қосылады. Басқа бөлімдерді қарап көріңіз.</p>
+                <div className="mt-5 flex flex-wrap justify-center gap-2">
+                  {SECTIONS.filter((x) => counts[x.key] && x.key !== active.key).map((x) => <Link key={x.key} href={`/topics/${id}?s=${x.key}#tabs`} scroll={false} className="btn-soft">{x.key === "KMZH" ? "ҚМЖ" : x.label} →</Link>)}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <aside className="space-y-3">
+          <h2 className="flex items-center gap-2 text-lg font-bold"><active.icon className="h-5 w-5 text-sky-500" />{active.key === "KMZH" ? <><Abbr k="ҚМЖ" /> (қысқа мерзімді жоспар)</> : active.label}</h2>
+          {items.map((m) => {
+            const on = sel?.id === m.id;
+            const ext = m.fileName?.split(".").pop()?.toUpperCase();
+            return (
+              <div key={m.id} className={`rounded-2xl border-2 bg-white p-4 transition ${on ? "border-sky-400 shadow-soft" : "border-sky-100"}`}>
+                <Link href={`/topics/${id}?s=${active.key}&m=${m.id}#tabs`} scroll={false} className="flex items-start gap-3">
+                  <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-gradient-to-br ${active.color} text-xs font-extrabold`}>{ext ?? <active.icon className="h-6 w-6" />}</span>
+                  <span className="min-w-0">
+                    <span className="block font-semibold leading-snug">{m.title}{!m.published && <span className="chip ml-2 bg-amber-100 text-amber-700">жоба</span>}</span>
+                    <span className="block text-sm muted">{m.fileName ? `${ext} · ${formatSize(m.fileSize)}` : m.externalUrl ? hostLabel(m.externalUrl) : "Видео"}</span>
+                  </span>
+                </Link>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {active.key === "GAME_LINK" && m.externalUrl ? (
+                    <>
+                      <a href={m.externalUrl} target="_blank" rel="noopener noreferrer nofollow" className="btn-primary flex-1"><ExternalLink className="h-4 w-4" /> Ойнау</a>
+                      {m.externalUrl.startsWith("/play/") && (user
+                        ? <a href={m.externalUrl} download className="btn-ghost"><Download className="h-4 w-4" /> Жүктеу</a>
+                        : <Link href={`/login?next=/topics/${id}`} className="btn-soft"><Lock className="h-4 w-4" /> Жүктеу</Link>)}
+                      {m.externalUrl.startsWith("/play/") && <ShareButton title={m.title} url={m.externalUrl} />}
+                    </>
+                  ) : (
+                    <>
+                      {m.filePath && (user
+                        ? <a href={`/api/files/material/${m.id}?dl=1`} className="btn-primary flex-1"><Download className="h-4 w-4" /> Жүктеу</a>
+                        : <Link href={`/login?next=/topics/${id}`} className="btn-soft flex-1"><Lock className="h-4 w-4" /> Жүктеу</Link>)}
+                      {active.key !== "VIDEO" && <Link href={`/materials/${m.id}`} className="btn-ghost"><Eye className="h-4 w-4" /> Толық ашу</Link>}
+                    </>
+                  )}
+                  {isAdmin && <ConfirmButton action={deleteMaterial.bind(null, m.id)} confirm={`«${m.title}» жою керек пе?`}>Жою</ConfirmButton>}
+                </div>
+              </div>
+            );
+          })}
+          {active.key === "GAME_LINK" && topic.games.map((gm) => (
+            <div key={gm.id} className="flex items-center gap-2 rounded-2xl border-2 border-sky-100 bg-white p-4">
+              <div className="flex-1 font-semibold">{gm.title} <span className="text-sm muted font-normal">· сайттағы ойын</span></div>
+              <Link href={`/games/${gm.id}`} className="btn-primary"><Gamepad2 className="h-4 w-4" /> Ойнау</Link>
+            </div>
+          ))}
+          {!items.length && !(active.key === "GAME_LINK" && topic.games.length) && <p className="rounded-2xl border-2 border-dashed border-sky-200 p-5 text-center text-base muted">Әзірге материал жоқ</p>}
+          {isAdmin && <div className="pt-1"><TopicUpload typeKey={active.key} label={active.label} mode={active.mode} accept={active.accept} grade={g} quarter={q} topicId={id} topicTitle={topic.title} /></div>}
+        </aside>
+      </section>
 
       <nav className="mt-8 grid grid-cols-2 gap-3" aria-label="Сабақтар">
         {prev ? <Link href={`/topics/${prev.id}`} className="card card-hover p-4 flex items-center gap-2"><ChevronLeft className="h-5 w-5 shrink-0 text-sky-500" /><span className="min-w-0"><span className="block text-xs muted">Алдыңғы сабақ</span><span className="block font-semibold truncate">{prev.title}</span></span></Link> : <span />}
@@ -139,4 +173,41 @@ export default async function TopicPage({ params, searchParams }: { params: Prom
 function hostLabel(u: string) {
   if (u.startsWith("/")) return "Сайттағы интерактивті ойын";
   try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return "Сілтеме"; }
+}
+
+type PM = { id: string; title: string; fileName: string | null; fileMime: string | null; previewPath: string | null; videoUrl: string | null; externalUrl: string | null; filePath: string | null };
+
+function Preview({ m, office, isGame }: { m: PM; office: string | null; isGame: boolean }) {
+  const video = embedUrl(m.videoUrl);
+  if (video) return <div className="aspect-video bg-black"><iframe src={video} title={m.title} className="h-full w-full" allow="encrypted-media; picture-in-picture; fullscreen" allowFullScreen loading="lazy" /></div>;
+  if (m.fileMime === "video/mp4") return <video src={`/api/files/material/${m.id}`} controls preload="metadata" className="w-full aspect-video bg-black" />;
+  if (isGame && m.externalUrl) return <GameHero title={m.title} href={m.externalUrl} external />;
+  if (m.previewPath || m.fileMime === "application/pdf") return <PdfFrame src={`/api/files/material/${m.id}#view=FitH`} title={m.title} />;
+  if (office) return <PdfFrame src={office} title={m.title} />;
+  return (
+    <div className="grid place-items-center text-center px-6 py-16 min-h-[420px] bg-gradient-to-br from-sky-50 to-lilac-100/50">
+      <div>
+        <Eye className="mx-auto h-12 w-12 text-sky-400" />
+        <h2 className="mt-4 text-xl font-bold">{m.title}</h2>
+        <Link href={`/materials/${m.id}`} className="btn-primary mt-5"><Eye className="h-4 w-4" /> Ашып көру</Link>
+      </div>
+    </div>
+  );
+}
+
+function GameHero({ title, href, external }: { title: string; href: string; external?: boolean }) {
+  return (
+    <div className="relative grid place-items-center overflow-hidden px-6 py-16 min-h-[420px] text-center text-white bg-gradient-to-br from-lilac-500 via-sky-500 to-sky-400">
+      <span aria-hidden className="absolute -left-10 -top-10 h-48 w-48 rounded-full bg-white/10" />
+      <span aria-hidden className="absolute -right-12 bottom-0 h-64 w-64 rounded-full bg-white/10" />
+      <div className="relative">
+        <Gamepad2 className="mx-auto h-16 w-16" />
+        <h2 className="mt-4 text-2xl sm:text-3xl font-extrabold">{title}</h2>
+        <p className="mt-2 text-white/85 text-base">Оқушылардың білім деңгейін ойын арқылы анықтаңыз</p>
+        {external
+          ? <a href={href} target="_blank" rel="noopener noreferrer nofollow" className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-white px-7 py-3.5 text-lg font-bold text-sky-600 shadow-lift hover:scale-105 transition"><ExternalLink className="h-5 w-5" /> Ойынды бастау</a>
+          : <Link href={href} className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-white px-7 py-3.5 text-lg font-bold text-sky-600 shadow-lift hover:scale-105 transition"><Gamepad2 className="h-5 w-5" /> Ойынды бастау</Link>}
+      </div>
+    </div>
+  );
 }
