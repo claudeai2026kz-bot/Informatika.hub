@@ -79,6 +79,11 @@ export default function Assistant({ soundOn = true }: { soundOn?: boolean }) {
   useEffect(() => { listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" }); }, [msgs, busy]);
   useEffect(() => { if (open) inputRef.current?.focus(); }, [open]);
   useEffect(() => {
+    const h = () => setOpen((o) => !o);
+    window.addEventListener("ihub-assistant", h);
+    return () => window.removeEventListener("ihub-assistant", h);
+  }, []);
+  useEffect(() => {
     const k = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
     window.addEventListener("keydown", k);
     return () => window.removeEventListener("keydown", k);
@@ -138,14 +143,14 @@ export default function Assistant({ soundOn = true }: { soundOn?: boolean }) {
       )}
       <button
         onClick={() => setOpen((o) => !o)}
-        className={`group fixed z-50 right-3 bottom-20 lg:bottom-5 flex flex-col items-center transition hover:scale-105 active:scale-95 ${open || intro === "center" ? "opacity-0 pointer-events-none" : ""}`}
+        className={`group fixed z-50 right-4 bottom-4 hidden lg:flex flex-col items-center transition hover:scale-105 active:scale-95 ${open || intro === "center" ? "opacity-0 pointer-events-none" : ""}`}
         aria-label="Робот-көмекшіні ашу"
         aria-expanded={open}
       >
         <span className="mb-1 rounded-full bg-[#121a46] px-3 py-1 text-xs font-bold text-cyan-200 shadow-soft opacity-0 transition group-hover:opacity-100">Көмек керек пе?</span>
-        <span className="robot-pad relative isolate">
-          <span className="absolute right-1 top-2 z-10 h-3.5 w-3.5 rounded-full bg-emerald-400 ring-2 ring-white" />
-          <Robot size={78} track={false} />
+        <span className="robot-pad relative isolate grid place-items-center rounded-full border border-cyan-300/40 bg-[#121a46]/85 backdrop-blur-md shadow-[0_12px_30px_-10px_rgba(11,16,53,.7),0_0_0_4px_rgba(34,211,238,.12)] h-[72px] w-[72px] overflow-visible">
+          <span className="absolute right-0.5 top-0.5 z-10 h-3 w-3 rounded-full bg-emerald-400 ring-2 ring-[#121a46]" />
+          <span className="-mt-4"><Robot size={62} track={false} float={false} /></span>
         </span>
       </button>
 

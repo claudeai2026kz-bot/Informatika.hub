@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Bell, Heart, Home, LayoutGrid, ClipboardCheck, Gamepad2, User, Settings, LogOut, Shield, ChevronDown } from "lucide-react";
 import Logo from "./Logo";
+import Robot from "./Robot";
 import { logoutAction } from "@/app/actions/auth";
 
 type NavUser = { name: string; role: "USER" | "ADMIN"; avatar?: string | null } | null;
@@ -67,6 +68,7 @@ export default function AppNav({ user, unread }: { user: NavUser; unread: number
                     {open && (
                       <div role="menu" className="absolute right-0 mt-2 w-56 card p-1.5 animate-fadeUp text-ink">
                         <MenuLink href="/profile" icon={User}>Профиль</MenuLink>
+                        <span className="lg:hidden"><MenuLink href="/favorites" icon={Heart}>Таңдаулылар</MenuLink></span>
                         <MenuLink href="/settings" icon={Settings}>Баптаулар</MenuLink>
                         {user.role === "ADMIN" && <MenuLink href="/admin" icon={Shield}>Әкімші панелі</MenuLink>}
                         <form action={logoutAction}>
@@ -89,12 +91,20 @@ export default function AppNav({ user, unread }: { user: NavUser; unread: number
 
       {/* Мобильді төменгі мәзір */}
       <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 app-bar rounded-t-2xl pb-[env(safe-area-inset-bottom)]" aria-label="Мобильді мәзір">
-        <div className="grid grid-cols-5">
-          {LINKS.map(({ href, label, icon: I }) => (
-            <Link key={href} href={href} className={`flex flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium ${active(href) ? "text-cyan-300" : "text-white/60"}`}>
-              <I className="h-5 w-5" />
-              <span className="truncate max-w-full px-1">{({ "Басты бет": "Басты", "Материалдар": "Материал", "Таңдаулылар": "Таңдаулы" } as Record<string, string>)[label] ?? label}</span>
+        <div className="grid grid-cols-5 items-end">
+          {[LINKS[0], LINKS[1], null, LINKS[2], LINKS[3]].map((l) => l ? (
+            <Link key={l.href} href={l.href} className={`flex flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium ${active(l.href) ? "text-cyan-300" : "text-white/60"}`}>
+              <l.icon className="h-5 w-5" />
+              <span className="truncate max-w-full px-1">{({ "Басты бет": "Басты", "Материалдар": "Материал" } as Record<string, string>)[l.label] ?? l.label}</span>
             </Link>
+          ) : (
+            <button key="robot" type="button" onClick={() => window.dispatchEvent(new Event("ihub-assistant"))} className="flex flex-col items-center pb-2 text-[11px] font-semibold text-cyan-200" aria-label="Робот-көмекшіні ашу">
+              <span className="relative -mt-7 mb-0.5 grid h-[58px] w-[58px] place-items-center rounded-full border border-cyan-300/50 bg-[#121a46] shadow-[0_0_0_5px_rgba(34,211,238,.14),0_10px_24px_-8px_rgba(34,211,238,.6)]">
+                <span className="absolute right-0 top-0 h-3 w-3 rounded-full bg-emerald-400 ring-2 ring-[#121a46]" />
+                <span className="-mt-3"><Robot size={46} track={false} float={false} /></span>
+              </span>
+              Көмекші
+            </button>
           ))}
         </div>
       </nav>
