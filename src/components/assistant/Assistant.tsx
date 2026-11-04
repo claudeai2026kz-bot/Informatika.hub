@@ -138,12 +138,15 @@ export default function Assistant({ soundOn = true }: { soundOn?: boolean }) {
       )}
       <button
         onClick={() => setOpen((o) => !o)}
-        className={`fixed z-50 right-4 bottom-20 lg:bottom-6 grid h-20 w-20 place-items-center rounded-full bg-white shadow-lift ring-4 ring-sky-100 transition hover:scale-105 active:scale-95 ${open || intro === "center" ? "opacity-0 pointer-events-none" : ""}`}
+        className={`group fixed z-50 right-3 bottom-20 lg:bottom-5 flex flex-col items-center transition hover:scale-105 active:scale-95 ${open || intro === "center" ? "opacity-0 pointer-events-none" : ""}`}
         aria-label="Робот-көмекшіні ашу"
         aria-expanded={open}
       >
-        <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-emerald-400 ring-2 ring-white" />
-        <Robot size={64} track={false} />
+        <span className="mb-1 rounded-full bg-white px-3 py-1 text-xs font-bold text-sky-700 shadow-soft opacity-0 transition group-hover:opacity-100">Көмек керек пе?</span>
+        <span className="relative">
+          <span className="absolute right-1 top-2 z-10 h-3.5 w-3.5 rounded-full bg-emerald-400 ring-2 ring-white" />
+          <Robot size={78} track={false} />
+        </span>
       </button>
 
       {open && (
