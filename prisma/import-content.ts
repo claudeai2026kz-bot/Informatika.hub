@@ -9,6 +9,31 @@ import { randomBytes } from "crypto";
  * Бір файл екі рет қосылмайды (тақырып + түр + файл атауы бойынша тексеріледі).
  */
 type Entry = { grade: number; quarter: number; topic: string; type: string; file?: string; url?: string; title?: string; replaces?: string };
+type AEntry = { assessment: "BZHB" | "TZHB"; grade: number; quarter: number; title: string; description?: string; file: string; preview?: string; answersFile?: string; answers?: string; criteria?: string; descriptors?: string };
+
+async function storeFile(rel: string) {
+  const buf = await readFile(path.resolve("content", rel));
+  const ext = path.extname(rel).slice(1).toLowerCase();
+  const mime = MIME[ext] ?? "application/octet-stream";
+  return { path: await store(buf, ext, mime), name: path.basename(rel), mime, size: buf.length };
+}
+
+async function importAssessment(db: PrismaClient, e: AEntry) {
+  const quarter = await db.quarter.findFirst({ where: { gradeId: e.grade, number: e.quarter } });
+  if (!quarter) return false;
+  if (await db.assessment.findFirst({ where: { quarterId: quarter.id, kind: e.assessment, title: e.title } })) return false;
+  const f = await storeFile(e.file);
+  const pv = e.preview ? await storeFile(e.preview) : null;
+  const ans = e.answersFile ? await storeFile(e.answersFile) : null;
+  await db.assessment.create({
+    data: {
+      kind: e.assessment, title: e.title, description: e.description ?? "", gradeId: e.grade, quarterId: quarter.id,
+      filePath: f.path, fileName: f.name, fileMime: f.mime, fileSize: f.size, previewPath: pv?.path,
+      answersPath: ans?.path, answers: e.answers, criteria: e.criteria, descriptors: e.descriptors, published: true,
+    },
+  });
+  return true;
+}
 
 const MIME: Record<string, string> = {
   pdf: "application/pdf",
@@ -48,8 +73,13 @@ async function store(buf: Buffer, ext: string, mime: string) {
 export async function importContent(db: PrismaClient) {
   const manifest = path.resolve("content/manifest.json");
   if (!existsSync(manifest)) return;
-  const entries = JSON.parse(await readFile(manifest, "utf8")) as Entry[];
+  const all = JSON.parse(await readFile(manifest, "utf8")) as (Entry | AEntry)[];
   let added = 0;
+  for (const a of all) {
+    if (!("assessment" in a)) continue;
+    try { if (await importAssessment(db, a)) added++; } catch (err) { console.error(`Импорт қатесі (${a.file}):`, err); }
+  }
+  const entries = all.filter((x): x is Entry => !("assessment" in x));
   for (const e of entries) {
     const topic = await db.topic.findFirst({ where: { title: e.topic, quarter: { gradeId: e.grade, number: e.quarter } }, include: { quarter: true } });
     if (!topic) { console.log(`Тақырып табылмады: ${e.grade}-${e.quarter} ${e.topic}`); continue; }
