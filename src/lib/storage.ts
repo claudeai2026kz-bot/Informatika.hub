@@ -13,14 +13,20 @@ const ROOT = path.resolve(process.env.STORAGE_DIR ?? "./storage");
 const clean = (v?: string) => v?.replace(/^[\s"']+|[\s"']+$/g, "").replace(/[\r\n]/g, "") || undefined;
 const SB_URL = clean(process.env.SUPABASE_URL)?.replace(/\/+$/, "");
 // JWT кілтінде тек A-Z a-z 0-9 . _ - болады: көшіргенде ілескен көрінбейтін таңбаларды алып тастаймыз.
-const RAW_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
-const SB_KEY = RAW_KEY.replace(/[^A-Za-z0-9._-]/g, "") || undefined;
-const KEY_HAD_JUNK = RAW_KEY.trim() !== SB_KEY;
+const RAW_KEY = (process.env.SUPABASE_SERVICE_ROLE_KEY ?? "").trim();
+function fixKey(k: string) {
+  const parts = k.split(".");
+  // Supabase JWT тақырыбы (header) әрқашан бірдей және құпия емес: бүлінсе, қалпына келтіреміз.
+  if (parts.length === 3 && /[^A-Za-z0-9_-]/.test(parts[0])) parts[0] = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
+  return parts.map((x) => x.replace(/[^A-Za-z0-9_-]/g, "")).join(".");
+}
+const SB_KEY = fixKey(RAW_KEY) || undefined;
+const KEY_HAD_JUNK = /[^A-Za-z0-9._-]/.test(SB_KEY ?? "");
 const BUCKET = clean(process.env.SUPABASE_BUCKET) ?? "files";
 export const cloud = !!(SB_URL && SB_KEY);
 
 async function sb(pathname: string, init: RequestInit = {}) {
-  if (KEY_HAD_JUNK && RAW_KEY.includes("\u2022")) throw new UploadError(`SUPABASE_SERVICE_ROLE_KEY ішінде • (жасырын нүктелер) тұр. Vercel әлі ескі мәнді қолданып тұр (ұзындығы ${RAW_KEY.length}). Кілтті қайта қойып, Redeploy жасаңыз.`);
+  if (KEY_HAD_JUNK) throw new UploadError("SUPABASE_SERVICE_ROLE_KEY ішінде артық таңба бар. Кілтті қайта қойып, Redeploy жасаңыз.");
   const res = await fetch(`${SB_URL}/storage/v1/${pathname}`, {
     ...init,
     headers: { Authorization: `Bearer ${SB_KEY}`, apikey: SB_KEY!, ...(init.headers ?? {}) },
