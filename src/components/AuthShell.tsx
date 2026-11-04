@@ -15,6 +15,11 @@ export default function AuthShell({ title, subtitle, children }: { title: string
       <AuthScene3D />
       <div aria-hidden className="absolute inset-0 pointer-events-none bg-gradient-to-r from-[#0B1230]/70 via-transparent to-transparent" />
 
+      {/* робот үстелде, ноутбуктың жанында */}
+      <div className="pointer-events-none absolute bottom-[7%] left-[max(1.5rem,calc(50%-42rem))] z-10 hidden lg:block [&_button]:pointer-events-auto [&_[aria-live]]:pointer-events-auto">
+        <AuthGuide dark />
+      </div>
+
       <div className="relative mx-auto flex min-h-screen max-w-7xl flex-col px-4 sm:px-8">
         {/* жоғарғы мәзір */}
         <header className="flex items-center justify-between py-5">
@@ -32,23 +37,24 @@ export default function AuthShell({ title, subtitle, children }: { title: string
 
         <div className="grid flex-1 items-center gap-10 pb-10 pt-4 lg:grid-cols-[minmax(0,1fr)_440px]">
           {/* сол жақ */}
-          <section className="relative hidden lg:flex h-full flex-col justify-center">
+          <section className="relative hidden lg:flex h-full flex-col justify-start pt-6">
             <h1 className="text-[3.4rem] font-extrabold leading-[1.08] tracking-tight [@media(max-height:760px)]:text-[2.7rem]">
-              Информатика<br />мұғалімдеріне<br /><span className="text-[#3B82F6]">көмекші</span> сайт
+              Информатика<br />мұғалімдеріне<br /><span className="bg-gradient-to-r from-[#3B6BFF] via-[#60A5FA] to-[#22D3EE] bg-clip-text text-transparent">көмекші</span> сайт
             </h1>
             <p className="mt-5 max-w-md text-xl text-white/80">Сапалы, дайын, жүйеленген материалдар – уақытыңызды үнемдейді!</p>
 
-            <div className="mt-auto pt-8 flex items-end gap-6">
-              <div className="shrink-0 -mb-2"><AuthGuide dark /></div>
-            </div>
           </section>
 
           {/* форма */}
-          <main className="relative w-full rounded-3xl bg-white p-7 sm:p-9 text-ink shadow-[0_30px_80px_-20px_rgba(0,0,0,.6)] [&_.btn-primary]:h-12 [&_.btn-primary]:text-base [&_.btn-primary]:bg-none [&_.btn-primary]:bg-[#2F6BFF] [&_.btn-primary:hover]:bg-[#1F5AF0] [&_.input]:h-12 [&_.input]:bg-slate-50 [&_.input]:border-slate-200 [&_a]:text-[#2F6BFF]">
+          <main className="auth-glass relative z-20 w-full overflow-hidden rounded-[1.75rem] border border-white/15 bg-[#121a46]/55 p-7 sm:p-9 shadow-[0_40px_90px_-24px_rgba(0,0,0,.75),inset_0_1px_0_rgba(255,255,255,.12)] backdrop-blur-2xl page-enter [&_.label]:text-white/80 [&_.btn-primary]:h-12">
+            <span aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-[#8B5CF6]/30 blur-3xl" />
+            <span aria-hidden className="pointer-events-none absolute -bottom-24 -left-16 h-56 w-56 rounded-full bg-[#22D3EE]/20 blur-3xl" />
             <div className="lg:hidden mb-2"><AuthGuide compact /></div>
-            <h2 className="text-[1.9rem] font-extrabold">{title}</h2>
-            <p className="mt-1.5 text-[15px] muted">{subtitle}</p>
-            <div className="mt-7">{children}</div>
+            <div className="relative">
+              <h2 className="text-[2rem] font-extrabold">{title}</h2>
+              <p className="mt-1.5 text-[15px] muted">{subtitle}</p>
+              <div className="mt-7">{children}</div>
+            </div>
           </main>
         </div>
       </div>

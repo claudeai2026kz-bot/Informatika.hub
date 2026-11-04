@@ -2,37 +2,28 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { loginAction } from "@/app/actions/auth";
-import PasswordInput from "@/components/ui/PasswordInput";
+import AuthField from "@/components/ui/AuthField";
 import SubmitButton from "@/components/ui/SubmitButton";
-import { FieldError, FormAlert } from "@/components/ui/Field";
 
 export default function LoginForm({ next, notice }: { next?: string; notice?: string }) {
   const [state, action] = useActionState(loginAction, undefined);
   const e = state?.errors ?? {};
   return (
-    <form action={action} className="space-y-5" noValidate>
-      {notice && !state && <FormAlert tone="ok" msg={notice} />}
-      <FormAlert msg={e.form} />
+    <form action={action} className="stagger space-y-4" noValidate>
+      {notice && !state && <div role="status" className="alert-dark border border-emerald-400/30 bg-emerald-400/10 text-emerald-200">{notice}</div>}
+      {e.form && <div role="alert" className="alert-dark border border-rose-400/30 bg-rose-400/10 text-rose-200">{e.form}</div>}
       <input type="hidden" name="next" value={next ?? ""} />
-      <div>
-        <label htmlFor="email" className="label">Электрондық пошта</label>
-        <input id="email" name="email" type="email" autoComplete="email" className={`input ${e.email ? "!border-rose-400" : ""}`} placeholder="example@mail.kz" defaultValue={state?.values?.email} aria-invalid={!!e.email || undefined} aria-describedby="email-err" required />
-        <FieldError id="email-err" msg={e.email} />
-      </div>
-      <div>
-        <label htmlFor="password" className="label">Құпиясөз</label>
-        <PasswordInput id="password" name="password" placeholder="Құпиясөзді енгізіңіз" autoComplete="current-password" invalid={!!e.password} />
-        <FieldError msg={e.password} />
-      </div>
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <AuthField key={`e${state ? Date.now() : 0}`} id="email" name="email" type="email" icon="mail" label="Электрондық пошта" autoComplete="email" defaultValue={state?.values?.email} error={e.email} />
+      <AuthField key={`p${state ? Date.now() : 0}`} id="password" name="password" type="password" icon="lock" label="Құпиясөз" autoComplete="current-password" error={e.password} />
+      <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
         <input type="hidden" name="rememberSet" value="1" />
-        <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-ink-soft">
-          <input type="checkbox" name="remember" defaultChecked className="h-4 w-4 rounded border-sky-300 accent-[#2F6BFF]" /> Мені есте сақтау
+        <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-white/80">
+          <input type="checkbox" name="remember" defaultChecked className="h-[18px] w-[18px] rounded accent-[#22D3EE]" /> Мені есте сақтау
         </label>
-        <Link href="/forgot" className="text-sm font-medium text-[#2F6BFF] hover:underline">Құпиясөзді ұмыттыңыз ба?</Link>
+        <Link href="/forgot" className="text-sm font-semibold text-cyan-300 hover:text-cyan-200">Құпиясөзді ұмыттыңыз ба?</Link>
       </div>
-      <SubmitButton pendingText="Кіріп жатыр…">Кіру</SubmitButton>
-      <p className="text-center text-sm muted">Аккаунтыңыз жоқ па? <Link href="/register" className="font-semibold text-sky-600 hover:underline">Тіркелу</Link></p>
+      <SubmitButton className="auth-btn mt-2" pendingText="Кіріп жатыр…">Кіру</SubmitButton>
+      <p className="pt-1 text-center text-[15px] text-white/70">Аккаунтыңыз жоқ па? <Link href="/register" className="font-bold text-cyan-300 hover:text-cyan-200">Тіркелу</Link></p>
     </form>
   );
 }

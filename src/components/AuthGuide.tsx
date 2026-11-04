@@ -103,29 +103,29 @@ export default function AuthGuide({ compact = false, dark = false }: { compact?:
   if (compact) {
     return (
       <div className="flex items-end gap-3 mb-6 animate-fadeUp">
-        <div className="shrink-0"><Robot size={84} track={false} wave={wave} talking={talking} /></div>
-        <div className="relative flex-1 rounded-2xl rounded-bl-md bg-white border border-sky-100 shadow-soft px-4 py-3 text-[15px] font-medium text-ink min-h-[64px]" aria-live="polite">
+        <div className="shrink-0"><Robot size={96} track={false} wave={wave} talking={talking} /></div>
+        <div className="relative flex-1 rounded-2xl rounded-bl-md border border-cyan-300/25 bg-white/10 px-4 py-3 text-[15px] font-medium text-white backdrop-blur min-h-[64px]" aria-live="polite">
           {shown}<span className={talking ? "inline-block w-1.5 h-4 ml-0.5 bg-sky-400 align-middle animate-pulse" : "hidden"} />
-          <button type="button" onClick={toggleMute} className="absolute -top-3 -right-2 grid h-8 w-8 place-items-center rounded-full bg-white shadow-soft text-sky-600" aria-label={mute ? "Дауысты қосу" : "Дауысты өшіру"}>{mute ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}</button>
+          <button type="button" onClick={toggleMute} className="absolute -top-3 -right-2 grid h-8 w-8 place-items-center rounded-full bg-[#22D3EE] text-[#0B1230] shadow-soft" aria-label={mute ? "Дауысты қосу" : "Дауысты өшіру"}>{mute ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}</button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="relative flex flex-col items-start" style={{ animation: "ihubRise 1.2s cubic-bezier(.2,.9,.3,1.3) both" }}>
-      <div className={`relative mb-4 w-[340px] rounded-2xl px-4 py-3.5 min-h-[96px] ${dark ? "border border-white/15 bg-[#141B45]/85 text-white backdrop-blur-md" : "bg-white/95 text-ink shadow-lift"}`} aria-live="polite">
+    <div className={`relative flex ${dark ? "flex-row-reverse items-center gap-5" : "flex-col items-start"}`} style={{ animation: "ihubRise 1.2s cubic-bezier(.2,.9,.3,1.3) both" }}>
+      <div className={`relative w-[340px] rounded-2xl ${dark ? "" : "mb-4"} px-4 py-3.5 min-h-[96px] ${dark ? "border border-cyan-300/25 bg-[#121a46]/80 text-white backdrop-blur-xl shadow-[0_20px_50px_-20px_rgba(34,211,238,.45)]" : "bg-white/95 text-ink shadow-lift"}`} aria-live="polite">
         <p className="text-[15px] font-semibold leading-snug">{shown}<span className={talking ? "inline-block w-2 h-5 ml-1 bg-sky-400 align-middle animate-pulse rounded-sm" : "hidden"} /></p>
         <div className="mt-3 flex items-center gap-2">
           <button type="button" onClick={() => { stopSpeaking(); playIntro(0); }} className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1 text-[13px] font-semibold ${dark ? "bg-white/10 text-white hover:bg-white/20" : "bg-sky-50 text-sky-700 hover:bg-sky-100"}`}><Volume2 className="h-4 w-4" /> Қайта тыңдау</button>
           <button type="button" onClick={toggleMute} className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[13px] ${dark ? "text-white/70 hover:bg-white/10" : "text-ink-soft hover:bg-sky-50"}`}>{mute ? <><VolumeX className="h-4 w-4" /> Дауыс өшірулі</> : "Дауысты өшіру"}</button>
           <span className="ml-auto flex gap-1">{lines.map((_, i) => <span key={i} className={`h-1.5 w-1.5 rounded-full ${i < idxRef.current ? "bg-sky-400" : "bg-sky-100"}`} />)}</span>
         </div>
-        <span className={`absolute -bottom-2 left-16 h-4 w-4 rotate-45 ${dark ? "border-b border-r border-white/15 bg-[#141B45]" : "bg-white/95"}`} />
+        <span className={`absolute h-4 w-4 rotate-45 ${dark ? "-left-2 top-1/2 -translate-y-1/2 border-b border-l border-cyan-300/25 bg-[#121a46]" : "-bottom-2 left-16 bg-white/95"}`} />
       </div>
-      <div className="relative ml-2">
+      <div className={`relative ${dark ? "" : "ml-2"}`}>
         {talking && [0, 1, 2].map((i) => <span key={i} aria-hidden className="absolute left-1/2 top-[30%] -translate-x-1/2 -translate-y-1/2 h-32 w-32 rounded-full border-2 border-indigo-300/40" style={{ animation: `ihubRing 1.8s ${i * 0.6}s ease-out infinite` }} />)}
-        <Robot size={150} wave={wave} talking={talking} />
+        <Robot size={190} wave={wave} talking={talking} />
       </div>
       <style>{`@keyframes ihubRise{0%{transform:translateY(120px) scale(.6);opacity:0}70%{transform:translateY(-10px) scale(1.03);opacity:1}100%{transform:none}}@keyframes ihubRing{0%{transform:translate(-50%,-50%) scale(.6);opacity:.8}100%{transform:translate(-50%,-50%) scale(1.8);opacity:0}}@media (prefers-reduced-motion:reduce){[style*=ihubRise],[style*=ihubRing]{animation:none!important}}`}</style>
     </div>

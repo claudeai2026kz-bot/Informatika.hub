@@ -2,38 +2,22 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { registerAction } from "@/app/actions/auth";
-import PasswordInput from "@/components/ui/PasswordInput";
+import AuthField from "@/components/ui/AuthField";
 import SubmitButton from "@/components/ui/SubmitButton";
-import { FieldError, FormAlert } from "@/components/ui/Field";
 
 export default function RegisterForm() {
   const [state, action] = useActionState(registerAction, undefined);
   const e = state?.errors ?? {};
+  const k = state ? Date.now() : 0;
   return (
-    <form action={action} className="space-y-4" noValidate>
-      <FormAlert msg={e.form} />
-      <div>
-        <label htmlFor="name" className="label">Аты-жөні</label>
-        <input id="name" name="name" autoComplete="name" className={`input ${e.name ? "!border-rose-400" : ""}`} placeholder="Айдана Әбілқайыр" defaultValue={state?.values?.name} required />
-        <FieldError msg={e.name} />
-      </div>
-      <div>
-        <label htmlFor="email" className="label">Электрондық пошта</label>
-        <input id="email" name="email" type="email" autoComplete="email" className={`input ${e.email ? "!border-rose-400" : ""}`} placeholder="example@mail.kz" defaultValue={state?.values?.email} required />
-        <FieldError msg={e.email} />
-      </div>
-      <div>
-        <label htmlFor="password" className="label">Құпиясөз</label>
-        <PasswordInput id="password" name="password" placeholder="Кемінде 8 таңба, әріп және сан" autoComplete="new-password" invalid={!!e.password} />
-        <FieldError msg={e.password} />
-      </div>
-      <div>
-        <label htmlFor="confirm" className="label">Құпиясөзді қайталаңыз</label>
-        <PasswordInput id="confirm" name="confirm" placeholder="Құпиясөзді қайта енгізіңіз" autoComplete="new-password" invalid={!!e.confirm} />
-        <FieldError msg={e.confirm} />
-      </div>
-      <SubmitButton pendingText="Тіркеліп жатыр…">Тіркелу</SubmitButton>
-      <p className="text-center text-sm muted">Аккаунтыңыз бар ма? <Link href="/login" className="font-semibold text-sky-600 hover:underline">Жүйеге кіру</Link></p>
+    <form action={action} className="stagger space-y-3.5" noValidate>
+      {e.form && <div role="alert" className="alert-dark border border-rose-400/30 bg-rose-400/10 text-rose-200">{e.form}</div>}
+      <AuthField key={`n${k}`} id="name" name="name" icon="user" label="Аты-жөні" autoComplete="name" defaultValue={state?.values?.name} error={e.name} />
+      <AuthField key={`e${k}`} id="email" name="email" type="email" icon="mail" label="Электрондық пошта" autoComplete="email" defaultValue={state?.values?.email} error={e.email} />
+      <AuthField key={`p${k}`} id="password" name="password" type="password" icon="lock" label="Құпиясөз" hint="Кемінде 8 таңба, ішінде әріп пен сан болсын" autoComplete="new-password" error={e.password} />
+      <AuthField key={`c${k}`} id="confirm" name="confirm" type="password" icon="lock" label="Құпиясөзді қайталаңыз" autoComplete="new-password" error={e.confirm} />
+      <SubmitButton className="auth-btn mt-2" pendingText="Тіркеліп жатыр…">Тіркелу</SubmitButton>
+      <p className="pt-1 text-center text-[15px] text-white/70">Аккаунтыңыз бар ма? <Link href="/login" className="font-bold text-cyan-300 hover:text-cyan-200">Жүйеге кіру</Link></p>
     </form>
   );
 }

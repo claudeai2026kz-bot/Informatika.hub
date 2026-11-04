@@ -130,7 +130,7 @@ export default function AuthScene3D() {
         leaf.rotation.set(Math.sin(a) * 0.5, 0, -Math.cos(a) * 0.5);
         leaf.castShadow = true; plant.add(leaf);
       }
-      plant.position.set(-3.4, -1.6, -0.4); scene.add(plant);
+      plant.position.set(2.9, -1.6, -1.6); scene.add(plant);
 
       // Қалқып жүрген фигуралар
       const glass = (c: number) => new THREE.MeshPhysicalMaterial({ color: c, metalness: 0.1, roughness: 0.15, transmission: 0.35, thickness: 0.5, clearcoat: 1, emissive: c, emissiveIntensity: 0.25 });
@@ -141,7 +141,7 @@ export default function AuthScene3D() {
       };
       addF(new THREE.IcosahedronGeometry(0.45, 0), 0x60a5fa, 1.9, 2.3, -1.5);
       addF(new THREE.TorusGeometry(0.38, 0.13, 24, 64), 0xc084fc, 3.6, 0.9, -0.5);
-      addF(new RoundedBoxGeometry(0.55, 0.55, 0.55, 4, 0.12), 0x3b82f6, -3.2, -0.2, 1.0);
+      addF(new RoundedBoxGeometry(0.5, 0.5, 0.5, 4, 0.12), 0x3b82f6, 2.3, 0.2, 1.4);
       addF(new THREE.OctahedronGeometry(0.35, 0), 0xf472b6, 0.6, 3.0, -2.5);
       addF(new THREE.SphereGeometry(0.25, 32, 24), 0x34d399, 2.6, -0.2, 1.2);
       addF(new THREE.TorusKnotGeometry(0.22, 0.08, 96, 12), 0xfbbf24, 3.2, 2.9, -2.4);
