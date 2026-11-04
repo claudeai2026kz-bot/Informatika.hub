@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import type * as THREE_NS from "three";
 
 /**
- * Шынайы 3D робот (суреті public/robot ішінде). Ауада қалқиды, тінтуірге қарай бұрылады,
- * сәлемдескенде тербеледі, сөйлегенде беті жарқырайды.
+ * Тірі 3D робот (three.js). Басы тінтуірге қарай бұрылады, көзін жыпылықтатады,
+ * сәлемдескенде қол бұлғайды, сөйлегенде аузы қимылдайды.
+ * `head` — тек басы (кішкентай көмекші батырмасы үшін).
  */
 export default function Robot({
   size = 320,
@@ -12,6 +14,7 @@ export default function Robot({
   track = true,
   wave = false,
   talking = false,
+  head = false,
   className = "",
 }: {
   size?: number;
@@ -19,54 +22,200 @@ export default function Robot({
   track?: boolean;
   wave?: boolean;
   talking?: boolean;
+  head?: boolean;
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const live = useRef({ wave, talking, float, track });
+  live.current = { wave, talking, float, track };
+  const [failed, setFailed] = useState(false);
+  const w = size;
+  const h = head ? size : Math.round(size * 1.23);
 
   useEffect(() => {
-    if (!track) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    let raf = 0;
-    const onMove = (e: PointerEvent) => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        const el = ref.current;
-        if (!el) return;
-        const r = el.getBoundingClientRect();
-        const dx = (e.clientX - (r.left + r.width / 2)) / window.innerWidth;
-        const dy = (e.clientY - (r.top + r.height * 0.4)) / window.innerHeight;
-        setTilt({ x: Math.max(-1, Math.min(1, dx * 2)) * 14, y: Math.max(-1, Math.min(1, dy * 2)) * -9 });
-      });
-    };
-    window.addEventListener("pointermove", onMove);
-    return () => { window.removeEventListener("pointermove", onMove); cancelAnimationFrame(raf); };
-  }, [track]);
+    const el = ref.current;
+    if (!el) return;
+    let dispose: (() => void) | undefined;
+    let started = false;
+    const io = new IntersectionObserver((ents) => {
+      const vis = ents.some((e) => e.isIntersecting);
+      if (vis && !started) {
+        started = true;
+        import("three").then((THREE) => import("three/examples/jsm/environments/RoomEnvironment.js").then(({ RoomEnvironment }) => {
+          if (!ref.current) return;
+          try { dispose = build(THREE, RoomEnvironment, ref.current, w, h, head, live); } catch { setFailed(true); }
+        }));
+      }
+      el.dataset.vis = vis ? "1" : "0";
+    }, { rootMargin: "100px" });
+    io.observe(el);
+    return () => { io.disconnect(); dispose?.(); };
+  }, [w, h, head]);
 
-  const h = Math.round(size * 1.23);
-  const src = size <= 120 ? "/robot/robot-sm.webp" : "/robot/robot.webp";
   return (
-    <div ref={ref} className={`relative select-none ${className}`} style={{ width: size, height: h, perspective: 900 }} aria-hidden>
-      {/* еденге түскен жарық көлеңке */}
-      <span className="absolute left-1/2 -translate-x-1/2 rounded-[50%] bg-cyan-400/40 blur-md" style={{ bottom: -size * 0.02, width: size * 0.55, height: size * 0.08, animation: float ? "rbshadow 5s ease-in-out infinite" : undefined }} />
-      <div className={float ? "rb-float" : ""} style={{ width: "100%", height: "100%" }}>
-        <div style={{ width: "100%", height: "100%", transform: `rotateY(${tilt.x}deg) rotateX(${tilt.y}deg)`, transition: "transform .5s cubic-bezier(.2,.7,.2,1)", transformStyle: "preserve-3d", animation: wave ? "rbhello 2.6s ease-in-out infinite" : talking ? "rbnod .9s ease-in-out infinite" : undefined }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={src} alt="" width={size} height={h} draggable={false} className="h-full w-full object-contain drop-shadow-[0_18px_30px_rgba(10,20,60,.35)]" />
-          {/* сөйлегенде экран жарқырайды */}
-          <span className="pointer-events-none absolute rounded-[45%] bg-cyan-300 mix-blend-screen blur-xl transition-opacity duration-300"
-            style={{ left: "44%", top: "14%", width: "46%", height: "38%", opacity: talking ? 0.35 : 0, animation: talking ? "rbglow .5s ease-in-out infinite alternate" : undefined }} />
-        </div>
-      </div>
-      <style>{`
-        .rb-float{animation:rbfloat 5s ease-in-out infinite}
-        @keyframes rbfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-${Math.max(4, size * 0.045)}px)}}
-        @keyframes rbshadow{0%,100%{transform:translateX(-50%) scale(1);opacity:.9}50%{transform:translateX(-50%) scale(.8);opacity:.5}}
-        @keyframes rbhello{0%,100%{rotate:0deg}15%{rotate:-7deg}30%{rotate:6deg}45%{rotate:-5deg}60%{rotate:0deg}}
-        @keyframes rbnod{0%,100%{translate:0 0}50%{translate:0 -2px}}
-        @keyframes rbglow{from{opacity:.15}to{opacity:.45}}
-        @media (prefers-reduced-motion:reduce){.rb-float{animation:none}}
-      `}</style>
+    <div ref={ref} className={`relative select-none ${className}`} style={{ width: w, height: h }} aria-hidden>
+      {failed && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={size <= 120 ? "/robot/robot-sm.webp" : "/robot/robot.webp"} alt="" className="h-full w-full object-contain" />
+      )}
     </div>
   );
+}
+
+type Live = { current: { wave: boolean; talking: boolean; float: boolean; track: boolean } };
+
+function build(THREE: typeof THREE_NS, RoomEnvironment: new () => THREE_NS.Scene, el: HTMLDivElement, w: number, h: number, headOnly: boolean, live: Live) {
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "low-power" });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setSize(w, h);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+  renderer.domElement.style.cssText = "width:100%;height:100%;display:block";
+  el.appendChild(renderer.domElement);
+
+  const scene = new THREE.Scene();
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const env = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  scene.environment = env;
+
+  const camera = new THREE.PerspectiveCamera(headOnly ? 26 : 28, w / h, 0.1, 50);
+  if (headOnly) { camera.position.set(0, 0.5, 5.2); camera.lookAt(0, 0.42, 0); }
+  else { camera.position.set(0, 0.3, 6.5); camera.lookAt(0, 0.15, 0); }
+
+  scene.add(new THREE.HemisphereLight(0xdff4ff, 0x1b2370, 0.9));
+  const key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(2.5, 4, 5); scene.add(key);
+  const rim = new THREE.PointLight(0x22d3ee, 18, 12); rim.position.set(-3, 1.5, -1.5); scene.add(rim);
+  const rim2 = new THREE.PointLight(0x8b5cf6, 14, 12); rim2.position.set(3, -1, -1.5); scene.add(rim2);
+
+  const shell = new THREE.MeshPhysicalMaterial({ color: 0xf3f6fb, roughness: 0.22, metalness: 0.05, clearcoat: 1, clearcoatRoughness: 0.08 });
+  const blue = new THREE.MeshPhysicalMaterial({ color: 0x3b5bdb, roughness: 0.3, metalness: 0.2, clearcoat: 0.8 });
+  const dark = new THREE.MeshPhysicalMaterial({ color: 0x060a1f, roughness: 0.06, metalness: 0.3, clearcoat: 1, clearcoatRoughness: 0.02 });
+  const glow = new THREE.MeshStandardMaterial({ color: 0x5ff3ff, emissive: 0x38e8ff, emissiveIntensity: 2.4, roughness: 0.4 });
+  const gold = new THREE.MeshStandardMaterial({ color: 0xffb84d, emissive: 0xff9f1c, emissiveIntensity: 1.4 });
+
+  const root = new THREE.Group(); scene.add(root);
+
+  // ── Дене
+  const body = new THREE.Group(); root.add(body);
+  if (!headOnly) {
+    const torso = new THREE.Mesh(new THREE.SphereGeometry(0.62, 48, 32), shell);
+    torso.scale.set(1, 1.08, 0.9); torso.position.y = -0.62; body.add(torso);
+    const belt = new THREE.Mesh(new THREE.TorusGeometry(0.585, 0.025, 12, 64), glow);
+    belt.rotation.x = Math.PI / 2; belt.position.y = -0.78; belt.scale.set(1, 0.92, 1); body.add(belt);
+    const core = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.03, 12, 32), glow);
+    core.position.set(0, -0.5, 0.555); body.add(core);
+    const coreIn = new THREE.Mesh(new THREE.CircleGeometry(0.08, 24), gold);
+    coreIn.position.set(0, -0.5, 0.56); body.add(coreIn);
+    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.26, 0.16, 24), blue);
+    neck.position.y = -0.02; body.add(neck);
+  }
+
+  // ── Қолдар (иық топсасы)
+  const arms: THREE_NS.Group[] = [];
+  if (!headOnly) for (const s of [-1, 1]) {
+    const pivot = new THREE.Group(); pivot.position.set(0.56 * s, -0.38, 0); body.add(pivot);
+    const arm = new THREE.Mesh(new THREE.CapsuleGeometry(0.11, 0.36, 8, 16), shell);
+    arm.position.y = -0.26; pivot.add(arm);
+    const cuff = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.022, 8, 24), glow);
+    cuff.rotation.x = Math.PI / 2; cuff.position.y = -0.38; pivot.add(cuff);
+    const hand = new THREE.Mesh(new THREE.SphereGeometry(0.13, 24, 16), blue);
+    hand.position.y = -0.52; pivot.add(hand);
+    pivot.rotation.z = 0.32 * s;
+    arms.push(pivot);
+  }
+
+  // ── Бас
+  const headG = new THREE.Group(); headG.position.y = 0.5; root.add(headG);
+  const HX = 0.92, HY = 0.76, HZ = 0.78;
+  const skull = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 48), shell);
+  skull.scale.set(HX, HY, HZ); headG.add(skull);
+  const visor = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 48, Math.PI / 2 - 1.0, 2.0, Math.PI / 2 - 0.62, 1.2), dark);
+  visor.scale.set(HX * 1.012, HY * 1.012, HZ * 1.012); headG.add(visor);
+  const visorRim = new THREE.Mesh(new THREE.TorusGeometry(1, 0.018, 8, 96), glow);
+  visorRim.scale.set(HX * 0.86, HY * 0.6, 1); visorRim.position.z = HZ * 0.66; headG.add(visorRim);
+
+  const onFace = (x: number, y: number) => HZ * 1.02 * Math.sqrt(Math.max(0, 1 - (x / HX) ** 2 - (y / HY) ** 2)) + 0.012;
+  const eyes: THREE_NS.Mesh[] = [];
+  for (const s of [-1, 1]) {
+    const eye = new THREE.Mesh(new THREE.CapsuleGeometry(0.075, 0.13, 8, 16), glow);
+    eye.position.set(0.27 * s, 0.06, onFace(0.27, 0.06));
+    eye.rotation.y = 0.27 * s * 0.9;
+    headG.add(eye); eyes.push(eye);
+  }
+  const mouth = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.024, 8, 32, Math.PI), glow);
+  mouth.rotation.z = Math.PI; mouth.position.set(0, -0.17, onFace(0, -0.17)); headG.add(mouth);
+  for (const s of [-1, 1]) {
+    const cheek = new THREE.Mesh(new THREE.CircleGeometry(0.05, 20), new THREE.MeshBasicMaterial({ color: 0xff7eb6, transparent: true, opacity: 0.55 }));
+    cheek.position.set(0.44 * s, -0.12, onFace(0.44, -0.12)); cheek.rotation.y = 0.55 * s; headG.add(cheek);
+  }
+  // Құлақтар
+  for (const s of [-1, 1]) {
+    const ear = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.22, 0.16, 32), blue);
+    ear.rotation.z = Math.PI / 2; ear.position.x = HX * 0.98 * s; headG.add(ear);
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.13, 0.03, 10, 32), s > 0 ? gold : glow);
+    ring.rotation.y = Math.PI / 2; ring.position.x = HX * 1.07 * s; headG.add(ring);
+  }
+  // Антенна
+  const ant = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.025, 0.28, 12), blue);
+  ant.position.y = HY + 0.12; headG.add(ant);
+  const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.065, 20, 16), gold);
+  bulb.position.y = HY + 0.29; headG.add(bulb);
+
+  // ── Қимыл
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const look = { x: 0, y: 0, tx: 0, ty: 0, last: 0 };
+  const onMove = (e: PointerEvent) => {
+    if (!live.current.track) return;
+    const r = el.getBoundingClientRect();
+    const cx = r.left + r.width / 2, cy = r.top + r.height * (headOnly ? 0.45 : 0.3);
+    look.tx = Math.max(-1, Math.min(1, (e.clientX - cx) / (window.innerWidth * 0.45)));
+    look.ty = Math.max(-1, Math.min(1, (e.clientY - cy) / (window.innerHeight * 0.45)));
+    look.last = performance.now();
+  };
+  window.addEventListener("pointermove", onMove, { passive: true });
+
+  let raf = 0, nextBlink = 1.5, blinkT = -1;
+  const clock = new THREE.Clock();
+  const tick = () => {
+    raf = requestAnimationFrame(tick);
+    if (el.dataset.vis === "0") return;
+    const t = clock.getElapsedTime();
+    const { wave, talking, float } = live.current;
+    // Біраз уақыт тінтуір қозғалмаса, айналаға ақырын қарайды
+    if (performance.now() - look.last > 3500) { look.tx = Math.sin(t * 0.5) * 0.35; look.ty = Math.sin(t * 0.37) * 0.12; }
+    look.x += (look.tx - look.x) * 0.08; look.y += (look.ty - look.y) * 0.08;
+    headG.rotation.y = look.x * 0.62;
+    headG.rotation.x = look.y * 0.38;
+    headG.rotation.z = -look.x * 0.06 + (wave && !reduced ? Math.sin(t * 3) * 0.06 : 0);
+    body.rotation.y = look.x * 0.18;
+    root.position.y = float && !reduced ? Math.sin(t * 1.6) * 0.07 : 0;
+    root.rotation.z = float && !reduced ? Math.sin(t * 0.8) * 0.02 : 0;
+
+    if (arms.length) {
+      const [l, r] = arms;
+      l.rotation.z = -0.32 - Math.sin(t * 1.6) * 0.04;
+      if (wave && !reduced) { r.rotation.z = 2.5 + Math.sin(t * 7) * 0.35; r.rotation.x = -0.2; }
+      else { r.rotation.z += (0.32 + Math.sin(t * 1.6) * 0.04 - r.rotation.z) * 0.12; r.rotation.x *= 0.9; }
+    }
+    // Жыпылықтау
+    if (t > nextBlink && blinkT < 0) blinkT = t;
+    let sy = 1;
+    if (blinkT >= 0) { const k = (t - blinkT) / 0.16; sy = k < 1 ? Math.abs(1 - 2 * k) * 0.9 + 0.1 : 1; if (k >= 1) { blinkT = -1; nextBlink = t + 2.2 + Math.random() * 3; } }
+    eyes.forEach((e) => (e.scale.y = sy));
+    mouth.scale.set(1, talking ? 0.6 + Math.abs(Math.sin(t * 14)) * 1.1 : 1, 1);
+    glow.emissiveIntensity = talking ? 2.6 + Math.sin(t * 10) * 0.6 : 2.4;
+    bulb.material === gold && (gold.emissiveIntensity = 1.1 + Math.sin(t * 3) * 0.5);
+    renderer.render(scene, camera);
+  };
+  tick();
+
+  return () => {
+    cancelAnimationFrame(raf);
+    window.removeEventListener("pointermove", onMove);
+    scene.traverse((o) => { const m = o as THREE_NS.Mesh; if (m.geometry) m.geometry.dispose(); });
+    [shell, blue, dark, glow, gold].forEach((m) => m.dispose());
+    env.dispose(); pmrem.dispose(); renderer.dispose();
+    renderer.domElement.remove();
+  };
 }

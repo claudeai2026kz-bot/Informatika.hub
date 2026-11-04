@@ -150,7 +150,7 @@ export default function Assistant({ soundOn = true }: { soundOn?: boolean }) {
         <span className="mb-1 rounded-full bg-[#121a46] px-3 py-1 text-xs font-bold text-cyan-200 shadow-soft opacity-0 transition group-hover:opacity-100">Көмек керек пе?</span>
         <span className="robot-pad relative isolate grid place-items-center rounded-full border border-cyan-300/40 bg-[#121a46]/85 backdrop-blur-md shadow-[0_12px_30px_-10px_rgba(11,16,53,.7),0_0_0_4px_rgba(34,211,238,.12)] h-[76px] w-[76px] overflow-visible">
           <span className="absolute right-0.5 top-0.5 z-10 h-3 w-3 rounded-full bg-emerald-400 ring-2 ring-[#121a46]" />
-          <span className="-mt-3"><img src="/robot/robot-head.webp" alt="" width={66} height={66} className="robot-face pointer-events-none select-none object-contain" style={{ width: 66, height: 66 }} /></span>
+          <span className="mt-1"><Robot head size={80} /></span>
         </span>
       </button>
 
