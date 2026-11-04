@@ -12,12 +12,15 @@ const ROOT = path.resolve(process.env.STORAGE_DIR ?? "./storage");
 // Көшіріп қойғанда кететін бос орын, тырнақша, жол соңы таңбаларын тазалаймыз.
 const clean = (v?: string) => v?.replace(/^[\s"']+|[\s"']+$/g, "").replace(/[\r\n]/g, "") || undefined;
 const SB_URL = clean(process.env.SUPABASE_URL)?.replace(/\/+$/, "");
-const SB_KEY = clean(process.env.SUPABASE_SERVICE_ROLE_KEY);
+// JWT кілтінде тек A-Z a-z 0-9 . _ - болады: көшіргенде ілескен көрінбейтін таңбаларды алып тастаймыз.
+const RAW_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
+const SB_KEY = RAW_KEY.replace(/[^A-Za-z0-9._-]/g, "") || undefined;
+const KEY_HAD_JUNK = RAW_KEY.trim() !== SB_KEY;
 const BUCKET = clean(process.env.SUPABASE_BUCKET) ?? "files";
 export const cloud = !!(SB_URL && SB_KEY);
 
 async function sb(pathname: string, init: RequestInit = {}) {
-  if (/[^\x21-\x7e]/.test(SB_KEY ?? "")) throw new UploadError("SUPABASE_SERVICE_ROLE_KEY дұрыс көшірілмеген: ішінде • немесе басқа артық таңба бар. Кілтті Supabase-тен қайта көшіріп, Vercel-ге қойыңыз.");
+  if (KEY_HAD_JUNK && RAW_KEY.includes("\u2022")) throw new UploadError(`SUPABASE_SERVICE_ROLE_KEY ішінде • (жасырын нүктелер) тұр. Vercel әлі ескі мәнді қолданып тұр (ұзындығы ${RAW_KEY.length}). Кілтті қайта қойып, Redeploy жасаңыз.`);
   const res = await fetch(`${SB_URL}/storage/v1/${pathname}`, {
     ...init,
     headers: { Authorization: `Bearer ${SB_KEY}`, apikey: SB_KEY!, ...(init.headers ?? {}) },
@@ -95,7 +98,7 @@ export async function signDirectUpload(fileName: string, size: number, allowed: 
   if (!r.ok) {
     const detail = await r.text().catch(() => "");
     console.error("Supabase sign upload failed", r.status, detail.slice(0, 300));
-    throw new UploadError(r.status === 404 || /bucket/i.test(detail) ? `Supabase-те «${BUCKET}» bucket табылмады` : r.status === 401 || r.status === 403 ? "Supabase кілті дұрыс емес (SUPABASE_SERVICE_ROLE_KEY)" : `Жүктеу сілтемесін алу мүмкін болмады (${r.status})`);
+    throw new UploadError(r.status === 404 || /bucket/i.test(detail) ? `Supabase-те «${BUCKET}» bucket табылмады` : r.status === 401 || r.status === 403 ? `Supabase кілті қабылданбады (SUPABASE_SERVICE_ROLE_KEY, ұзындығы ${SB_KEY?.length ?? 0})` : `Жүктеу сілтемесін алу мүмкін болмады (${r.status})`);
   }
   const { url } = (await r.json()) as { url: string };
   return { path: rel, url: `${SB_URL}/storage/v1${url}` };
