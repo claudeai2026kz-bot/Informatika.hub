@@ -6,7 +6,7 @@ import { z } from "zod";
 import type { GameType, Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { assertAdmin } from "@/lib/auth";
-import { DOC_EXTS, UploadError, removeStored, saveUpload } from "@/lib/storage";
+import { DOC_EXTS, UploadError, adoptDirectUpload, removeStored, saveUpload, signDirectUpload } from "@/lib/storage";
 
 export type AdminState = { error?: string; ok?: string } | undefined;
 
@@ -16,8 +16,19 @@ const optUrl = z.string().trim().url("Сілтеме дұрыс емес").max(5
 
 async function fileFrom(fd: FormData, key: string, folder: string, exts = DOC_EXTS) {
   const f = fd.get(key);
+  if (typeof f === "string" && f.startsWith("__uploaded:")) return adoptDirectUpload(f.slice(11), exts);
   if (!(f instanceof File) || f.size === 0) return null;
   return saveUpload(f, folder, exts);
+}
+
+/** Браузердің файлды тікелей бұлтқа жүктеуіне рұқсат (тек әкімші). Бұлт қосылмаса null. */
+export async function signUpload(fileName: string, size: number): Promise<{ path: string; url: string } | { error: string } | null> {
+  await assertAdmin();
+  try {
+    return await signDirectUpload(String(fileName), Number(size));
+  } catch (e) {
+    return { error: e instanceof UploadError ? e.message : "Жүктеу мүмкін болмады" };
+  }
 }
 
 async function notifyAll(title: string, body: string, link: string) {

@@ -1,4 +1,5 @@
 "use client";
+import { withDirectUploads } from "./direct-upload";
 import Link from "next/link";
 import { useActionState } from "react";
 import { saveMaterial } from "@/app/actions/admin";
@@ -10,7 +11,7 @@ import CurriculumSelect, { type TopicOpt } from "./CurriculumSelect";
 type M = { id: string; title: string; description: string; typeKey: string; grade: number; quarter: number; topicId: number | null; videoUrl: string | null; externalUrl: string | null; published: boolean; fileName: string | null; hasPreview: boolean } | null;
 
 export default function MaterialForm({ m, topics }: { m: M; topics: TopicOpt[] }) {
-  const [state, action] = useActionState(saveMaterial, undefined);
+  const [state, action] = useActionState(withDirectUploads(saveMaterial), undefined);
   return (
     <form action={action} className="card p-6 sm:p-8 space-y-5 max-w-3xl">
       <FormAlert msg={state?.error} />

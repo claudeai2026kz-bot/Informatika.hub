@@ -4,10 +4,25 @@ import path from "path";
 import { randomBytes } from "crypto";
 
 /**
- * Файл сақтау. Қазір жергілікті дискіде (STORAGE_DIR) сақталады.
- * Хостингке шығарғанда осы модульді S3 / Supabase Storage нұсқасына ауыстыру жеткілікті.
+ * Файл сақтау.
+ *  - SUPABASE_URL және SUPABASE_SERVICE_ROLE_KEY берілсе: Supabase Storage (жабық bucket).
+ *  - Әйтпесе: жергілікті диск (STORAGE_DIR).
  */
 const ROOT = path.resolve(process.env.STORAGE_DIR ?? "./storage");
+const SB_URL = process.env.SUPABASE_URL?.replace(/\/$/, "");
+const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const BUCKET = process.env.SUPABASE_BUCKET ?? "files";
+export const cloud = !!(SB_URL && SB_KEY);
+
+async function sb(pathname: string, init: RequestInit = {}) {
+  const res = await fetch(`${SB_URL}/storage/v1/${pathname}`, {
+    ...init,
+    headers: { Authorization: `Bearer ${SB_KEY}`, apikey: SB_KEY!, ...(init.headers ?? {}) },
+    cache: "no-store",
+  });
+  return res;
+}
+const objPath = (rel: string) => rel.split("/").map(encodeURIComponent).join("/");
 
 export const MAX_FILE_MB = 50;
 
@@ -45,13 +60,67 @@ export async function saveUpload(file: File, folder: string, allowed: string[] =
   const buf = Buffer.from(await file.arrayBuffer());
   if (!kind.check(buf)) throw new UploadError("Файлдың мазмұны оның кеңейтіміне сәйкес келмейді");
 
-  const safeFolder = folder.replace(/[^a-z0-9-]/gi, "");
-  const name = `${Date.now()}-${randomBytes(8).toString("hex")}.${ext}`;
-  const rel = path.posix.join(safeFolder, name);
-  await mkdir(path.join(ROOT, safeFolder), { recursive: true });
-  await writeFile(path.join(ROOT, rel), buf);
-  const original = path.basename(file.name).replace(/[\u0000-\u001f"\\/]/g, "_").slice(0, 150);
-  return { path: rel, name: original, mime: kind.mime, size: file.size };
+  const rel = newPath(folder, ext);
+  if (cloud) {
+    const r = await sb(`object/${BUCKET}/${objPath(rel)}`, { method: "POST", body: buf, headers: { "Content-Type": kind.mime } });
+    if (!r.ok) throw new UploadError("Файлды бұлтқа сақтау мүмкін болмады");
+  } else {
+    await mkdir(path.dirname(path.join(ROOT, rel)), { recursive: true });
+    await writeFile(path.join(ROOT, rel), buf);
+  }
+  return { path: rel, name: cleanName(file.name), mime: kind.mime, size: file.size };
+}
+
+const cleanName = (n: string) => path.basename(n).replace(/[\u0000-\u001f"\\/]/g, "_").slice(0, 150);
+function newPath(folder: string, ext: string) {
+  const safeFolder = folder.replace(/[^a-z0-9-]/gi, "") || "files";
+  return path.posix.join(safeFolder, `${Date.now()}-${randomBytes(8).toString("hex")}.${ext}`);
+}
+const UPLOADED = /^uploads\/\d+-[0-9a-f]{16}\.([a-z0-9]+)$/;
+
+/**
+ * Үлкен файлдар үшін: браузер файлды тікелей Supabase-ке жүктейтін бір реттік сілтеме.
+ * (Хостингте сервер арқылы өтетін сұраныс көлемі шектеулі.) Бұлт қосылмаса null қайтарады.
+ */
+export async function signDirectUpload(fileName: string, size: number, allowed: string[] = DOC_EXTS, maxMb = MAX_FILE_MB) {
+  if (!cloud) return null;
+  if (size > maxMb * 1024 * 1024) throw new UploadError(`Файл көлемі ${maxMb} МБ-тан аспауы керек`);
+  const ext = path.extname(fileName).slice(1).toLowerCase();
+  if (!KINDS.some((k) => k.ext === ext) || !allowed.includes(ext)) throw new UploadError(`Бұл файл түріне рұқсат жоқ. Рұқсат етілгені: ${allowed.join(", ")}`);
+  const rel = newPath("uploads", ext);
+  const r = await sb(`object/upload/sign/${BUCKET}/${objPath(rel)}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+  if (!r.ok) throw new UploadError("Жүктеу сілтемесін алу мүмкін болмады");
+  const { url } = (await r.json()) as { url: string };
+  return { path: rel, url: `${SB_URL}/storage/v1${url}` };
+}
+
+/** Браузер тікелей жүктеген файлды тексеріп қабылдайды (кеңейтімі, көлемі, ішкі қолтаңбасы). */
+export async function adoptDirectUpload(raw: string, allowed: string[] = DOC_EXTS, maxMb = MAX_FILE_MB) {
+  let info: { path?: string; name?: string };
+  try { info = JSON.parse(raw); } catch { throw new UploadError("Файл деректері дұрыс емес"); }
+  const m = cloud && typeof info.path === "string" ? UPLOADED.exec(info.path) : null;
+  const kind = m && KINDS.find((k) => k.ext === m[1]);
+  if (!m || !kind || !allowed.includes(kind.ext)) throw new UploadError("Бұл файл түріне рұқсат жоқ");
+  const rel = info.path!;
+  const r = await sb(`object/authenticated/${BUCKET}/${objPath(rel)}`, { headers: { Range: "bytes=0-15" } });
+  if (!r.ok && r.status !== 206) throw new UploadError("Жүктелген файл табылмады");
+  const head = Buffer.from(await r.arrayBuffer()).subarray(0, 16);
+  const size = Number(r.headers.get("content-range")?.split("/")[1] ?? r.headers.get("content-length") ?? 0);
+  if (!kind.check(head) || size <= 0 || size > maxMb * 1024 * 1024) {
+    await removeStored(rel);
+    throw new UploadError(size > maxMb * 1024 * 1024 ? `Файл көлемі ${maxMb} МБ-тан аспауы керек` : "Файлдың мазмұны оның кеңейтіміне сәйкес келмейді");
+  }
+  return { path: rel, name: cleanName(String(info.name ?? `file.${kind.ext}`)), mime: kind.mime, size };
+}
+
+/** Бұлтта: файлға қысқа мерзімді сілтеме (жүктеуге 60 с, қарауға 1 сағ). */
+export async function signedDownloadUrl(rel: string, downloadName?: string) {
+  const r = await sb(`object/sign/${BUCKET}/${objPath(rel)}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ expiresIn: downloadName ? 60 : 3600 }) });
+  if (!r.ok) return null;
+  const { signedURL } = (await r.json()) as { signedURL: string };
+  const u = new URL(`${SB_URL}/storage/v1${signedURL}`);
+  if (downloadName) u.searchParams.set("download", downloadName);
+  return u.toString();
 }
 
 function resolveSafe(rel: string) {
@@ -68,6 +137,10 @@ export async function readStored(rel: string) {
 
 export async function removeStored(rel?: string | null) {
   if (!rel) return;
+  if (cloud) {
+    await sb(`object/${BUCKET}`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prefixes: [rel] }) }).catch(() => null);
+    return;
+  }
   try {
     await unlink(resolveSafe(rel));
   } catch {

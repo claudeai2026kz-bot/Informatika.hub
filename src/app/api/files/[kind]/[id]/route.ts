@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
-import { mimeFor, readStored } from "@/lib/storage";
+import { cloud, mimeFor, readStored, signedDownloadUrl } from "@/lib/storage";
 
 function contentDisposition(type: "inline" | "attachment", name: string) {
   const ascii = name.replace(/[^\x20-\x7e]/g, "_").replace(/"/g, "");
@@ -73,6 +73,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ kind
     return NextResponse.redirect(url);
   }
   if (!path) return new NextResponse("Файл жоқ", { status: 404 });
+
+  if (cloud) {
+    const url = await signedDownloadUrl(path, dl || part === "answers" ? name : undefined);
+    if (!url) return new NextResponse("Файл табылмады", { status: 404 });
+    await onDownload?.();
+    return NextResponse.redirect(url, { headers: { "Cache-Control": "private, no-store" } });
+  }
 
   try {
     const { data, size } = await readStored(path);

@@ -1,4 +1,5 @@
 "use client";
+import { withDirectUploads } from "./direct-upload";
 import { useActionState, useState } from "react";
 import { Plus, X, Upload, Link2 } from "lucide-react";
 import { saveMaterial } from "@/app/actions/admin";
@@ -10,7 +11,7 @@ export default function TopicUpload({ typeKey, label, mode, accept, grade, quart
   typeKey: string; label: string; mode: "file" | "url" | "both"; accept: string; grade: number; quarter: number; topicId: number; topicTitle: string;
 }) {
   const [open, setOpen] = useState(false);
-  const [state, action] = useActionState(saveMaterial, undefined);
+  const [state, action] = useActionState(withDirectUploads(saveMaterial), undefined);
   if (!open)
     return (
       <button type="button" onClick={() => setOpen(true)} className="btn-soft btn-sm w-full sm:w-auto"><Plus className="h-4 w-4" /> {label} қосу</button>

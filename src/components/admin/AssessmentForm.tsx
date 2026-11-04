@@ -1,4 +1,5 @@
 "use client";
+import { withDirectUploads } from "./direct-upload";
 import Link from "next/link";
 import { useActionState } from "react";
 import { saveAssessment } from "@/app/actions/admin";
@@ -10,7 +11,7 @@ type A = { id: string; kind: string; title: string; description: string; grade: 
 const fileCls = "block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-sky-100 file:px-3 file:py-2 file:font-semibold file:text-sky-600";
 
 export default function AssessmentForm({ a, topics, preset }: { a: A; topics: TopicOpt[]; preset?: { kind?: string; grade?: number; quarter?: number } }) {
-  const [state, action] = useActionState(saveAssessment, undefined);
+  const [state, action] = useActionState(withDirectUploads(saveAssessment), undefined);
   return (
     <form action={action} className="card p-6 sm:p-8 space-y-5 max-w-3xl">
       <FormAlert msg={state?.error} />

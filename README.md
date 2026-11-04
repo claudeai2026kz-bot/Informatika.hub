@@ -21,6 +21,17 @@ ADMIN_EMAIL=you@mail.kz ADMIN_PASSWORD='Құпия123' npm run db:seed   # рө�
 npm run dev
 ```
 
+## Интернетке шығару (Vercel + Supabase, тегін)
+
+1. **Supabase**: жаңа жоба ашыңыз. Storage → New bucket → атауы `files`, **Public емес** (жабық).
+   Project Settings → Database → Connection string → **Session pooler** URI-ін көшіріңіз (құпиясөзді қойыңыз).
+   Project Settings → API → `Project URL` және `service_role` кілтін көшіріңіз.
+2. **Vercel**: GitHub арқылы кіріп, осы репозиторийді Import етіңіз. Environment Variables:
+   `DATABASE_URL` (Supabase URI), `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `APP_URL`.
+3. Deploy. `vercel-build` кестелерді жасайды, сыныптар мен тақырыптарды және әкімшіні қосады.
+
+Файлдарды браузер тікелей Supabase-ке жүктейді (Vercel-дегі 4.5 МБ шегін айналып өту үшін), сервер файлдың түрін тексереді. Жүктеу сілтемелері қысқа мерзімді және тек рұқсаты барларға беріледі.
+
 ## Қосымша баптауды қажет ететін функциялар
 
 | Функция | Не керек |
