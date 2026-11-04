@@ -5,6 +5,6 @@
   "workspaceFolder": "/workspaces/informatika-hub",
   "forwardPorts": [3000],
   "portsAttributes": { "3000": { "label": "Informatika Hub", "onAutoForward": "openPreview" } },
-  "postCreateCommand": "npm install && npx prisma db push && ADMIN_EMAIL=admin@informatika.kz ADMIN_PASSWORD=Admin12345 SEED_DEMO=1 npm run db:seed",
+  "postCreateCommand": "npm install && npx prisma db push && ADMIN_EMAIL=admin@informatika.kz ADMIN_PASSWORD=Admin12345 npm run db:seed",
   "postAttachCommand": "npm run dev"
 }

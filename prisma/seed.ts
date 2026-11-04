@@ -39,7 +39,6 @@ async function main() {
     console.log("ADMIN_EMAIL / ADMIN_PASSWORD берілмеген, әкімші жасалмады.");
   }
 
-  if (process.env.SEED_DEMO === "1") await (await import("./demo")).seedDemo(db);
 }
 
 main().finally(() => db.$disconnect());

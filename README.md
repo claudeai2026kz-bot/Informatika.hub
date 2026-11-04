@@ -18,7 +18,6 @@ npm install
 cp .env.example .env          # DATABASE_URL мәнін өз базаңызға өзгертіңіз
 npx prisma db push            # кестелерді жасау
 ADMIN_EMAIL=you@mail.kz ADMIN_PASSWORD='Құпия123' npm run db:seed   # рөлдер, сыныптар, бірінші әкімші
-# SEED_DEMO=1 қоссаңыз, үлгі тақырыптар мен материалдар қосылады
 npm run dev
 ```
 
