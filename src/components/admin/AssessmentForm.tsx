@@ -9,7 +9,7 @@ import CurriculumSelect, { type TopicOpt } from "./CurriculumSelect";
 type A = { id: string; kind: string; title: string; description: string; grade: number; quarter: number; topicId: number | null; variant: string; answers: string | null; criteria: string | null; descriptors: string | null; published: boolean; fileName: string | null; hasAnswersFile: boolean } | null;
 const fileCls = "block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-sky-100 file:px-3 file:py-2 file:font-semibold file:text-sky-600";
 
-export default function AssessmentForm({ a, topics }: { a: A; topics: TopicOpt[] }) {
+export default function AssessmentForm({ a, topics, preset }: { a: A; topics: TopicOpt[]; preset?: { kind?: string; grade?: number; quarter?: number } }) {
   const [state, action] = useActionState(saveAssessment, undefined);
   return (
     <form action={action} className="card p-6 sm:p-8 space-y-5 max-w-3xl">
@@ -17,10 +17,10 @@ export default function AssessmentForm({ a, topics }: { a: A; topics: TopicOpt[]
       {a && <input type="hidden" name="id" value={a.id} />}
       <div className="grid gap-4 sm:grid-cols-[1fr_200px]">
         <div><label className="label" htmlFor="title">Атауы *</label><input id="title" name="title" className="input" defaultValue={a?.title} required /></div>
-        <div><label className="label" htmlFor="kind">Түрі *</label><select id="kind" name="kind" className="input" defaultValue={a?.kind ?? "BZHB"}><option value="BZHB">БЖБ</option><option value="TZHB">ТЖБ</option></select></div>
+        <div><label className="label" htmlFor="kind">Түрі *</label><select id="kind" name="kind" className="input" defaultValue={a?.kind ?? preset?.kind ?? "BZHB"}><option value="BZHB">БЖБ</option><option value="TZHB">ТЖБ</option></select></div>
       </div>
       <div><label className="label" htmlFor="description">Сипаттамасы</label><textarea id="description" name="description" rows={3} className="input" defaultValue={a?.description} /></div>
-      <CurriculumSelect topics={topics} grade={a?.grade} quarter={a?.quarter} topicId={a?.topicId} />
+      <CurriculumSelect topics={topics} grade={a?.grade ?? preset?.grade} quarter={a?.quarter ?? preset?.quarter} topicId={a?.topicId} />
       <div className="max-w-xs"><label className="label" htmlFor="variant">Нұсқа</label><input id="variant" name="variant" className="input" defaultValue={a?.variant ?? "1-нұсқа"} /></div>
       <fieldset className="rounded-xl border border-sky-100 p-4 space-y-4">
         <legend className="px-1 text-sm font-semibold">Файлдар</legend>

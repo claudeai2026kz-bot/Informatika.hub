@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, ClipboardCheck, Plus } from "lucide-react";
+import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { GRADE_STYLES, QUARTER_LABELS } from "@/lib/labels";
 import { TypeIcon } from "@/components/MaterialCard";
@@ -26,6 +27,16 @@ export default async function GradePage({ params, searchParams }: { params: Prom
         where: { quarterId: current.id },
         orderBy: [{ order: "asc" }, { id: "asc" }],
         include: { materials: { where: { published: true }, select: { type: { select: { key: true } } } } },
+      })
+    : [];
+
+  const user = await getCurrentUser();
+  const isAdmin = user?.role === "ADMIN";
+  const assessments = current
+    ? await db.assessment.findMany({
+        where: { quarterId: current.id, ...(isAdmin ? {} : { published: true }) },
+        orderBy: [{ kind: "asc" }, { createdAt: "asc" }],
+        select: { id: true, kind: true, title: true, variant: true, published: true, topic: { select: { title: true } } },
       })
     : [];
 
@@ -97,6 +108,41 @@ export default async function GradePage({ params, searchParams }: { params: Prom
               </section>
             ))
           )}
+          <section className="mt-8 card p-5 sm:p-6 bg-gradient-to-br from-white to-lilac-100/40" id="assessments">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="grid h-11 w-11 place-items-center rounded-xl bg-lilac-100 text-lilac-500"><ClipboardCheck className="h-5 w-5" /></span>
+              <div>
+                <h2 className="text-lg font-bold">Бағалау: БЖБ және ТЖБ</h2>
+                <p className="text-xs muted">{g}-сынып · {QUARTER_LABELS[qn]} · жауаптары мен критерийлерімен</p>
+              </div>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {(["BZHB", "TZHB"] as const).map((k) => {
+                const list = assessments.filter((a) => a.kind === k);
+                const name = k === "BZHB" ? "БЖБ" : "ТЖБ";
+                return (
+                  <div key={k} className="rounded-xl border border-sky-100 bg-white p-4">
+                    <h3 className="font-bold">{name} <span className="text-xs font-normal muted">{k === "BZHB" ? "бөлім бойынша жиынтық бағалау" : "тоқсандық жиынтық бағалау"}</span></h3>
+                    <ul className="mt-3 space-y-2">
+                      {list.map((a) => (
+                        <li key={a.id}>
+                          <Link href={`/assessments/${a.id}`} className="flex items-center gap-2 rounded-lg bg-sky-50/60 px-3 py-2.5 hover:bg-sky-100 transition">
+                            <span className="min-w-0 flex-1">
+                              <span className="block text-sm font-semibold">{a.title}{!a.published && <span className="chip ml-2 bg-amber-100 text-amber-700">жоба</span>}</span>
+                              <span className="block text-xs muted">{a.variant}{a.topic ? ` · ${a.topic.title}` : ""}</span>
+                            </span>
+                            <ChevronRight className="h-4 w-4 text-ink-mute" />
+                          </Link>
+                        </li>
+                      ))}
+                      {list.length === 0 && <li className="text-sm muted">Әзірге {name} қосылмаған.</li>}
+                    </ul>
+                    {isAdmin && <Link href={`/admin/assessments/new?kind=${k}&grade=${g}&quarter=${qn}`} className="btn-soft btn-sm mt-3 w-full"><Plus className="h-4 w-4" /> {name} қосу</Link>}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
         </div>
       </div>
     </div>
