@@ -5,6 +5,10 @@ import { db } from "@/lib/db";
 import { QUARTER_LABELS } from "@/lib/labels";
 import { TypeIcon } from "@/components/MaterialCard";
 
+// Сабақ бетіндегі бөлімдер реті: Презентация, Бейнесабақ, Тапсырма, ҚМЖ, Ойын.
+const ORDER = ["PRESENTATION", "VIDEO", "PRACTICE", "KMZH", "GAME_LINK", "INTERACTIVE", "RESOURCE"];
+const rank = (k: string) => { const i = ORDER.indexOf(k); return i < 0 ? 99 : i; };
+
 /** Сынып ішінде: тоқсандар → тақырыптар → БЖБ/ТЖБ. Сынып беті мен басты бетте қолданылады. */
 export default async function GradeBrowser({ g, qn, quarterHref }: { g: number; qn: number; quarterHref: (q: number) => string }) {
   const quarters = await db.quarter.findMany({
@@ -68,7 +72,7 @@ export default async function GradeBrowser({ g, qn, quarterHref }: { g: number; 
               <ul className="space-y-3">
                 {list.map((t) => {
                   n++;
-                  const kinds = [...new Set(t.materials.map((m) => m.type.key))];
+                  const kinds = [...new Set(t.materials.map((m) => m.type.key))].sort((a, b) => rank(a) - rank(b));
                   return (
                     <li key={t.id}>
                       <Link href={`/topics/${t.id}`} className="card card-hover flex items-center gap-4 p-4">
