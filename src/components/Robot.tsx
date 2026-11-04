@@ -81,14 +81,17 @@ function build(THREE: typeof THREE_NS, RoomEnvironment: new () => THREE_NS.Scene
 
   const camera = new THREE.PerspectiveCamera(headOnly ? 26 : 28, w / h, 0.1, 50);
   if (headOnly) { camera.position.set(0, 0.5, 5.2); camera.lookAt(0, 0.42, 0); }
-  else { camera.position.set(0, 0.3, 6.5); camera.lookAt(0, 0.15, 0); }
+  else { camera.position.set(0, 0.35, 6.9); camera.lookAt(0, 0.05, 0); }
 
   scene.add(new THREE.HemisphereLight(0xdff4ff, 0x1b2370, 0.9));
   const key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(2.5, 4, 5); scene.add(key);
   const rim = new THREE.PointLight(0x22d3ee, 18, 12); rim.position.set(-3, 1.5, -1.5); scene.add(rim);
   const rim2 = new THREE.PointLight(0x8b5cf6, 14, 12); rim2.position.set(3, -1, -1.5); scene.add(rim2);
 
-  const shell = new THREE.MeshPhysicalMaterial({ color: 0xf3f6fb, roughness: 0.22, metalness: 0.05, clearcoat: 1, clearcoatRoughness: 0.08 });
+  const shell = new THREE.MeshPhysicalMaterial({ color: 0xf5f8fd, roughness: 0.18, metalness: 0.08, clearcoat: 1, clearcoatRoughness: 0.05, iridescence: 0.35, iridescenceIOR: 1.35, sheen: 0.4, sheenColor: new THREE.Color(0x9ad8ff) });
+  // Жұмсақ жарқыл (бөлек «bloom» орнына)
+  const haloTex = (() => { const c = document.createElement("canvas"); c.width = c.height = 64; const g = c.getContext("2d")!; const r = g.createRadialGradient(32, 32, 0, 32, 32, 32); r.addColorStop(0, "rgba(120,245,255,1)"); r.addColorStop(0.35, "rgba(56,232,255,.45)"); r.addColorStop(1, "rgba(56,232,255,0)"); g.fillStyle = r; g.fillRect(0, 0, 64, 64); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })();
+  const halo = (sx: number, sy: number, op = 0.8) => { const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: haloTex, transparent: true, opacity: op, blending: THREE.AdditiveBlending, depthWrite: false })); m.scale.set(sx, sy, 1); return m; };
   const blue = new THREE.MeshPhysicalMaterial({ color: 0x3b5bdb, roughness: 0.3, metalness: 0.2, clearcoat: 0.8 });
   const dark = new THREE.MeshPhysicalMaterial({ color: 0x060a1f, roughness: 0.06, metalness: 0.3, clearcoat: 1, clearcoatRoughness: 0.02 });
   const glow = new THREE.MeshStandardMaterial({ color: 0x5ff3ff, emissive: 0x38e8ff, emissiveIntensity: 2.4, roughness: 0.4 });
@@ -111,6 +114,19 @@ function build(THREE: typeof THREE_NS, RoomEnvironment: new () => THREE_NS.Scene
     neck.position.y = -0.02; body.add(neck);
   }
 
+  // ── Астындағы ұшатын жарық сақина
+  const rings: THREE_NS.Mesh[] = [];
+  let beam: THREE_NS.Mesh | undefined;
+  if (!headOnly) {
+    for (const [r, y, op] of [[0.42, -1.42, 1], [0.62, -1.5, 0.55]] as const) {
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(r, 0.02, 8, 64), new THREE.MeshBasicMaterial({ color: 0x5ff3ff, transparent: true, opacity: op, blending: THREE.AdditiveBlending, depthWrite: false }));
+      ring.rotation.x = Math.PI / 2; ring.position.y = y; root.add(ring); rings.push(ring);
+    }
+    beam = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.62, 0.55, 48, 1, true), new THREE.MeshBasicMaterial({ color: 0x38e8ff, transparent: true, opacity: 0.16, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+    beam.position.y = -1.22; root.add(beam);
+    const thr = halo(0.9, 0.35, 0.9); thr.position.y = -1.36; root.add(thr);
+  }
+
   // ── Қолдар (иық топсасы)
   const arms: THREE_NS.Group[] = [];
   if (!headOnly) for (const s of [-1, 1]) {
@@ -121,6 +137,7 @@ function build(THREE: typeof THREE_NS, RoomEnvironment: new () => THREE_NS.Scene
     cuff.rotation.x = Math.PI / 2; cuff.position.y = -0.38; pivot.add(cuff);
     const hand = new THREE.Mesh(new THREE.SphereGeometry(0.13, 24, 16), blue);
     hand.position.y = -0.52; pivot.add(hand);
+    const sh = new THREE.Mesh(new THREE.SphereGeometry(0.14, 24, 16), blue); pivot.add(sh);
     pivot.rotation.z = 0.32 * s;
     arms.push(pivot);
   }
@@ -142,7 +159,9 @@ function build(THREE: typeof THREE_NS, RoomEnvironment: new () => THREE_NS.Scene
     eye.position.set(0.27 * s, 0.06, onFace(0.27, 0.06));
     eye.rotation.y = 0.27 * s * 0.9;
     headG.add(eye); eyes.push(eye);
+    const eh = halo(0.42, 0.55, 0.55); eh.position.copy(eye.position); eh.position.z += 0.02; headG.add(eh);
   }
+  const face = halo(1.5, 1.0, 0.12); face.position.set(0, 0, HZ + 0.05); headG.add(face);
   const mouth = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.024, 8, 32, Math.PI), glow);
   mouth.rotation.z = Math.PI; mouth.position.set(0, -0.17, onFace(0, -0.17)); headG.add(mouth);
   for (const s of [-1, 1]) {
@@ -206,6 +225,8 @@ function build(THREE: typeof THREE_NS, RoomEnvironment: new () => THREE_NS.Scene
     mouth.scale.set(1, talking ? 0.6 + Math.abs(Math.sin(t * 14)) * 1.1 : 1, 1);
     glow.emissiveIntensity = talking ? 2.6 + Math.sin(t * 10) * 0.6 : 2.4;
     bulb.material === gold && (gold.emissiveIntensity = 1.1 + Math.sin(t * 3) * 0.5);
+    rings.forEach((r, i) => { const k = (Math.sin(t * 2.2 + i * 1.3) + 1) / 2; r.scale.setScalar(1 + k * 0.12); (r.material as THREE_NS.MeshBasicMaterial).opacity = (i ? 0.35 : 0.8) + k * 0.2; r.position.y = (i ? -1.5 : -1.42) - root.position.y * 0.6; });
+    if (beam) (beam.material as THREE_NS.MeshBasicMaterial).opacity = 0.12 + Math.sin(t * 3) * 0.05;
     renderer.render(scene, camera);
   };
   tick();
@@ -215,7 +236,7 @@ function build(THREE: typeof THREE_NS, RoomEnvironment: new () => THREE_NS.Scene
     window.removeEventListener("pointermove", onMove);
     scene.traverse((o) => { const m = o as THREE_NS.Mesh; if (m.geometry) m.geometry.dispose(); });
     [shell, blue, dark, glow, gold].forEach((m) => m.dispose());
-    env.dispose(); pmrem.dispose(); renderer.dispose();
+    env.dispose(); haloTex.dispose(); pmrem.dispose(); renderer.dispose();
     renderer.domElement.remove();
   };
 }

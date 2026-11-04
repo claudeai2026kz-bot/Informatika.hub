@@ -125,7 +125,7 @@ export default function AuthGuide({ compact = false, dark = false }: { compact?:
       </div>
       <div className={`relative ${dark ? "" : "ml-2"}`}>
         {talking && [0, 1, 2].map((i) => <span key={i} aria-hidden className="absolute left-1/2 top-[30%] -translate-x-1/2 -translate-y-1/2 h-32 w-32 rounded-full border-2 border-indigo-300/40" style={{ animation: `ihubRing 1.8s ${i * 0.6}s ease-out infinite` }} />)}
-        <Robot size={190} wave={wave} talking={talking} />
+        <Robot size={240} wave={wave} talking={talking} />
       </div>
       <style>{`@keyframes ihubRise{0%{transform:translateY(120px) scale(.6);opacity:0}70%{transform:translateY(-10px) scale(1.03);opacity:1}100%{transform:none}}@keyframes ihubRing{0%{transform:translate(-50%,-50%) scale(.6);opacity:.8}100%{transform:translate(-50%,-50%) scale(1.8);opacity:0}}@media (prefers-reduced-motion:reduce){[style*=ihubRise],[style*=ihubRing]{animation:none!important}}`}</style>
     </div>

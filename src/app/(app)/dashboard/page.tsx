@@ -73,7 +73,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
               ))}
             </div>
           </div>
-          <div className="hidden md:block robot-pad isolate pr-4"><Robot size={210} /></div>
+          <div className="hidden md:block -my-6 pr-2"><Robot size={290} /></div>
         </div>
       </section>
 
