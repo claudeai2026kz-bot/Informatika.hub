@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { QUARTER_LABELS, formatSize } from "@/lib/labels";
 import { embedUrl } from "@/lib/video";
+import ShareButton from "@/components/ShareButton";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import Abbr from "@/components/Abbr";
 import TopicUpload from "@/components/admin/TopicUpload";
@@ -92,7 +93,13 @@ export default async function TopicPage({ params, searchParams }: { params: Prom
                         </div>
                         <div className="flex flex-wrap gap-2">
                           {s.key === "GAME_LINK" && m.externalUrl ? (
-                            <a href={m.externalUrl} target="_blank" rel="noopener noreferrer nofollow" className="btn-primary btn-sm"><ExternalLink className="h-4 w-4" /> Ойнау</a>
+                            <>
+                              <a href={m.externalUrl} target="_blank" rel="noopener noreferrer nofollow" className="btn-primary btn-sm"><ExternalLink className="h-4 w-4" /> Ойнау</a>
+                              {m.externalUrl.startsWith("/play/") && (user
+                                ? <a href={m.externalUrl} download className="btn-ghost btn-sm"><Download className="h-4 w-4" /> Жүктеу</a>
+                                : <Link href={`/login?next=/topics/${id}`} className="btn-soft btn-sm"><Lock className="h-4 w-4" /> Жүктеу</Link>)}
+                              {m.externalUrl.startsWith("/play/") && <ShareButton title={m.title} url={m.externalUrl} />}
+                            </>
                           ) : (
                             <>
                               {s.key !== "VIDEO" && <Link href={`/materials/${m.id}`} className="btn-ghost btn-sm"><Eye className="h-4 w-4" /> Ашу</Link>}

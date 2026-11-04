@@ -2,17 +2,18 @@
 import { useState } from "react";
 import { Share2, Check } from "lucide-react";
 
-export default function ShareButton({ title }: { title: string }) {
+/** Бөлісу: телефонда жүйелік мәзір, компьютерде сілтемені көшіреді. url берілмесе — ағымдағы бет. */
+export default function ShareButton({ title, url, className = "btn-ghost w-full" }: { title: string; url?: string; className?: string }) {
   const [done, setDone] = useState(false);
   return (
     <button
       type="button"
-      className="btn-ghost w-full"
+      className={url ? "btn-ghost btn-sm" : className}
       onClick={async () => {
-        const url = location.href;
+        const link = url ? new URL(url, location.origin).toString() : location.href;
         try {
-          if (navigator.share) await navigator.share({ title, url });
-          else { await navigator.clipboard.writeText(url); setDone(true); setTimeout(() => setDone(false), 2000); }
+          if (navigator.share) await navigator.share({ title, url: link });
+          else { await navigator.clipboard.writeText(link); setDone(true); setTimeout(() => setDone(false), 2000); }
         } catch { /* пайдаланушы бас тартты */ }
       }}
     >
