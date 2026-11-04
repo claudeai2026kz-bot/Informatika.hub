@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { CURRICULUM } from "./curriculum";
 
 const db = new PrismaClient();
 
@@ -24,6 +25,16 @@ async function main() {
     for (let q = 1; q <= 4; q++)
       await db.quarter.upsert({ where: { gradeId_number: { gradeId: g, number: q } }, update: {}, create: { gradeId: g, number: q } });
   }
+
+  // Тақырыптар: бар болса өзгертілмейді, жоқтары қосылады.
+  for (const [g, quarters] of Object.entries(CURRICULUM))
+    for (const [q, titles] of Object.entries(quarters)) {
+      const quarter = await db.quarter.findUniqueOrThrow({ where: { gradeId_number: { gradeId: Number(g), number: Number(q) } } });
+      for (const [i, title] of titles.entries()) {
+        const found = await db.topic.findFirst({ where: { quarterId: quarter.id, title } });
+        if (!found) await db.topic.create({ data: { quarterId: quarter.id, title, order: i + 1 } });
+      }
+    }
 
   // Бірінші әкімші тек осы жерде, ортаның айнымалылары арқылы жасалады.
   const email = process.env.ADMIN_EMAIL?.toLowerCase();
