@@ -79,7 +79,7 @@ export default async function GradePage({ params, searchParams }: { params: Prom
                     const kinds = [...new Set(t.materials.map((m) => m.type.key))];
                     return (
                       <li key={t.id}>
-                        <Link href={`/materials?grade=${g}&quarter=${qn}&topic=${t.id}`} className="card card-hover flex items-center gap-4 p-4">
+                        <Link href={`/topics/${t.id}`} className="card card-hover flex items-center gap-4 p-4">
                           <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-sky-100 font-bold text-sky-600">{n}</span>
                           <div className="min-w-0 flex-1">
                             <div className="font-semibold">{t.title}</div>

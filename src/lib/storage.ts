@@ -13,7 +13,11 @@ export const MAX_FILE_MB = 50;
 
 type Kind = { ext: string; mime: string; check: (b: Buffer) => boolean };
 const zip = (b: Buffer) => b.length > 4 && b[0] === 0x50 && b[1] === 0x4b && b[2] === 0x03 && b[3] === 0x04;
+const ole = (b: Buffer) => b.length > 8 && b[0] === 0xd0 && b[1] === 0xcf && b[2] === 0x11 && b[3] === 0xe0;
 const KINDS: Kind[] = [
+  { ext: "ppt", mime: "application/vnd.ms-powerpoint", check: ole },
+  { ext: "doc", mime: "application/msword", check: ole },
+  { ext: "xls", mime: "application/vnd.ms-excel", check: ole },
   { ext: "pdf", mime: "application/pdf", check: (b) => b.subarray(0, 5).toString() === "%PDF-" },
   { ext: "pptx", mime: "application/vnd.openxmlformats-officedocument.presentationml.presentation", check: zip },
   { ext: "docx", mime: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", check: zip },
@@ -26,7 +30,7 @@ const KINDS: Kind[] = [
   { ext: "mp4", mime: "video/mp4", check: (b) => b.subarray(4, 8).toString() === "ftyp" },
 ];
 
-export const DOC_EXTS = ["pdf", "pptx", "docx", "xlsx", "zip", "png", "jpg", "jpeg", "webp", "mp4"];
+export const DOC_EXTS = ["pdf", "pptx", "ppt", "docx", "doc", "xlsx", "xls", "zip", "png", "jpg", "jpeg", "webp", "mp4"];
 export const IMAGE_EXTS = ["png", "jpg", "jpeg", "webp"];
 
 export class UploadError extends Error {}

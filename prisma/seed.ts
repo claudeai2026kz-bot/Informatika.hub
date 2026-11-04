@@ -10,6 +10,7 @@ const TYPES = [
   ["KMZH", "ҚМЖ"],
   ["RESOURCE", "Қосымша ресурс"],
   ["INTERACTIVE", "Интерактивті тапсырма"],
+  ["GAME_LINK", "Ойын (гемификация)"],
 ];
 
 async function main() {

@@ -89,7 +89,7 @@ export async function deleteTopic(id: number) {
 const materialSchema = z.object({
   title: z.string().trim().min(3, "Атауы кемінде 3 таңба").max(200),
   description: z.string().trim().max(3000).default(""),
-  typeKey: z.enum(["PRESENTATION", "VIDEO", "PRACTICE", "KMZH", "RESOURCE", "INTERACTIVE"], { message: "Материал түрін таңдаңыз" }),
+  typeKey: z.enum(["PRESENTATION", "VIDEO", "PRACTICE", "KMZH", "RESOURCE", "INTERACTIVE", "GAME_LINK"], { message: "Материал түрін таңдаңыз" }),
   grade: z.coerce.number().int().min(5, "Сыныпты таңдаңыз").max(11),
   quarter: z.coerce.number().int().min(1, "Тоқсанды таңдаңыз").max(4),
   topicId: z.coerce.number().int().positive().optional(),
@@ -145,6 +145,8 @@ export async function saveMaterial(_: AdminState, fd: FormData): Promise<AdminSt
   if (d.published && !existing?.published) await notifyAll("Жаңа материал қосылды", `${d.grade}-сынып: ${d.title}`, `/materials/${savedId}`);
   await log(admin.id, existing ? "Материал өңделді" : "Материал қосылды", d.title);
   revalidatePath("/admin/materials");
+  const back = str(fd, "back");
+  if (back.startsWith("/topics/")) { revalidatePath(back); redirect(`${back}?saved=1`); }
   redirect(`/admin/materials?saved=1`);
 }
 
@@ -163,6 +165,7 @@ export async function deleteMaterial(id: string) {
   await Promise.all([removeStored(m.filePath), removeStored(m.previewPath)]);
   await log(admin.id, "Материал жойылды", m.title);
   revalidatePath("/admin/materials");
+  if (m.topicId) revalidatePath(`/topics/${m.topicId}`);
 }
 
 /* ================= БЖБ / ТЖБ ================= */

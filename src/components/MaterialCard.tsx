@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Eye, Download, Star, Presentation, PlayCircle, ClipboardList, FileText, BookOpen, Sparkles } from "lucide-react";
+import { Eye, Download, Star, Presentation, PlayCircle, ClipboardList, FileText, BookOpen, Sparkles, Gamepad2 } from "lucide-react";
 import FavoriteButton from "./FavoriteButton";
 import { QUARTER_LABELS } from "@/lib/labels";
 
@@ -10,6 +10,7 @@ const ICONS: Record<string, { i: typeof Eye; c: string }> = {
   KMZH: { i: FileText, c: "bg-sky-100 text-sky-600" },
   RESOURCE: { i: BookOpen, c: "bg-amber-100 text-amber-600" },
   INTERACTIVE: { i: Sparkles, c: "bg-lilac-100 text-lilac-500" },
+  GAME_LINK: { i: Gamepad2, c: "bg-teal-100 text-teal-600" },
 };
 export function TypeIcon({ k, className = "h-11 w-11" }: { k: string; className?: string }) {
   const { i: I, c } = ICONS[k] ?? ICONS.RESOURCE;

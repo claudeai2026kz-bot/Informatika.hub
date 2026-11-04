@@ -8,6 +8,7 @@ export const MATERIAL_TYPES = [
   { key: "KMZH", name: "ҚМЖ", one: "ҚМЖ", icon: "plan" },
   { key: "RESOURCE", name: "Қосымша ресурстар", one: "Қосымша ресурс", icon: "book" },
   { key: "INTERACTIVE", name: "Интерактивті тапсырмалар", one: "Интерактивті тапсырма", icon: "spark" },
+  { key: "GAME_LINK", name: "Ойындар (гемификация)", one: "Ойын (гемификация)", icon: "game" },
 ] as const;
 
 export const ABBR: Record<string, string> = {
