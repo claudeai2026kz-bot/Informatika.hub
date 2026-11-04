@@ -8,7 +8,7 @@ import { randomBytes } from "crypto";
  * content/manifest.json ішіндегі файлдарды (әкімші жіберген материалдар) тиісті тақырыпқа қосады.
  * Бір файл екі рет қосылмайды (тақырып + түр + файл атауы бойынша тексеріледі).
  */
-type Entry = { grade: number; quarter: number; topic: string; type: string; file: string; title?: string };
+type Entry = { grade: number; quarter: number; topic: string; type: string; file?: string; url?: string; title?: string };
 
 const MIME: Record<string, string> = {
   pdf: "application/pdf",
@@ -55,10 +55,23 @@ export async function importContent(db: PrismaClient) {
     if (!topic) { console.log(`Тақырып табылмады: ${e.grade}-${e.quarter} ${e.topic}`); continue; }
     const type = await db.materialType.findUnique({ where: { key: e.type } });
     if (!type) { console.log(`Түр табылмады: ${e.type}`); continue; }
+    if (e.url) {
+      if (await db.material.findFirst({ where: { topicId: topic.id, typeId: type.id, externalUrl: e.url } })) continue;
+      await db.material.create({
+        data: {
+          title: e.title ?? `${topic.title}: ${LABEL[e.type] ?? e.type}`,
+          typeId: type.id, gradeId: e.grade, quarterId: topic.quarterId, topicId: topic.id,
+          externalUrl: e.url, published: true,
+        },
+      });
+      added++;
+      continue;
+    }
+    if (!e.file) continue;
     const fileName = path.basename(e.file);
     if (await db.material.findFirst({ where: { topicId: topic.id, typeId: type.id, fileName } })) continue;
     try {
-    const buf = await readFile(path.resolve("content", e.file));
+    const buf = await readFile(path.resolve("content", e.file!));
     const ext = path.extname(fileName).slice(1).toLowerCase();
     const mime = MIME[ext] ?? "application/octet-stream";
     const filePath = await store(buf, ext, mime);
