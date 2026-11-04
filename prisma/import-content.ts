@@ -57,6 +57,7 @@ export async function importContent(db: PrismaClient) {
     if (!type) { console.log(`Түр табылмады: ${e.type}`); continue; }
     const fileName = path.basename(e.file);
     if (await db.material.findFirst({ where: { topicId: topic.id, typeId: type.id, fileName } })) continue;
+    try {
     const buf = await readFile(path.resolve("content", e.file));
     const ext = path.extname(fileName).slice(1).toLowerCase();
     const mime = MIME[ext] ?? "application/octet-stream";
@@ -69,6 +70,10 @@ export async function importContent(db: PrismaClient) {
       },
     });
     added++;
+    } catch (err) {
+      // Импорт қатесі сайттың жаңаруын тоқтатпауы керек.
+      console.error(`Импорт қатесі (${e.file}):`, err);
+    }
   }
   console.log(`Мазмұн импорты: ${added} жаңа материал қосылды.`);
 }
