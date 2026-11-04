@@ -17,6 +17,7 @@ const BUCKET = clean(process.env.SUPABASE_BUCKET) ?? "files";
 export const cloud = !!(SB_URL && SB_KEY);
 
 async function sb(pathname: string, init: RequestInit = {}) {
+  if (/[^\x21-\x7e]/.test(SB_KEY ?? "")) throw new UploadError("SUPABASE_SERVICE_ROLE_KEY дұрыс көшірілмеген: ішінде • немесе басқа артық таңба бар. Кілтті Supabase-тен қайта көшіріп, Vercel-ге қойыңыз.");
   const res = await fetch(`${SB_URL}/storage/v1/${pathname}`, {
     ...init,
     headers: { Authorization: `Bearer ${SB_KEY}`, apikey: SB_KEY!, ...(init.headers ?? {}) },
