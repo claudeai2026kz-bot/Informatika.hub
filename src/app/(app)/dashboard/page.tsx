@@ -3,8 +3,8 @@ import { Search, ArrowRight, Users, Layers, Download, Gamepad2, ClipboardCheck, 
 import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { GRADES, GAME_TYPES, GRADE_STYLES } from "@/lib/labels";
-import MaterialCard, { materialCardSelect } from "@/components/MaterialCard";
 import Robot from "@/components/Robot";
+import GradeBrowser from "@/components/GradeBrowser";
 import Abbr from "@/components/Abbr";
 
 export const metadata = { title: "Басты панель" };
@@ -23,14 +23,14 @@ function Section({ title, href, children }: { title: React.ReactNode; href?: str
   );
 }
 
-export default async function Dashboard({ searchParams }: { searchParams: Promise<{ denied?: string }> }) {
+export default async function Dashboard({ searchParams }: { searchParams: Promise<{ denied?: string; g?: string; q?: string }> }) {
   const user = await requireUser("/dashboard");
-  const { denied } = await searchParams;
+  const sp = await searchParams;
+  const denied = sp.denied;
+  const g = Math.min(11, Math.max(5, Number(sp.g) || 5));
+  const qn = Math.min(4, Math.max(1, Number(sp.q) || 1));
   const pub = { published: true };
-  const [latest, popular, downloaded, assessments, games, stats, favs] = await Promise.all([
-    db.material.findMany({ where: pub, orderBy: { createdAt: "desc" }, take: 3, select: materialCardSelect }),
-    db.material.findMany({ where: pub, orderBy: [{ views: "desc" }], take: 3, select: materialCardSelect }),
-    db.material.findMany({ where: pub, orderBy: [{ downloads: "desc" }], take: 3, select: materialCardSelect }),
+  const [assessments, games, stats] = await Promise.all([
     db.assessment.findMany({ where: pub, orderBy: { createdAt: "desc" }, take: 4, include: { quarter: true } }),
     db.game.findMany({ where: pub, orderBy: { plays: "desc" }, take: 4, include: { _count: { select: { questions: true } } } }),
     Promise.all([
@@ -39,9 +39,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
       db.material.aggregate({ _sum: { downloads: true } }),
       db.game.count({ where: pub }),
     ]),
-    db.favorite.findMany({ where: { userId: user.id, materialId: { not: null } }, select: { materialId: true } }),
   ]);
-  const favSet = new Set(favs.map((f) => f.materialId));
   const first = user.name.split(" ")[0];
 
   return (
@@ -81,24 +79,19 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
       {/* Сыныптар */}
       <Section title="Сыныпты таңдаңыз">
         <div className="grid grid-cols-4 sm:grid-cols-7 gap-3">
-          {GRADES.map((g, i) => (
-            <Link key={g} href={`/grades/${g}`} className={`card card-hover bg-gradient-to-b ${GRADE_STYLES[i]} py-5 text-center`}>
-              <div className="text-3xl font-extrabold">{g}</div>
+          {GRADES.map((gr, i) => (
+            <Link key={gr} href={`/dashboard?g=${gr}#browse`} scroll={false} aria-current={gr === g ? "page" : undefined} className={`card card-hover bg-gradient-to-b ${GRADE_STYLES[i]} py-5 text-center transition ${gr === g ? "ring-4 ring-sky-400/70 scale-[1.03]" : "opacity-80"}`}>
+              <div className="text-3xl font-extrabold">{gr}</div>
               <div className="text-xs font-semibold opacity-80">сынып</div>
             </Link>
           ))}
         </div>
       </Section>
 
-      <Section title="Соңғы қосылған материалдар" href="/materials?sort=new">
-        <Grid items={latest} favSet={favSet} />
-      </Section>
-      <Section title="Танымал материалдар" href="/materials?sort=popular">
-        <Grid items={popular} favSet={favSet} />
-      </Section>
-      <Section title="Көп жүктелген материалдар" href="/materials?sort=downloads">
-        <Grid items={downloaded} favSet={favSet} />
-      </Section>
+      <section id="browse" className="mt-6 scroll-mt-24">
+        <h2 className="text-xl sm:text-2xl font-bold">{g}-сынып</h2>
+        <GradeBrowser g={g} qn={qn} quarterHref={(q) => `/dashboard?g=${g}&q=${q}#browse`} />
+      </section>
 
       <Section title={<><Abbr k="БЖБ" /> / <Abbr k="ТЖБ" /></>} href="/assessments">
         {assessments.length ? (
@@ -145,15 +138,6 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
       </Section>
     </div>
   );
-
-  function Grid({ items, favSet }: { items: typeof latest; favSet: Set<string | null> }) {
-    if (!items.length) return <Empty text="Әзірге материалдар жоқ." />;
-    return (
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {items.map((m) => <MaterialCard key={m.id} m={m} fav={favSet.has(m.id)} loggedIn />)}
-      </div>
-    );
-  }
 }
 
 function Empty({ text }: { text: string }) {
