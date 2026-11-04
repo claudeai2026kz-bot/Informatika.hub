@@ -4,7 +4,6 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Bell, Heart, Home, LayoutGrid, ClipboardCheck, Gamepad2, User, Settings, LogOut, Shield, ChevronDown } from "lucide-react";
 import Logo from "./Logo";
-import Robot from "./Robot";
 import { logoutAction } from "@/app/actions/auth";
 
 type NavUser = { name: string; role: "USER" | "ADMIN"; avatar?: string | null } | null;
@@ -101,7 +100,7 @@ export default function AppNav({ user, unread }: { user: NavUser; unread: number
             <button key="robot" type="button" onClick={() => window.dispatchEvent(new Event("ihub-assistant"))} className="flex flex-col items-center pb-2 text-[11px] font-semibold text-cyan-200" aria-label="Робот-көмекшіні ашу">
               <span className="relative -mt-7 mb-0.5 grid h-[58px] w-[58px] place-items-center rounded-full border border-cyan-300/50 bg-[#121a46] shadow-[0_0_0_5px_rgba(34,211,238,.14),0_10px_24px_-8px_rgba(34,211,238,.6)]">
                 <span className="absolute right-0 top-0 h-3 w-3 rounded-full bg-emerald-400 ring-2 ring-[#121a46]" />
-                <span className="-mt-3"><Robot size={46} track={false} float={false} /></span>
+                <span className="-mt-2"><img src="/robot/robot-head.webp" alt="" width={52} height={52} className="robot-face pointer-events-none select-none object-contain" style={{ width: 52, height: 52 }} /></span>
               </span>
               Көмекші
             </button>
