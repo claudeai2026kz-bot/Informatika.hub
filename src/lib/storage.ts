@@ -168,3 +168,16 @@ export function mimeFor(rel: string) {
   const ext = path.extname(rel).slice(1).toLowerCase();
   return KINDS.find((k) => k.ext === ext)?.mime ?? "application/octet-stream";
 }
+
+const OFFICE_EXTS = ["pptx", "ppt", "docx", "doc", "xlsx", "xls"];
+/**
+ * PowerPoint/Word/Excel файлын сайт ішінде көрсету үшін Microsoft Office Online көрермені.
+ * Тек бұлтта жұмыс істейді: көрермен файлды 1 сағаттық сілтеме арқылы оқиды.
+ */
+export async function officeViewerUrl(rel?: string | null) {
+  if (!cloud || !rel) return null;
+  const ext = path.extname(rel).slice(1).toLowerCase();
+  if (!OFFICE_EXTS.includes(ext)) return null;
+  const url = await signedDownloadUrl(rel);
+  return url ? `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}` : null;
+}

@@ -10,6 +10,7 @@ import ShareButton from "@/components/ShareButton";
 import CommentForm from "@/components/CommentForm";
 import ViewTracker from "@/components/ViewTracker";
 import PdfFrame from "@/components/PdfFrame";
+import { officeViewerUrl } from "@/lib/storage";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const a = await db.assessment.findUnique({ where: { id: (await params).id }, select: { title: true } });
@@ -27,6 +28,7 @@ export default async function AssessmentPage({ params }: { params: Promise<{ id:
   const fav = user ? await db.favorite.findFirst({ where: { userId: user.id, assessmentId: id } }) : null;
   const src = `/api/files/assessment/${a.id}`;
   const canPreview = a.previewPath || a.fileMime === "application/pdf";
+  const office = canPreview ? null : await officeViewerUrl(a.filePath);
   const label = a.kind === "BZHB" ? "БЖБ" : "ТЖБ";
 
   return (
@@ -43,7 +45,7 @@ export default async function AssessmentPage({ params }: { params: Promise<{ id:
           </header>
 
           <div className="card overflow-hidden">
-            {canPreview ? <PdfFrame src={`${src}#view=FitH`} title={a.title} /> : (
+            {canPreview ? <PdfFrame src={`${src}#view=FitH`} title={a.title} /> : office ? <PdfFrame src={office} title={a.title} /> : (
               <div className="p-10 text-center"><FileWarning className="mx-auto h-10 w-10 text-gold-500" /><p className="mt-3 font-semibold">Алдын ала қарау нұсқасы жоқ</p><p className="text-sm muted">Файлды жүктеп алып ашыңыз.</p></div>
             )}
           </div>

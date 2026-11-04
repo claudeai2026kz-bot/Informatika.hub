@@ -13,6 +13,7 @@ import ShareButton from "@/components/ShareButton";
 import MaterialCard, { TypeIcon, materialCardSelect } from "@/components/MaterialCard";
 import ViewTracker from "@/components/ViewTracker";
 import PdfFrame from "@/components/PdfFrame";
+import { officeViewerUrl } from "@/lib/storage";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const m = await db.material.findUnique({ where: { id: (await params).id }, select: { title: true } });
@@ -42,6 +43,7 @@ export default async function MaterialPage({ params }: { params: Promise<{ id: s
   const isImage = m.fileMime?.startsWith("image/");
   const isMp4 = m.fileMime === "video/mp4";
   const fileSrc = `/api/files/material/${m.id}`;
+  const office = !isPdfLike && !video ? await officeViewerUrl(m.filePath) : null;
 
   return (
     <div>
@@ -81,6 +83,8 @@ export default async function MaterialPage({ params }: { params: Promise<{ id: s
               <img src={fileSrc} alt={m.title} className="w-full" />
             ) : isPdfLike ? (
               <PdfFrame src={`${fileSrc}#view=FitH`} title={m.title} />
+            ) : office ? (
+              <PdfFrame src={office} title={m.title} />
             ) : (
               <div className="p-10 text-center">
                 <FileWarning className="mx-auto h-10 w-10 text-gold-500" />
