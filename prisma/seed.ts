@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { CURRICULUM, REMOVED, SECTIONS } from "./curriculum";
+import { importContent } from "./import-content";
 
 const db = new PrismaClient();
 
@@ -47,6 +48,8 @@ async function main() {
     if (t._count.materials + t._count.assessments + t._count.games === 0) await db.topic.delete({ where: { id: t.id } });
     else console.log(`Өшірілмеді (материалы бар): ${r.title}`);
   }
+
+  await importContent(db);
 
   // Бірінші әкімші тек осы жерде, ортаның айнымалылары арқылы жасалады.
   const email = process.env.ADMIN_EMAIL?.toLowerCase();
