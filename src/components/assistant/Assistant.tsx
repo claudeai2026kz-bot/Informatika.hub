@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { X, Send, ArrowRight, Mic, Volume2, VolumeX } from "lucide-react";
 import Robot from "../Robot";
-import { speak } from "@/lib/speech";
+import { speak, preloadVoice } from "@/lib/speech";
 
 type Msg = { from: "bot" | "me"; text: string; items?: { title: string; href: string; meta: string }[]; links?: { href: string; label: string }[] };
 
@@ -36,6 +36,9 @@ export default function Assistant({ soundOn = true }: { soundOn?: boolean }) {
   // Сайтқа кіргенде робот ортаға шығып, қол бұлғап сәлемдеседі, сосын бұрышқа барып отырады (сессияда бір рет).
   useEffect(() => {
     setCanListen(!!makeRecognizer());
+    // Қазақша дауыс моделін бос уақытта алдын ала жүктейміз
+    const idle = (window as unknown as { requestIdleCallback?: (cb: () => void) => void }).requestIdleCallback ?? ((cb: () => void) => setTimeout(cb, 2500));
+    idle(() => preloadVoice());
     try { setVoice(localStorage.getItem("ihub-voice") !== "off"); } catch { /* */ }
     let seen = false;
     try { seen = sessionStorage.getItem("ihub-welcome") === "1"; sessionStorage.setItem("ihub-welcome", "1"); } catch { /* */ }

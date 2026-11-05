@@ -1,83 +1,149 @@
 "use client";
 /**
- * Робот-көмекшінің дауысы.
- * 1) Сервердегі таза қазақша нейрондық дауыс (/api/tts, Azure kk-KZ).
- * 2) Ол бапталмаса — браузердегі қазақша дауыс (мысалы, Edge-те «Aigul»/«Daulet»).
- * 3) Қазақша дауыс мүлде болмаса — орыс акцентімен бұрмаламау үшін үндемейді (мәтін экранда көрінеді).
+ * Робот-көмекшінің дауысы — таза қазақша, тегін, тіркелусіз, кез келген браузерде.
+ *  1) Робот жиі айтатын сөздер ашық MMS-TTS (kaz) моделімен алдын ала жазылған: /tts/kaz/clips/*.mp3 (бірден ойнайды).
+ *  2) Жазылмаған жаңа бөліктерді сол модель браузердің өзінде дыбысқа айналдырады (Web Worker).
+ *  3) Ол да мүмкін болмаса — браузердегі қазақша дауыс (бар болса). Орыс дауысына ешқашан түспейді.
  */
-let current: HTMLAudioElement | null = null;
-let serverTts: "unknown" | "yes" | "no" = "unknown";
-let token = 0;
-const urls = new Map<string, string>();
+import { chunksKk } from "./kk-normalize";
 
-function clean(text: string) {
-  return text.replace(/\p{Extended_Pictographic}/gu, "").replace(/\s+/g, " ").trim();
+let ctx: AudioContext | null = null;
+let worker: Worker | null = null;
+let workerBroken = false;
+let manifestP: Promise<Record<string, string>> | null = null;
+let seq = 0;
+let current: { id: number; sources: AudioBufferSourceNode[] } | null = null;
+const waiting = new Map<string, { resolve: (b: AudioBuffer | null) => void }>();
+
+function audio(): AudioContext | null {
+  try {
+    if (!ctx) ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+    if (ctx.state === "suspended") void ctx.resume();
+    return ctx;
+  } catch {
+    return null;
+  }
 }
 
-function kazakhVoice(): SpeechSynthesisVoice | undefined {
-  const voices = window.speechSynthesis?.getVoices() ?? [];
-  return voices.find((v) => v.lang.toLowerCase().startsWith("kk"));
+function manifest() {
+  manifestP ??= fetch("/tts/kaz/clips.json").then((r) => (r.ok ? r.json() : {})).catch(() => ({}));
+  return manifestP;
 }
 
-function browserSpeak(text: string, onEnd?: () => void): boolean {
-  const ss = window.speechSynthesis;
-  const v = ss && kazakhVoice();
-  if (!ss || !v) return false;
-  const u = new SpeechSynthesisUtterance(text);
-  u.voice = v; u.lang = v.lang; u.rate = 0.95;
-  if (onEnd) { u.onend = onEnd; u.onerror = onEnd; }
-  ss.speak(u);
+function getWorker(): Worker | null {
+  if (workerBroken || typeof Worker === "undefined") return null;
+  if (!worker) {
+    try {
+      worker = new Worker(new URL("./kk-tts.worker.ts", import.meta.url), { type: "module" });
+      worker.onmessage = (e: MessageEvent<{ type: string; id: number; idx: number; pcm?: Float32Array; rate?: number }>) => {
+        const m = e.data;
+        const w = waiting.get(`${m.id}:${m.idx}`);
+        if (!w) return;
+        waiting.delete(`${m.id}:${m.idx}`);
+        if (m.type !== "pcm" || !m.pcm || !ctx) return w.resolve(null);
+        const buf = ctx.createBuffer(1, m.pcm.length, m.rate!);
+        buf.getChannelData(0).set(m.pcm);
+        w.resolve(buf);
+      };
+      worker.onerror = () => { workerBroken = true; waiting.forEach((w) => w.resolve(null)); waiting.clear(); };
+    } catch {
+      workerBroken = true;
+      return null;
+    }
+  }
+  return worker;
+}
+
+function synthInBrowser(id: number, idx: number, text: string): Promise<AudioBuffer | null> {
+  const w = getWorker();
+  if (!w) return Promise.resolve(null);
+  return new Promise((resolve) => {
+    waiting.set(`${id}:${idx}`, { resolve });
+    w.postMessage({ type: "synth", id, idx, text });
+  });
+}
+
+async function clip(name: string): Promise<AudioBuffer | null> {
+  try {
+    const r = await fetch(`/tts/kaz/clips/${name}`);
+    if (!r.ok || !ctx) return null;
+    return await ctx.decodeAudioData(await r.arrayBuffer());
+  } catch {
+    return null;
+  }
+}
+
+function browserKazakh(text: string, onEnd?: () => void): boolean {
+  try {
+    const ss = window.speechSynthesis;
+    const v = ss?.getVoices().find((x) => x.lang.toLowerCase().startsWith("kk"));
+    if (!ss || !v) return false;
+    const u = new SpeechSynthesisUtterance(text.replace(/\p{Extended_Pictographic}/gu, ""));
+    u.voice = v; u.lang = v.lang; u.rate = 0.95;
+    if (onEnd) { u.onend = onEnd; u.onerror = onEnd; }
+    ss.speak(u);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function run(id: number, text: string, onEnd?: () => void) {
+  const c = audio();
+  const done = () => { if (current?.id === id) current = null; onEnd?.(); };
+  if (!c) { if (!browserKazakh(text, onEnd)) onEnd?.(); return; }
+  const chunks = chunksKk(text);
+  const map = await manifest();
+  if (seq !== id) return;
+  // Барлық бөлікті қатар дайындаймыз, бірақ ретімен ойнатамыз
+  const bufs = chunks.map((ch, i) => (map[ch.text] ? clip(map[ch.text]).then((b) => b ?? synthInBrowser(id, i, ch.text)) : synthInBrowser(id, i, ch.text)));
+  let nextAt = 0, played = 0, lastEnd: Promise<void> = Promise.resolve();
+  for (let i = 0; i < chunks.length; i++) {
+    const buf = await bufs[i];
+    if (seq !== id) return;
+    if (!buf) continue;
+    if (c.state !== "running") { done(); return; } // дыбысқа рұқсат жоқ (бетпен әлі әрекет жасалмаған)
+    const src = c.createBufferSource();
+    src.buffer = buf;
+    src.connect(c.destination);
+    const at = Math.max(c.currentTime + 0.03, nextAt);
+    src.start(at);
+    nextAt = at + buf.duration + chunks[i].pause / 1000;
+    current?.sources.push(src);
+    lastEnd = new Promise((r) => { src.onended = () => r(); });
+    played++;
+  }
+  if (!played && seq === id) { if (!browserKazakh(text, onEnd)) done(); return; }
+  await lastEnd;
+  if (seq === id) done();
+}
+
+/** Мәтінді қазақша дауыстап оқиды. Дауыс шығару мүмкін болса true. */
+export function speak(text: string, onEnd?: () => void): boolean {
+  stopSpeaking();
+  const t = text.trim();
+  if (!t || typeof window === "undefined") return false;
+  const id = ++seq;
+  current = { id, sources: [] };
+  void run(id, t, onEnd);
   return true;
 }
 
-async function serverSpeak(text: string, my: number, onEnd?: () => void): Promise<boolean> {
-  if (serverTts === "no") return false;
-  try {
-    let url = urls.get(text);
-    if (!url) {
-      const r = await fetch("/api/tts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }) });
-      if (r.status === 501) { serverTts = "no"; return false; }
-      if (!r.ok) return false;
-      url = URL.createObjectURL(await r.blob());
-      urls.set(text, url);
-    }
-    serverTts = "yes";
-    if (my !== token) return true; // басқа сөз басталып кетті
-    const a = new Audio(url);
-    current = a;
-    a.onended = () => { if (current === a) current = null; onEnd?.(); };
-    a.onerror = () => { if (current === a) current = null; onEnd?.(); };
-    await a.play();
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-/** Мәтінді дауыстап оқиды. Дауыс шығатын болса true қайтарады. */
-export function speak(text: string, onEnd?: () => void): boolean {
-  try {
-    stopSpeaking();
-    const t = clean(text);
-    if (!t) return false;
-    const my = ++token;
-    // Сервер дауысы жоқ екені белгілі болса — бірден браузердің қазақша дауысы
-    if (serverTts === "no") return browserSpeak(t, onEnd);
-    // Сервер дауысын көреміз; болмаса браузерге ауысамыз, ол да болмаса үнсіз аяқтаймыз
-    void serverSpeak(t, my, onEnd).then((ok) => {
-      if (ok || my !== token) return;
-      if (!browserSpeak(t, onEnd)) onEnd?.();
-    });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 export function stopSpeaking() {
-  token++;
-  try { current?.pause(); } catch { /* */ }
+  const cur = current;
   current = null;
+  seq++;
+  cur?.sources.forEach((s) => { try { s.stop(); } catch { /* */ } });
+  if (cur) worker?.postMessage({ type: "cancel", id: cur.id });
+  waiting.forEach((w) => w.resolve(null));
+  waiting.clear();
   try { window.speechSynthesis?.cancel(); } catch { /* */ }
 }
+
+/** Бос уақытта дайындық: дайын дауыстар тізімін алдын ала жүктейді (модель тек керек кезде жүктеледі). */
+export function preloadVoice() {
+  if (voiceOff()) return;
+  void manifest();
+}
+
 export function voiceOff() { try { return localStorage.getItem("ihub-voice") === "off"; } catch { return false; } }
