@@ -3,7 +3,8 @@ import { Heart, ClipboardCheck } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { GAME_TYPES, QUARTER_LABELS } from "@/lib/labels";
-import MaterialCard, { materialCardSelect } from "@/components/MaterialCard";
+import MaterialCard from "@/components/MaterialCard";
+import { materialCardSelect } from "@/lib/material-select";
 import FavoriteButton from "@/components/FavoriteButton";
 import { GAME_ICONS } from "@/components/games/icons";
 

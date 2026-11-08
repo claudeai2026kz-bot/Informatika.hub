@@ -2,7 +2,8 @@ import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { GRADES, MATERIAL_TYPES, QUARTER_LABELS } from "@/lib/labels";
-import MaterialCard, { materialCardSelect } from "@/components/MaterialCard";
+import MaterialCard from "@/components/MaterialCard";
+import { materialCardSelect } from "@/lib/material-select";
 import FilterBar from "@/components/FilterBar";
 import Pagination from "@/components/Pagination";
 
