@@ -26,15 +26,18 @@ export const GAME_TYPES = [
   { key: "CODING", name: "Программалау тапсырмалары", desc: "Кодтың нәтижесін анықта не толықтыр" },
 ] as const;
 
-export function formatSize(bytes?: number | null) {
+type Tr = (s: string) => string;
+const same: Tr = (s) => s;
+
+export function formatSize(bytes?: number | null, t: Tr = same) {
   if (!bytes) return "";
-  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} КБ`;
-  return `${(bytes / 1024 / 1024).toFixed(1)} МБ`;
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} ${t("КБ")}`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} ${t("МБ")}`;
 }
 
 const MONTHS = ["қаңтар", "ақпан", "наурыз", "сәуір", "мамыр", "маусым", "шілде", "тамыз", "қыркүйек", "қазан", "қараша", "желтоқсан"];
-export function formatDate(d: Date) {
-  return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+export function formatDate(d: Date, t: Tr = same) {
+  return `${d.getDate()} ${t(MONTHS[d.getMonth()])} ${d.getFullYear()}`;
 }
 
 export const GRADE_STYLES = [

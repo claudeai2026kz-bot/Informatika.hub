@@ -7,8 +7,11 @@ export function speak(text: string, onEnd?: () => void): boolean {
     ss.cancel();
     const u = new SpeechSynthesisUtterance(text.replace(/\p{Extended_Pictographic}/gu, ""));
     const voices = ss.getVoices();
-    const v = voices.find((x) => x.lang.toLowerCase().startsWith("kk")) ?? voices.find((x) => x.lang.toLowerCase().startsWith("ru"));
-    if (v) { u.voice = v; u.lang = v.lang; } else u.lang = "kk-KZ";
+    const lang = (document.documentElement.lang || "kk").slice(0, 2);
+    const by = (p: string) => voices.find((x) => x.lang.toLowerCase().startsWith(p));
+    const v = lang === "kk" ? by("kk") ?? by("ru") : by(lang);
+    const fallback = { kk: "kk-KZ", ru: "ru-RU", en: "en-US" }[lang] ?? "kk-KZ";
+    if (v) { u.voice = v; u.lang = v.lang; } else u.lang = fallback;
     u.rate = 0.92;
     if (onEnd) { u.onend = onEnd; u.onerror = onEnd; }
     ss.speak(u);

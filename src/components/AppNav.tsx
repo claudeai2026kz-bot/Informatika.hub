@@ -6,6 +6,8 @@ import { Bell, Heart, Home, LayoutGrid, ClipboardCheck, Gamepad2, User, Settings
 import Logo from "./Logo";
 import Robot from "./Robot";
 import { logoutAction } from "@/app/actions/auth";
+import PrefsSwitcher from "./PrefsSwitcher";
+import { useT } from "@/lib/i18n/client";
 
 type NavUser = { name: string; role: "USER" | "ADMIN"; avatar?: string | null } | null;
 
@@ -28,6 +30,7 @@ function Avatar({ user, size = 36 }: { user: NonNullable<NavUser>; size?: number
 }
 
 export default function AppNav({ user, unread }: { user: NavUser; unread: number }) {
+  const t = useT();
   const path = usePathname();
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -47,15 +50,16 @@ export default function AppNav({ user, unread }: { user: NavUser; unread: number
         <div className="mx-auto max-w-7xl px-3 sm:px-6 pt-3">
           <div className="app-bar rounded-2xl h-16 px-3 sm:px-4 flex items-center gap-3 text-white">
             <Logo href={user ? "/dashboard" : "/"} small />
-            <nav className="hidden lg:flex items-center gap-1 ml-6" aria-label="Негізгі мәзір">
+            <nav className="hidden lg:flex items-center gap-1 ml-6" aria-label={t("Негізгі мәзір")}>
               {LINKS.map(({ href, label }) => (
-                <Link key={href} href={href} className={`rounded-xl px-3.5 py-2 text-sm font-medium transition ${active(href) ? "bg-white/12 text-white shadow-[inset_0_-2px_0_#22D3EE]" : "text-white/70 hover:bg-white/10 hover:text-white"}`}>{label}</Link>
+                <Link key={href} href={href} className={`rounded-xl px-3.5 py-2 text-sm font-medium transition ${active(href) ? "bg-white/12 text-white shadow-[inset_0_-2px_0_#22D3EE]" : "text-white/70 hover:bg-white/10 hover:text-white"}`}>{t(label)}</Link>
               ))}
             </nav>
             <div className="ml-auto flex items-center gap-1.5">
+              <PrefsSwitcher />
               {user ? (
                 <>
-                  <Link href="/notifications" className="relative grid h-10 w-10 place-items-center rounded-xl text-white/80 hover:bg-white/10" aria-label={`Хабарламалар${unread ? `, ${unread} жаңа` : ""}`}>
+                  <Link href="/notifications" className="relative grid h-10 w-10 place-items-center rounded-xl text-white/80 hover:bg-white/10" aria-label={t("Хабарламалар") + (unread ? `, ${t("{n} жаңа", { n: unread })}` : "")}>
                     <Bell className="h-5 w-5" />
                     {unread > 0 && <span className="absolute right-1.5 top-1.5 grid min-w-[18px] h-[18px] place-items-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">{unread > 9 ? "9+" : unread}</span>}
                   </Link>
@@ -67,12 +71,12 @@ export default function AppNav({ user, unread }: { user: NavUser; unread: number
                     </button>
                     {open && (
                       <div role="menu" className="absolute right-0 mt-2 w-56 card p-1.5 animate-fadeUp text-ink">
-                        <MenuLink href="/profile" icon={User}>Профиль</MenuLink>
-                        <span className="lg:hidden"><MenuLink href="/favorites" icon={Heart}>Таңдаулылар</MenuLink></span>
-                        <MenuLink href="/settings" icon={Settings}>Баптаулар</MenuLink>
-                        {user.role === "ADMIN" && <MenuLink href="/admin" icon={Shield}>Әкімші панелі</MenuLink>}
+                        <MenuLink href="/profile" icon={User}>{t("Профиль")}</MenuLink>
+                        <span className="lg:hidden"><MenuLink href="/favorites" icon={Heart}>{t("Таңдаулылар")}</MenuLink></span>
+                        <MenuLink href="/settings" icon={Settings}>{t("Баптаулар")}</MenuLink>
+                        {user.role === "ADMIN" && <MenuLink href="/admin" icon={Shield}>{t("Әкімші панелі")}</MenuLink>}
                         <form action={logoutAction}>
-                          <button className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm text-rose-600 hover:bg-rose-50" role="menuitem"><LogOut className="h-4 w-4" /> Шығу</button>
+                          <button className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm text-rose-600 hover:bg-rose-50" role="menuitem"><LogOut className="h-4 w-4" /> {t("Шығу")}</button>
                         </form>
                       </div>
                     )}
@@ -80,8 +84,8 @@ export default function AppNav({ user, unread }: { user: NavUser; unread: number
                 </>
               ) : (
                 <>
-                  <Link href={`/login?next=${encodeURIComponent(path)}`} className="btn-ghost btn-sm">Кіру</Link>
-                  <Link href="/register" className="btn-primary btn-sm hidden sm:inline-flex">Тіркелу</Link>
+                  <Link href={`/login?next=${encodeURIComponent(path)}`} className="btn-ghost btn-sm">{t("Кіру")}</Link>
+                  <Link href="/register" className="btn-primary btn-sm hidden sm:inline-flex">{t("Тіркелу")}</Link>
                 </>
               )}
             </div>
@@ -90,20 +94,20 @@ export default function AppNav({ user, unread }: { user: NavUser; unread: number
       </header>
 
       {/* Мобильді төменгі мәзір */}
-      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 app-bar rounded-t-2xl pb-[env(safe-area-inset-bottom)]" aria-label="Мобильді мәзір">
+      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 app-bar rounded-t-2xl pb-[env(safe-area-inset-bottom)]" aria-label={t("Мобильді мәзір")}>
         <div className="grid grid-cols-5 items-end">
           {[LINKS[0], LINKS[1], null, LINKS[2], LINKS[3]].map((l) => l ? (
             <Link key={l.href} href={l.href} className={`flex flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium ${active(l.href) ? "text-cyan-300" : "text-white/60"}`}>
               <l.icon className="h-5 w-5" />
-              <span className="truncate max-w-full px-1">{({ "Басты бет": "Басты", "Материалдар": "Материал" } as Record<string, string>)[l.label] ?? l.label}</span>
+              <span className="truncate max-w-full px-1">{t(({ "Басты бет": "Басты", "Материалдар": "Материал" } as Record<string, string>)[l.label] ?? l.label)}</span>
             </Link>
           ) : (
-            <button key="robot" type="button" onClick={() => window.dispatchEvent(new Event("ihub-assistant"))} className="flex flex-col items-center pb-2 text-[11px] font-semibold text-cyan-200" aria-label="Робот-көмекшіні ашу">
+            <button key="robot" type="button" onClick={() => window.dispatchEvent(new Event("ihub-assistant"))} className="flex flex-col items-center pb-2 text-[11px] font-semibold text-cyan-200" aria-label={t("Робот-көмекшіні ашу")}>
               <span className="relative -mt-7 mb-0.5 grid h-[58px] w-[58px] place-items-center rounded-full border border-cyan-300/50 bg-[#121a46] shadow-[0_0_0_5px_rgba(34,211,238,.14),0_10px_24px_-8px_rgba(34,211,238,.6)]">
                 <span className="absolute right-0 top-0 z-10 h-3 w-3 rounded-full bg-emerald-400 ring-2 ring-[#121a46]" />
                 <span className="mt-1"><Robot head size={62} /></span>
               </span>
-              Көмекші
+              {t("Көмекші")}
             </button>
           ))}
         </div>

@@ -127,3 +127,73 @@
 .robot-face { animation: faceBob 3.4s ease-in-out infinite; filter: drop-shadow(0 6px 10px rgba(10,20,60,.45)); }
 @keyframes faceBob { 0%,100% { transform: translateY(0) rotate(0) } 30% { transform: translateY(-3px) rotate(-3deg) } 65% { transform: translateY(-1px) rotate(3deg) } }
 @media (prefers-reduced-motion: reduce) { .robot-face { animation: none; } }
+
+/* ===== Режимдер: қарапайым (әдепкі), түнгі (dark), оқу (read) =====
+   Компоненттер Tailwind түстерін тікелей қолданады, сондықтан негізгі
+   беттік/мәтін кластары осы жерде режимге қарай қайта анықталады. */
+html[data-theme="dark"] { color-scheme: dark; --bg: #0a0f2a; --ink: #e6ebff; }
+html[data-theme="dark"] body {
+  background-image:
+    radial-gradient(1100px 560px at 100% -8%, rgba(139,92,246,.18) 0%, transparent 60%),
+    radial-gradient(900px 520px at -10% 8%, rgba(59,107,255,.16) 0%, transparent 60%);
+}
+html[data-theme="dark"] .text-ink { color: #e6ebff; }
+html[data-theme="dark"] .text-ink-soft { color: #b8c2e0; }
+html[data-theme="dark"] .text-ink-mute, html[data-theme="dark"] .muted { color: #8d98bb; }
+html[data-theme="dark"] .bg-white, html[data-theme="dark"] .card, html[data-theme="dark"] .input, html[data-theme="dark"] .btn-ghost { background-color: #141b42; }
+html[data-theme="dark"] .bg-white\/70, html[data-theme="dark"] .bg-white\/80, html[data-theme="dark"] .bg-white\/60, html[data-theme="dark"] .glass { background-color: rgba(20,27,66,.75); }
+html[data-theme="dark"] .glass { border-color: rgba(255,255,255,.08); }
+html[data-theme="dark"] .bg-sky-50, html[data-theme="dark"] .bg-sky-50\/60, html[data-theme="dark"] .hover\:bg-sky-50:hover { background-color: #1a2354; }
+html[data-theme="dark"] .bg-sky-100, html[data-theme="dark"] .hover\:bg-sky-100:hover, html[data-theme="dark"] .btn-soft { background-color: #1f2b66; }
+html[data-theme="dark"] .bg-sky-200, html[data-theme="dark"] .hover\:bg-sky-200:hover { background-color: #2a3880; }
+html[data-theme="dark"] .bg-lilac-100 { background-color: #2a2366; }
+html[data-theme="dark"] .bg-gold-100, html[data-theme="dark"] .bg-amber-100, html[data-theme="dark"] .bg-amber-50 { background-color: #3a3120; }
+html[data-theme="dark"] .bg-rose-50, html[data-theme="dark"] .bg-rose-100, html[data-theme="dark"] .hover\:bg-rose-50:hover, html[data-theme="dark"] .hover\:bg-rose-100:hover { background-color: #3a1830; }
+html[data-theme="dark"] .bg-emerald-50, html[data-theme="dark"] .bg-emerald-100 { background-color: #12352e; }
+html[data-theme="dark"] .from-white { --tw-gradient-from: #141b42 var(--tw-gradient-from-position); --tw-gradient-to: rgb(20 27 66 / 0) var(--tw-gradient-to-position); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
+html[data-theme="dark"] .from-sky-50, html[data-theme="dark"] .from-sky-100 { --tw-gradient-from: #1a2354 var(--tw-gradient-from-position); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
+html[data-theme="dark"] .from-lilac-100, html[data-theme="dark"] .from-rose-100, html[data-theme="dark"] .from-emerald-100 { --tw-gradient-from: #221c55 var(--tw-gradient-from-position); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
+html[data-theme="dark"] .to-sky-50, html[data-theme="dark"] .to-sky-100, html[data-theme="dark"] .to-lilac-100, html[data-theme="dark"] .to-lilac-100\/40, html[data-theme="dark"] .to-lilac-100\/50, html[data-theme="dark"] .to-rose-50, html[data-theme="dark"] .to-emerald-50, html[data-theme="dark"] .to-white { --tw-gradient-to: #141b42 var(--tw-gradient-to-position); }
+html[data-theme="dark"] .border-sky-100, html[data-theme="dark"] .border-sky-200, html[data-theme="dark"] .card, html[data-theme="dark"] .input, html[data-theme="dark"] .btn-ghost, html[data-theme="dark"] .divide-sky-100 > * + * { border-color: rgba(148,170,255,.16); }
+html[data-theme="dark"] .border-white\/80 { border-color: rgba(255,255,255,.08); }
+html[data-theme="dark"] .text-sky-600, html[data-theme="dark"] .text-sky-700 { color: #7cc4ff; }
+html[data-theme="dark"] .text-lilac-500 { color: #b9a3ff; }
+html[data-theme="dark"] .text-amber-700, html[data-theme="dark"] .text-amber-800 { color: #f5cf7a; }
+html[data-theme="dark"] .text-emerald-700, html[data-theme="dark"] .text-emerald-600 { color: #5ee0b0; }
+html[data-theme="dark"] .text-rose-600 { color: #ff8fa8; }
+html[data-theme="dark"] .ring-sky-100, html[data-theme="dark"] .focus\:ring-sky-100:focus { --tw-ring-color: rgba(103,183,247,.2); }
+html[data-theme="dark"] .skeleton { background-image: linear-gradient(90deg,#141b42 25%,#1d2659 50%,#141b42 75%); }
+html[data-theme="dark"] ::selection { background: #2a3880; }
+html[data-theme="dark"] .input::placeholder { color: #6f7aa0; }
+
+/* Оқу режимі: жылы сепия түстер, үлкенірек мәтін, кең жол аралығы, анимациясыз. */
+html[data-theme="read"] { --bg: #f4ecd8; --ink: #3b2f22; font-size: 112.5%; }
+html[data-theme="read"] body { background-image: none; line-height: 1.75; letter-spacing: .005em; }
+html[data-theme="read"] p, html[data-theme="read"] li { line-height: 1.8; }
+html[data-theme="read"] .text-ink { color: #3b2f22; }
+html[data-theme="read"] .text-ink-soft { color: #5a4a37; }
+html[data-theme="read"] .text-ink-mute, html[data-theme="read"] .muted { color: #7d6a52; }
+html[data-theme="read"] .bg-white, html[data-theme="read"] .card, html[data-theme="read"] .input, html[data-theme="read"] .btn-ghost,
+html[data-theme="read"] .bg-white\/70, html[data-theme="read"] .bg-white\/80, html[data-theme="read"] .glass { background-color: #fbf6ea; }
+html[data-theme="read"] .glass { backdrop-filter: none; }
+html[data-theme="read"] .bg-sky-50, html[data-theme="read"] .bg-sky-50\/60, html[data-theme="read"] .hover\:bg-sky-50:hover { background-color: #f1e7d0; }
+html[data-theme="read"] .bg-sky-100, html[data-theme="read"] .hover\:bg-sky-100:hover, html[data-theme="read"] .btn-soft, html[data-theme="read"] .chip { background-color: #eadcbc; }
+html[data-theme="read"] .bg-lilac-100 { background-color: #eadfcf; }
+html[data-theme="read"] .from-sky-50, html[data-theme="read"] .from-sky-100, html[data-theme="read"] .from-lilac-100, html[data-theme="read"] .from-white { --tw-gradient-from: #f1e7d0 var(--tw-gradient-from-position); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
+html[data-theme="read"] .to-sky-50, html[data-theme="read"] .to-sky-100, html[data-theme="read"] .to-lilac-100, html[data-theme="read"] .to-lilac-100\/40, html[data-theme="read"] .to-lilac-100\/50, html[data-theme="read"] .to-white { --tw-gradient-to: #fbf6ea var(--tw-gradient-to-position); }
+html[data-theme="read"] .border-sky-100, html[data-theme="read"] .border-sky-200, html[data-theme="read"] .card, html[data-theme="read"] .input, html[data-theme="read"] .btn-ghost, html[data-theme="read"] .divide-sky-100 > * + * { border-color: #e2d3b2; }
+html[data-theme="read"] .card { box-shadow: 0 1px 0 rgba(90,74,55,.06); }
+html[data-theme="read"] .text-sky-600, html[data-theme="read"] .text-sky-500, html[data-theme="read"] .text-sky-700, html[data-theme="read"] .chip { color: #8a5a1f; }
+html[data-theme="read"] .text-lilac-500 { color: #7a4f7a; }
+html[data-theme="read"] .btn-primary { background-image: none; background-color: #8a5a1f; box-shadow: none; }
+html[data-theme="read"] .gradient-text { background-image: none; color: #8a5a1f; -webkit-text-fill-color: #8a5a1f; }
+html[data-theme="read"] .app-bar { background: #4a3a28; border-color: #5a4733; box-shadow: none; backdrop-filter: none; }
+html[data-theme="read"] .app-hero { background: linear-gradient(120deg, #5a4530, #7a5c3c); }
+html[data-theme="read"] .app-hero-grid { display: none; }
+html[data-theme="read"] ::selection { background: #eadcbc; }
+/* алаңдататын қозғалыстарды өшіреміз */
+html[data-theme="read"] *, html[data-theme="read"] *::before, html[data-theme="read"] *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; }
+html[data-theme="read"] .reveal { opacity: 1; transform: none; }
+html[data-theme="read"] .card-hover:hover { transform: none; }
+html[data-theme="read"] .animate-blob { display: none; }
+html[data-theme="dark"] .animate-blob { opacity: .3; }
