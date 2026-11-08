@@ -5,6 +5,8 @@ import { db } from "@/lib/db";
 import { createSession, destroySession, hashPassword, verifyPassword } from "@/lib/auth";
 import { fieldErrors, loginSchema, registerSchema, type FieldErrors } from "@/lib/validation";
 import { rateLimit } from "@/lib/rate-limit";
+import { applyUserPrefs } from "@/app/actions/prefs";
+import { getT } from "@/lib/i18n/server";
 
 export type AuthState = { errors?: FieldErrors; values?: Record<string, string> } | undefined;
 
@@ -55,6 +57,7 @@ export async function loginAction(_: AuthState, fd: FormData): Promise<AuthState
   if (!user || !ok) return { errors: { form: "Email немесе құпиясөз қате. Қайта тексеріп көріңіз." }, values };
   if (user.blocked) return { errors: { form: "Бұл аккаунт бұғатталған. Қолдау қызметіне хабарласыңыз." }, values };
 
+  await applyUserPrefs(user.theme, user.lang);
   await createSession(user.id, fd.get("remember") !== null || fd.get("rememberSet") === null);
   redirect(safeNext(fd.get("next")));
 }

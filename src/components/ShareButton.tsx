@@ -1,9 +1,11 @@
 "use client";
 import { useState } from "react";
 import { Share2, Check } from "lucide-react";
+import { useT } from "@/lib/i18n/client";
 
 /** Бөлісу: телефонда жүйелік мәзір, компьютерде сілтемені көшіреді. url берілмесе — ағымдағы бет. */
 export default function ShareButton({ title, url, className = "btn-ghost w-full" }: { title: string; url?: string; className?: string }) {
+  const t = useT();
   const [done, setDone] = useState(false);
   return (
     <button
@@ -17,7 +19,7 @@ export default function ShareButton({ title, url, className = "btn-ghost w-full"
         } catch { /* пайдаланушы бас тартты */ }
       }}
     >
-      {done ? <><Check className="h-4 w-4 text-emerald-500" /> Сілтеме көшірілді</> : <><Share2 className="h-4 w-4" /> Бөлісу</>}
+      {done ? <><Check className="h-4 w-4 text-emerald-500" /> {t("Сілтеме көшірілді")}</> : <><Share2 className="h-4 w-4" /> {t("Бөлісу")}</>}
     </button>
   );
 }

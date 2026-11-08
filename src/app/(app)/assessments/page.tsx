@@ -9,11 +9,15 @@ import FavoriteButton from "@/components/FavoriteButton";
 import Pagination from "@/components/Pagination";
 import Abbr from "@/components/Abbr";
 
-export const metadata = { title: "БЖБ / ТЖБ" };
+import { getT } from "@/lib/i18n/server";
+export async function generateMetadata() {
+  return { title: (await getT())("БЖБ / ТЖБ") };
+}
 const PER = 12;
 type SP = { kind?: string; grade?: string; quarter?: string; topic?: string; variant?: string; q?: string; page?: string };
 
 export default async function AssessmentsPage({ searchParams }: { searchParams: Promise<SP> }) {
+  const t = await getT();
   const sp = await searchParams;
   const user = await getCurrentUser();
   const kind = sp.kind === "BZHB" || sp.kind === "TZHB" ? sp.kind : undefined;
@@ -45,43 +49,43 @@ export default async function AssessmentsPage({ searchParams }: { searchParams: 
   return (
     <div>
       <h1 className="text-3xl font-extrabold"><Abbr k="БЖБ" /> / <Abbr k="ТЖБ" /></h1>
-      <p className="mt-1 muted">Бөлім және тоқсан бойынша жиынтық бағалау тапсырмалары, жауаптары және дескрипторлары.</p>
+      <p className="mt-1 muted">{t("Бөлім және тоқсан бойынша жиынтық бағалау тапсырмалары, жауаптары және дескрипторлары.")}</p>
 
       <div className="mt-6 inline-flex rounded-2xl bg-white p-1 border border-sky-100 shadow-soft" role="tablist">
         {[[undefined, "Барлығы"], ["BZHB", "БЖБ"], ["TZHB", "ТЖБ"]].map(([k, l]) => (
-          <Link key={l} href={tab(k)} role="tab" aria-selected={kind === k} className={`rounded-xl px-5 py-2 text-sm font-semibold transition ${kind === k ? "bg-gradient-to-r from-sky-500 to-lilac-500 text-white" : "text-ink-soft hover:bg-sky-50"}`}>{l}</Link>
+          <Link key={l} href={tab(k)} role="tab" aria-selected={kind === k} className={`rounded-xl px-5 py-2 text-sm font-semibold transition ${kind === k ? "bg-gradient-to-r from-sky-500 to-lilac-500 text-white" : "text-ink-soft hover:bg-sky-50"}`}>{t(l ?? "")}</Link>
         ))}
       </div>
 
       <div className="mt-4">
-        <FilterBar placeholder="Тапсырма атауы бойынша іздеу…" filters={[
-          { name: "grade", label: "Сынып", options: GRADES.map((g) => ({ value: String(g), label: `${g}-сынып` })) },
-          { name: "quarter", label: "Тоқсан", options: [1, 2, 3, 4].map((n) => ({ value: String(n), label: QUARTER_LABELS[n] })) },
-          { name: "topic", label: "Тақырып", options: topics.map((t) => ({ value: String(t.id), label: t.title })) },
-          { name: "variant", label: "Нұсқа", options: variants.map((v) => ({ value: v.variant, label: v.variant })) },
+        <FilterBar placeholder={t("Тапсырма атауы бойынша іздеу…")} filters={[
+          { name: "grade", label: t("Сынып"), options: GRADES.map((g) => ({ value: String(g), label: t("{g}-сынып", { g }) })) },
+          { name: "quarter", label: t("Тоқсан"), options: [1, 2, 3, 4].map((n) => ({ value: String(n), label: t(QUARTER_LABELS[n]) })) },
+          { name: "topic", label: t("Тақырып"), options: topics.map((x) => ({ value: String(x.id), label: x.title })) },
+          { name: "variant", label: t("Нұсқа"), options: variants.map((v) => ({ value: v.variant, label: v.variant })) },
         ]} />
       </div>
 
-      <p className="mt-6 mb-4 text-sm muted">{total} тапсырма табылды</p>
+      <p className="mt-6 mb-4 text-sm muted">{t("{n} тапсырма табылды", { n: total })}</p>
       {items.length ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((a) => (
             <article key={a.id} className="card card-hover p-5 flex flex-col">
               <div className="flex items-start justify-between gap-2">
-                <span className={`chip ${a.kind === "BZHB" ? "" : "bg-lilac-100 text-lilac-500"}`}><ClipboardCheck className="h-3.5 w-3.5" /> {a.kind === "BZHB" ? "БЖБ" : "ТЖБ"}</span>
+                <span className={`chip ${a.kind === "BZHB" ? "" : "bg-lilac-100 text-lilac-500"}`}><ClipboardCheck className="h-3.5 w-3.5" /> {t(a.kind === "BZHB" ? "БЖБ" : "ТЖБ")}</span>
                 <FavoriteButton target={{ assessmentId: a.id }} initial={favSet.has(a.id)} loggedIn={!!user} />
               </div>
               <h3 className="mt-2 font-bold leading-snug"><Link href={`/assessments/${a.id}`} className="hover:text-sky-600">{a.title}</Link></h3>
-              <p className="mt-1 text-xs muted">{a.gradeId}-сынып · {QUARTER_LABELS[a.quarter.number]} · {a.variant}{a.topic ? ` · ${a.topic.title}` : ""}</p>
+              <p className="mt-1 text-xs muted">{t("{g}-сынып", { g: a.gradeId })} · {t(QUARTER_LABELS[a.quarter.number])} · {a.variant}{a.topic ? ` · ${a.topic.title}` : ""}</p>
               {a.description && <p className="mt-2 text-sm text-ink-soft line-clamp-2">{a.description}</p>}
               <div className="mt-auto pt-4 flex items-center justify-between">
                 <span className="text-xs muted flex items-center gap-1"><Download className="h-3.5 w-3.5" /> {a.downloads}</span>
-                <Link href={`/assessments/${a.id}`} className="btn-soft btn-sm">Ашу</Link>
+                <Link href={`/assessments/${a.id}`} className="btn-soft btn-sm">{t("Ашу")}</Link>
               </div>
             </article>
           ))}
         </div>
-      ) : <div className="card p-12 text-center muted">Сүзгіге сай тапсырма табылмады.</div>}
+      ) : <div className="card p-12 text-center muted">{t("Сүзгіге сай тапсырма табылмады.")}</div>}
       <Pagination page={page} pages={Math.ceil(total / PER)} base="/assessments" params={{ ...sp, page: undefined }} />
     </div>
   );

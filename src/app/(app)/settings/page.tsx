@@ -5,8 +5,12 @@ import ActionForm from "@/components/ui/ActionForm";
 import SubmitButton from "@/components/ui/SubmitButton";
 import { updateSettings } from "@/app/actions/profile";
 import { logoutAction } from "@/app/actions/auth";
+import PrefsSwitcher from "@/components/PrefsSwitcher";
 
-export const metadata = { title: "Баптаулар" };
+import { getT } from "@/lib/i18n/server";
+export async function generateMetadata() {
+  return { title: (await getT())("Баптаулар") };
+}
 
 function Toggle({ name, label, hint, on, icon }: { name: string; label: string; hint: string; on: boolean; icon: React.ReactNode }) {
   return (
@@ -20,24 +24,27 @@ function Toggle({ name, label, hint, on, icon }: { name: string; label: string; 
 }
 
 export default async function SettingsPage() {
+  const t = await getT();
   const user = await requireUser("/settings");
   return (
     <div className="max-w-2xl mx-auto space-y-5">
-      <h1 className="text-3xl font-extrabold">Баптаулар</h1>
-      <div className="card p-6 flex items-center gap-4">
-        <span className="grid h-10 w-10 place-items-center rounded-xl bg-sky-100 text-sky-600"><Globe className="h-5 w-5" /></span>
-        <div className="flex-1"><div className="font-semibold">Тіл</div><div className="text-sm muted">Платформа толығымен қазақ тілінде</div></div>
-        <span className="chip">Қазақша</span>
+      <h1 className="text-3xl font-extrabold">{t("Баптаулар")}</h1>
+      <div className="card p-6">
+        <div className="flex items-center gap-4 mb-4">
+          <span className="grid h-10 w-10 place-items-center rounded-xl bg-sky-100 text-sky-600"><Globe className="h-5 w-5" /></span>
+          <div className="flex-1"><div className="font-semibold">{t("Режим және тіл")}</div><div className="text-sm muted">{t("Таңдауыңыз аккаунтыңызда сақталады")}</div></div>
+        </div>
+        <PrefsSwitcher full />
       </div>
       <ActionForm action={updateSettings} className="card px-6 py-2 divide-y divide-sky-100">
-        <Toggle name="soundOn" label="Робот дыбысы" hint="Робот жауап бергенде қысқа дыбыстық белгі" on={user.soundOn} icon={<Volume2 className="h-5 w-5" />} />
-        <Toggle name="notifyOn" label="Хабарламалар" hint="Жаңа материалдар туралы хабарлама алу" on={user.notifyOn} icon={<Bell className="h-5 w-5" />} />
-        <Toggle name="profilePublic" label="Құпиялық" hint="Пікірлерде толық атымды көрсету" on={user.profilePublic} icon={<Shield className="h-5 w-5" />} />
-        <div className="py-4"><SubmitButton className="btn-primary">Сақтау</SubmitButton></div>
+        <Toggle name="soundOn" label={t("Робот дыбысы")} hint={t("Робот жауап бергенде қысқа дыбыстық белгі")} on={user.soundOn} icon={<Volume2 className="h-5 w-5" />} />
+        <Toggle name="notifyOn" label={t("Хабарламалар")} hint={t("Жаңа материалдар туралы хабарлама алу")} on={user.notifyOn} icon={<Bell className="h-5 w-5" />} />
+        <Toggle name="profilePublic" label={t("Құпиялық")} hint={t("Пікірлерде толық атымды көрсету")} on={user.profilePublic} icon={<Shield className="h-5 w-5" />} />
+        <div className="py-4"><SubmitButton className="btn-primary">{t("Сақтау")}</SubmitButton></div>
       </ActionForm>
       <div className="card p-6 flex flex-wrap items-center gap-3">
-        <Link href="/profile" className="btn-ghost"><KeyRound className="h-4 w-4" /> Құпиясөзді ауыстыру</Link>
-        <form action={logoutAction}><button className="btn-danger"><LogOut className="h-4 w-4" /> Аккаунттан шығу</button></form>
+        <Link href="/profile" className="btn-ghost"><KeyRound className="h-4 w-4" /> {t("Құпиясөзді ауыстыру")}</Link>
+        <form action={logoutAction}><button className="btn-danger"><LogOut className="h-4 w-4" /> {t("Аккаунттан шығу")}</button></form>
       </div>
     </div>
   );
