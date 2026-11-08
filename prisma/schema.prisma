@@ -28,6 +28,8 @@ model User {
   soundOn      Boolean   @default(true)
   notifyOn     Boolean   @default(true)
   profilePublic Boolean  @default(false)
+  theme        String?   // light | dark | read
+  lang         String?   // kk | ru | en
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 

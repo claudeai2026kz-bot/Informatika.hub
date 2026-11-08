@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Play, RotateCcw, Check, X, Timer, ArrowRight, Trophy, Loader2 } from "lucide-react";
 import { checkAnswer, submitGame } from "@/app/actions/games";
 import Robot from "../Robot";
+import { useT } from "@/lib/i18n/client";
 
 type Q = { id: string; prompt: string; points: number; data: Record<string, unknown> };
 type Layout = { rows: number; cols: number; words: { id: string; n: number; row: number; col: number; dir: "across" | "down"; len: number }[] } | null;
@@ -13,6 +14,7 @@ type Result = Awaited<ReturnType<typeof submitGame>>;
 export default function GamePlayer({ gameId, type, title, questions, timeLimit, layout, loggedIn }: {
   gameId: string; type: string; title: string; questions: Q[]; timeLimit: number | null; layout: Layout; loggedIn: boolean;
 }) {
+  const t = useT();
   const [phase, setPhase] = useState<"intro" | "play" | "done">("intro");
   const [answers, setAnswers] = useState<Record<string, unknown>>({});
   const [result, setResult] = useState<Result | null>(null);
@@ -24,16 +26,16 @@ export default function GamePlayer({ gameId, type, title, questions, timeLimit, 
     start(async () => { const r = await submitGame(gameId, final); setResult(r); setPhase("done"); });
   }
 
-  if (questions.length === 0) return <div className="card p-10 text-center muted">Бұл ойынға әлі сұрақ қосылмаған.</div>;
+  if (questions.length === 0) return <div className="card p-10 text-center muted">{t("Бұл ойынға әлі сұрақ қосылмаған.")}</div>;
 
   if (phase === "intro")
     return (
       <div className="card p-8 sm:p-12 text-center">
         <div className="flex justify-center"><Robot size={150} wave /></div>
-        <h2 className="mt-4 text-2xl font-bold">Дайынсыз ба?</h2>
-        <p className="mt-2 muted">{questions.length} сұрақ{type === "RAPID" ? ` · әр сұраққа ${timeLimit ?? 10} секунд` : ""}. Ұпай автоматты түрде есептеледі.</p>
-        {!loggedIn && <p className="mt-2 text-sm text-amber-700">Нәтижеңіз сақталуы үшін жүйеге кіріңіз.</p>}
-        <button onClick={() => setPhase("play")} className="btn-primary h-12 px-8 mt-6 text-base"><Play className="h-5 w-5" /> Ойынды бастау</button>
+        <h2 className="mt-4 text-2xl font-bold">{t("Дайынсыз ба?")}</h2>
+        <p className="mt-2 muted">{t("{n} сұрақ", { n: questions.length })}{type === "RAPID" ? ` · ${t("әр сұраққа {s} секунд", { s: timeLimit ?? 10 })}` : ""}. {t("Ұпай автоматты түрде есептеледі.")}</p>
+        {!loggedIn && <p className="mt-2 text-sm text-amber-700">{t("Нәтижеңіз сақталуы үшін жүйеге кіріңіз.")}</p>}
+        <button onClick={() => setPhase("play")} className="btn-primary h-12 px-8 mt-6 text-base"><Play className="h-5 w-5" /> {t("Ойынды бастау")}</button>
       </div>
     );
 
@@ -55,6 +57,7 @@ export default function GamePlayer({ gameId, type, title, questions, timeLimit, 
 
 /* ---------- Тест / Жылдам сұрақтар / Логика / Программалау ---------- */
 function Stepper({ gameId, type, questions, timeLimit, onDone }: { gameId: string; type: string; questions: Q[]; timeLimit: number; onDone: (a: Record<string, unknown>) => void }) {
+  const t = useT();
   const [i, setI] = useState(0);
   const [answers, setAnswers] = useState<Record<string, unknown>>({});
   const [feedback, setFeedback] = useState<{ correct: boolean; answer: unknown; explanation?: string | null; chosen: unknown } | null>(null);
@@ -94,13 +97,13 @@ function Stepper({ gameId, type, questions, timeLimit, onDone }: { gameId: strin
   return (
     <div className="card p-6 sm:p-8">
       <div className="flex items-center justify-between gap-3 text-sm">
-        <span className="font-semibold">Сұрақ {i + 1} / {questions.length}</span>
-        <span className="chip bg-gold-100 text-gold-500"><Trophy className="h-3.5 w-3.5" /> {score} ұпай</span>
+        <span className="font-semibold">{t("Сұрақ")} {i + 1} / {questions.length}</span>
+        <span className="chip bg-gold-100 text-gold-500"><Trophy className="h-3.5 w-3.5" /> {t("{n} ұпай", { n: score })}</span>
       </div>
       <div className="mt-3 h-2 rounded-full bg-sky-100 overflow-hidden"><div className="h-full bg-gradient-to-r from-sky-400 to-lilac-500 transition-all duration-500" style={{ width: `${(i / questions.length) * 100}%` }} /></div>
       {type === "RAPID" && (
         <div className={`mt-4 flex items-center gap-2 font-bold ${left <= 3 ? "text-rose-500" : "text-sky-600"}`} aria-live="polite">
-          <Timer className="h-5 w-5" /> {Math.max(0, left)} с
+          <Timer className="h-5 w-5" /> {Math.max(0, left)} {t("с")}
           <div className="flex-1 h-1.5 rounded-full bg-sky-100"><div className={`h-full rounded-full transition-all duration-1000 ease-linear ${left <= 3 ? "bg-rose-400" : "bg-sky-400"}`} style={{ width: `${(Math.max(0, left) / timeLimit) * 100}%` }} /></div>
         </div>
       )}
@@ -127,17 +130,17 @@ function Stepper({ gameId, type, questions, timeLimit, onDone }: { gameId: strin
         </div>
       ) : (
         <form onSubmit={(e) => { e.preventDefault(); if (text.trim()) answer(text); }} className="mt-6 flex gap-2">
-          <input ref={inputRef} value={text} onChange={(e) => setText(e.target.value)} disabled={!!feedback} className="input" placeholder="Жауабыңызды жазыңыз" aria-label="Жауап" maxLength={200} />
-          <button className="btn-primary" disabled={!!feedback || !text.trim() || pending}>Тексеру</button>
+          <input ref={inputRef} value={text} onChange={(e) => setText(e.target.value)} disabled={!!feedback} className="input" placeholder={t("Жауабыңызды жазыңыз")} aria-label={t("Жауап")} maxLength={200} />
+          <button className="btn-primary" disabled={!!feedback || !text.trim() || pending}>{t("Тексеру")}</button>
         </form>
       )}
 
       {feedback && (
         <div className={`mt-6 rounded-xl p-4 animate-fadeUp ${feedback.correct ? "bg-emerald-50 text-emerald-800" : "bg-rose-50 text-rose-800"}`} role="status">
-          <div className="font-bold">{feedback.correct ? "Дұрыс! 🎉" : feedback.chosen === -1 ? "Уақыт бітті ⏰" : "Қате 😕"}</div>
-          {!feedback.correct && !isChoice && <div className="text-sm mt-1">Дұрыс жауап: <b>{Array.isArray(feedback.answer) ? String(feedback.answer[0]) : String(feedback.answer)}</b></div>}
+          <div className="font-bold">{t(feedback.correct ? "Дұрыс! 🎉" : feedback.chosen === -1 ? "Уақыт бітті ⏰" : "Қате 😕")}</div>
+          {!feedback.correct && !isChoice && <div className="text-sm mt-1">{t("Дұрыс жауап:")} <b>{Array.isArray(feedback.answer) ? String(feedback.answer[0]) : String(feedback.answer)}</b></div>}
           {feedback.explanation && <div className="text-sm mt-1">{feedback.explanation}</div>}
-          <button onClick={next} className="btn-primary btn-sm mt-3">{i + 1 < questions.length ? <>Келесі сұрақ <ArrowRight className="h-4 w-4" /></> : "Нәтижені көру"}</button>
+          <button onClick={next} className="btn-primary btn-sm mt-3">{i + 1 < questions.length ? <>{t("Келесі сұрақ")} <ArrowRight className="h-4 w-4" /></> : t("Нәтижені көру")}</button>
         </div>
       )}
     </div>
@@ -146,6 +149,7 @@ function Stepper({ gameId, type, questions, timeLimit, onDone }: { gameId: strin
 
 /* ---------- Сәйкестендіру ---------- */
 function Matching({ q, onDone }: { q: Q; onDone: (v: number[]) => void }) {
+  const t = useT();
   const leftItems = (q.data.left as string[]) ?? [];
   const rightItems = (q.data.right as { i: number; text: string }[]) ?? [];
   const [sel, setSel] = useState<number | null>(null);
@@ -157,7 +161,7 @@ function Matching({ q, onDone }: { q: Q; onDone: (v: number[]) => void }) {
   return (
     <div className="card p-6 sm:p-8">
       <h2 className="text-xl font-bold">{q.prompt}</h2>
-      <p className="mt-1 text-sm muted">Алдымен сол жақтағы ұғымды, содан кейін оң жақтағы сәйкес анықтаманы басыңыз.</p>
+      <p className="mt-1 text-sm muted">{t("Алдымен сол жақтағы ұғымды, содан кейін оң жақтағы сәйкес анықтаманы басыңыз.")}</p>
       <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-6">
         <ul className="space-y-2.5">
           {leftItems.map((t, l) => (
@@ -187,13 +191,14 @@ function Matching({ q, onDone }: { q: Q; onDone: (v: number[]) => void }) {
           })}
         </ul>
       </div>
-      <button className="btn-primary mt-6" disabled={!complete} onClick={() => onDone(leftItems.map((_, l) => pairs[l]))}>Тексеру</button>
+      <button className="btn-primary mt-6" disabled={!complete} onClick={() => onDone(leftItems.map((_, l) => pairs[l]))}>{t("Тексеру")}</button>
     </div>
   );
 }
 
 /* ---------- Сөзжұмбақ ---------- */
 function Crossword({ layout, questions, onDone }: { layout: NonNullable<Layout>; questions: Q[]; onDone: (a: Record<string, string>) => void }) {
+  const t = useT();
   const cellKey = (r: number, c: number) => `${r}:${c}`;
   const cells = useMemo(() => {
     const m = new Map<string, { n?: number }>();
@@ -231,7 +236,7 @@ function Crossword({ layout, questions, onDone }: { layout: NonNullable<Layout>;
                   ref={(el) => { refs.current[cellKey(r, c)] = el; }}
                   value={vals[cellKey(r, c)] ?? ""}
                   maxLength={1}
-                  aria-label={`${r + 1}-жол, ${c + 1}-баған`}
+                  aria-label={t("{r}-жол, {c}-баған", { r: r + 1, c: c + 1 })}
                   onFocus={(e) => e.currentTarget.select()}
                   onKeyDown={(e) => {
                     if (e.key === "Backspace" && !vals[cellKey(r, c)]) move(r, c, -1);
@@ -253,19 +258,19 @@ function Crossword({ layout, questions, onDone }: { layout: NonNullable<Layout>;
         </div>
       </div>
       <div>
-        <h2 className="font-bold">Сұрақтар</h2>
+        <h2 className="font-bold">{t("Сұрақтар")}</h2>
         <ol className="mt-3 space-y-2 text-sm">
           {layout.words.map((w) => (
             <li key={w.id}>
               <button type="button" className="text-left hover:text-sky-600" onClick={() => { setDir(w.dir); refs.current[cellKey(w.row, w.col)]?.focus(); }}>
-                <b>{w.n}.</b> {questions.find((q) => q.id === w.id)?.prompt} <span className="muted">({w.dir === "across" ? "көлденең" : "тігінен"}, {w.len} әріп)</span>
+                <b>{w.n}.</b> {questions.find((q) => q.id === w.id)?.prompt} <span className="muted">({t(w.dir === "across" ? "көлденең" : "тігінен")}, {t("{n} әріп", { n: w.len })})</span>
               </button>
             </li>
           ))}
         </ol>
         <button className="btn-primary mt-6" disabled={!filled}
           onClick={() => onDone(Object.fromEntries(layout.words.map((w) => [w.id, Array.from({ length: w.len }, (_, k) => vals[cellKey(w.dir === "down" ? w.row + k : w.row, w.dir === "across" ? w.col + k : w.col)] ?? "").join("")])))}>
-          Тексеру
+          {t("Тексеру")}
         </button>
       </div>
     </div>
@@ -274,8 +279,9 @@ function Crossword({ layout, questions, onDone }: { layout: NonNullable<Layout>;
 
 /* ---------- Нәтиже ---------- */
 function ResultView({ result, questions, type, onRestart }: { result: Result; questions: Q[]; type: string; onRestart: () => void }) {
+  const t = useT();
   const pct = result.max ? Math.round((result.score / result.max) * 100) : 0;
-  const msg = pct >= 90 ? "Керемет нәтиже! 🏆" : pct >= 60 ? "Жақсы! Тағы аздап қалды 💪" : "Қайта байқап көріңіз, сіз міндетті түрде жетесіз! 🙂";
+  const msg = t(pct >= 90 ? "Керемет нәтиже! 🏆" : pct >= 60 ? "Жақсы! Тағы аздап қалды 💪" : "Қайта байқап көріңіз, сіз міндетті түрде жетесіз! 🙂");
   return (
     <div className="card p-8 sm:p-10">
       <div className="grid items-center gap-6 sm:grid-cols-[auto_1fr]">
@@ -289,10 +295,10 @@ function ResultView({ result, questions, type, onRestart }: { result: Result; qu
         </div>
         <div className="text-center sm:text-left">
           <h2 className="text-2xl font-bold">{msg}</h2>
-          <p className="mt-1 muted">{result.saved ? `Нәтиже сақталды. Ең жақсы нәтижеңіз: ${result.best} ұпай.` : "Нәтижені сақтау үшін жүйеге кіріңіз."}</p>
+          <p className="mt-1 muted">{result.saved ? t("Нәтиже сақталды. Ең жақсы нәтижеңіз: {n} ұпай.", { n: result.best ?? 0 }) : t("Нәтижені сақтау үшін жүйеге кіріңіз.")}</p>
           <div className="mt-5 flex flex-wrap gap-2 justify-center sm:justify-start">
-            <button onClick={onRestart} className="btn-primary"><RotateCcw className="h-4 w-4" /> Қайта ойнау</button>
-            <Link href="/games" className="btn-ghost">Басқа ойындар</Link>
+            <button onClick={onRestart} className="btn-primary"><RotateCcw className="h-4 w-4" /> {t("Қайта ойнау")}</button>
+            <Link href="/games" className="btn-ghost">{t("Басқа ойындар")}</Link>
           </div>
         </div>
       </div>
@@ -306,7 +312,7 @@ function ResultView({ result, questions, type, onRestart }: { result: Result; qu
             return (
               <li key={q.id} className={`flex items-start gap-3 rounded-xl px-4 py-3 text-sm ${d?.correct ? "bg-emerald-50" : "bg-rose-50"}`}>
                 {d?.correct ? <Check className="h-5 w-5 text-emerald-500 shrink-0" /> : <X className="h-5 w-5 text-rose-500 shrink-0" />}
-                <div><b>{k + 1}.</b> {q.prompt} <span className="muted">· Дұрыс жауап: <b className="text-ink">{ans}</b></span></div>
+                <div><b>{k + 1}.</b> {q.prompt} <span className="muted">· {t("Дұрыс жауап:")} <b className="text-ink">{ans}</b></span></div>
               </li>
             );
           })}

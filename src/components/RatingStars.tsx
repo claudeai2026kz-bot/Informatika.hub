@@ -3,8 +3,10 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Star } from "lucide-react";
 import { rateMaterial } from "@/app/actions/reviews";
+import { useT } from "@/lib/i18n/client";
 
 export default function RatingStars({ materialId, mine, loggedIn }: { materialId: string; mine: number; loggedIn: boolean }) {
+  const t = useT();
   const [hover, setHover] = useState(0);
   const [val, setVal] = useState(mine);
   const [msg, setMsg] = useState("");
@@ -12,14 +14,14 @@ export default function RatingStars({ materialId, mine, loggedIn }: { materialId
   const router = useRouter();
   return (
     <div>
-      <div className="flex gap-1" role="radiogroup" aria-label="Бағалау" onMouseLeave={() => setHover(0)}>
+      <div className="flex gap-1" role="radiogroup" aria-label={t("Бағалау")} onMouseLeave={() => setHover(0)}>
         {[1, 2, 3, 4, 5].map((n) => (
           <button
             key={n}
             type="button"
             role="radio"
             aria-checked={val === n}
-            aria-label={`${n} жұлдыз`}
+            aria-label={t("{n} жұлдыз", { n })}
             disabled={pending}
             onMouseEnter={() => setHover(n)}
             onClick={() => {
@@ -27,7 +29,7 @@ export default function RatingStars({ materialId, mine, loggedIn }: { materialId
               setVal(n);
               start(async () => {
                 const r = await rateMaterial(materialId, n);
-                setMsg(r.error ?? "Бағаңыз сақталды, рақмет!");
+                setMsg(t(r.error ?? "Бағаңыз сақталды, рақмет!"));
                 router.refresh();
               });
             }}

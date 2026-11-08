@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { Volume2, VolumeX } from "lucide-react";
 import Robot from "./Robot";
 import { speak, stopSpeaking, voiceOff } from "@/lib/speech";
+import { useT } from "@/lib/i18n/client";
 
 /** Кіру/тіркелу бетіндегі тірі робот: шығып келеді, қол бұлғайды, сайт туралы айтады, қай жолды толтыру керегін көрсетеді. */
 const INTRO: Record<string, string[]> = {
@@ -26,8 +27,9 @@ const FIELD: Record<string, string> = {
 };
 
 export default function AuthGuide({ compact = false, dark = false }: { compact?: boolean; dark?: boolean }) {
+  const tr = useT();
   const path = usePathname();
-  const lines = (INTRO[path] ?? ["Сәлеметсіз бе! Informatika Hub сайтына қош келдіңіз!"]).map((l) => (compact ? l.replace("қасымдағы", "төмендегі") : l));
+  const lines = (INTRO[path] ?? ["Сәлеметсіз бе! Informatika Hub сайтына қош келдіңіз!"]).map((l) => tr(compact ? l.replace("қасымдағы", "төмендегі") : l));
   const [text, setText] = useState("");
   const [shown, setShown] = useState("");
   const [talking, setTalking] = useState(false);
@@ -80,7 +82,8 @@ export default function AuthGuide({ compact = false, dark = false }: { compact?:
     };
     const onFocus = (e: FocusEvent) => {
       const el = e.target as HTMLInputElement;
-      const hint = el?.name === "password" && path === "/register" ? "Құпиясөз ойлап табыңыз: кемінде 8 таңба, ішінде әріп пен сан болсын." : el?.name && FIELD[el.name];
+      const raw = el?.name === "password" && path === "/register" ? "Құпиясөз ойлап табыңыз: кемінде 8 таңба, ішінде әріп пен сан болсын." : el?.name && FIELD[el.name];
+      const hint = raw && tr(raw);
       if (!hint) return;
       spokeRef.current = true;
       idxRef.current = lines.length;
@@ -106,7 +109,7 @@ export default function AuthGuide({ compact = false, dark = false }: { compact?:
         <div className="shrink-0"><Robot size={96} track={false} wave={wave} talking={talking} /></div>
         <div className="relative flex-1 rounded-2xl rounded-bl-md border border-cyan-300/25 bg-white/10 px-4 py-3 text-[15px] font-medium text-white backdrop-blur min-h-[64px]" aria-live="polite">
           {shown}<span className={talking ? "inline-block w-1.5 h-4 ml-0.5 bg-sky-400 align-middle animate-pulse" : "hidden"} />
-          <button type="button" onClick={toggleMute} className="absolute -top-3 -right-2 grid h-8 w-8 place-items-center rounded-full bg-[#22D3EE] text-[#0B1230] shadow-soft" aria-label={mute ? "Дауысты қосу" : "Дауысты өшіру"}>{mute ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}</button>
+          <button type="button" onClick={toggleMute} className="absolute -top-3 -right-2 grid h-8 w-8 place-items-center rounded-full bg-[#22D3EE] text-[#0B1230] shadow-soft" aria-label={tr(mute ? "Дауысты қосу" : "Дауысты өшіру")}>{mute ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}</button>
         </div>
       </div>
     );
@@ -117,8 +120,8 @@ export default function AuthGuide({ compact = false, dark = false }: { compact?:
       <div className={`relative w-[340px] rounded-2xl ${dark ? "" : "mb-4"} px-4 py-3.5 min-h-[96px] ${dark ? "border border-cyan-300/25 bg-[#121a46]/80 text-white backdrop-blur-xl shadow-[0_20px_50px_-20px_rgba(34,211,238,.45)]" : "bg-white/95 text-ink shadow-lift"}`} aria-live="polite">
         <p className="text-[15px] font-semibold leading-snug">{shown}<span className={talking ? "inline-block w-2 h-5 ml-1 bg-sky-400 align-middle animate-pulse rounded-sm" : "hidden"} /></p>
         <div className="mt-3 flex items-center gap-2">
-          <button type="button" onClick={() => { stopSpeaking(); playIntro(0); }} className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1 text-[13px] font-semibold ${dark ? "bg-white/10 text-white hover:bg-white/20" : "bg-sky-50 text-sky-700 hover:bg-sky-100"}`}><Volume2 className="h-4 w-4" /> Қайта тыңдау</button>
-          <button type="button" onClick={toggleMute} className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[13px] ${dark ? "text-white/70 hover:bg-white/10" : "text-ink-soft hover:bg-sky-50"}`}>{mute ? <><VolumeX className="h-4 w-4" /> Дауыс өшірулі</> : "Дауысты өшіру"}</button>
+          <button type="button" onClick={() => { stopSpeaking(); playIntro(0); }} className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1 text-[13px] font-semibold ${dark ? "bg-white/10 text-white hover:bg-white/20" : "bg-sky-50 text-sky-700 hover:bg-sky-100"}`}><Volume2 className="h-4 w-4" /> {tr("Қайта тыңдау")}</button>
+          <button type="button" onClick={toggleMute} className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[13px] ${dark ? "text-white/70 hover:bg-white/10" : "text-ink-soft hover:bg-sky-50"}`}>{mute ? <><VolumeX className="h-4 w-4" /> {tr("Дауыс өшірулі")}</> : tr("Дауысты өшіру")}</button>
           <span className="ml-auto flex gap-1">{lines.map((_, i) => <span key={i} className={`h-1.5 w-1.5 rounded-full ${i < idxRef.current ? "bg-sky-400" : "bg-sky-100"}`} />)}</span>
         </div>
         <span className={`absolute h-4 w-4 rotate-45 ${dark ? "-left-2 top-1/2 -translate-y-1/2 border-b border-l border-cyan-300/25 bg-[#121a46]" : "-bottom-2 left-16 bg-white/95"}`} />
