@@ -45,9 +45,10 @@ export default function MaterialCard({ m, fav, loggedIn }: { m: MaterialCardData
       </div>
       <div className="mt-auto pt-4 flex items-center justify-between">
         <div className="flex items-center gap-3 text-xs muted">
-          <span className="flex items-center gap-1" title={t("Қаралым")}><Eye className="h-3.5 w-3.5" />{m.views}</span>
-          <span className="flex items-center gap-1" title={t("Жүктеу")}><Download className="h-3.5 w-3.5" />{m.downloads}</span>
-          <span className="flex items-center gap-1" title={t("Бағалау")}><Star className="h-3.5 w-3.5 text-gold-500 fill-gold-400" />{m.ratingCount ? m.ratingAvg.toFixed(1) : "–"}</span>
+          {m.views > 0 && <span className="flex items-center gap-1" title={t("Қаралым")}><Eye className="h-3.5 w-3.5" />{m.views}</span>}
+          {m.downloads > 0 && <span className="flex items-center gap-1" title={t("Жүктеу")}><Download className="h-3.5 w-3.5" />{m.downloads}</span>}
+          {m.ratingCount > 0 && <span className="flex items-center gap-1" title={t("Бағалау")}><Star className="h-3.5 w-3.5 text-gold-500 fill-gold-400" />{m.ratingAvg.toFixed(1)}</span>}
+          {!m.views && !m.downloads && !m.ratingCount && <span className="chip bg-emerald-100 text-emerald-700">{t("Жаңа")}</span>}
         </div>
         <Link href={`/materials/${m.id}`} className="btn-soft btn-sm">{t("Ашу")}</Link>
       </div>

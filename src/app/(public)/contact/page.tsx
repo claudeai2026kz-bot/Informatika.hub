@@ -9,7 +9,7 @@ export default async function Contact() {
   return (
     <InfoPage title={t("Байланыс")}>
       <p>{t("Ұсыныс, сұрақ немесе материал жіберу үшін бізге жазыңыз.")}</p>
-      {email ? <p>Email: <a className="font-semibold text-sky-600" href={`mailto:${email}`}>{email}</a></p> : <p className="text-amber-700">{t("Байланыс email-і әлі бапталмаған (CONTACT_EMAIL).")}</p>}
+      {email ? <p>Email: <a className="font-semibold text-sky-600" href={`mailto:${email}`}>{email}</a></p> : <p>{t("Сұрағыңызды әр беттің төменгі бұрышындағы робот-көмекшіге жазыңыз немесе")} <a className="font-semibold text-sky-600" href="/support">{t("Қолдау қызметі")}</a> {t("бетін қараңыз.")}</p>}
     </InfoPage>
   );
 }

@@ -59,7 +59,7 @@ export default async function Landing() {
                 [games, "ойын"],
               ].map(([n, l]) => (
                 <div key={String(l)} className="glass rounded-2xl px-4 py-3">
-                  <dt className="text-2xl font-extrabold text-ink">{n}</dt>
+                  <dt className={`font-extrabold text-ink ${n ? "text-2xl" : "text-base leading-8"}`}>{n || tr("Жақында")}</dt>
                   <dd className="text-xs muted">{tr(String(l))}</dd>
                 </div>
               ))}

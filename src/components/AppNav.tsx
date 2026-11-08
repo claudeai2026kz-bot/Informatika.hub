@@ -52,7 +52,7 @@ export default function AppNav({ user, unread }: { user: NavUser; unread: number
             <Logo href={user ? "/dashboard" : "/"} small />
             <nav className="hidden lg:flex items-center gap-1 ml-6" aria-label={t("Негізгі мәзір")}>
               {LINKS.map(({ href, label }) => (
-                <Link key={href} href={href} className={`rounded-xl px-3.5 py-2 text-sm font-medium transition ${active(href) ? "bg-white/12 text-white shadow-[inset_0_-2px_0_#22D3EE]" : "text-white/70 hover:bg-white/10 hover:text-white"}`}>{t(label)}</Link>
+                <Link key={href} href={href} className={`whitespace-nowrap rounded-xl px-2.5 xl:px-3.5 py-2 text-sm font-medium transition ${active(href) ? "bg-white/12 text-white shadow-[inset_0_-2px_0_#22D3EE]" : "text-white/70 hover:bg-white/10 hover:text-white"}`}>{t(label)}</Link>
               ))}
             </nav>
             <div className="ml-auto flex items-center gap-1.5">

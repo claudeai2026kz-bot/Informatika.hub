@@ -197,3 +197,24 @@ html[data-theme="read"] .reveal { opacity: 1; transform: none; }
 html[data-theme="read"] .card-hover:hover { transform: none; }
 html[data-theme="read"] .animate-blob { display: none; }
 html[data-theme="dark"] .animate-blob { opacity: .3; }
+
+/* ===== Шынайы 3D робот-көмекші ===== */
+.rb-bob, .rb-tilt { position: absolute; inset: 0; }
+.rb-tilt { transform-style: preserve-3d; will-change: transform; }
+.rb-img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 26px 26px rgba(20,40,90,.28)) drop-shadow(0 0 18px rgba(34,211,238,.18)); pointer-events: none; user-select: none; }
+.rb-shine { position: absolute; inset: 0; -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-position: center; mask-position: center;
+  background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,.55) 48%, transparent 60%); background-size: 250% 100%; background-position: 150% 0; mix-blend-mode: soft-light; animation: rbShine 6s ease-in-out infinite; pointer-events: none; }
+@keyframes rbShine { 0%, 60% { background-position: 150% 0 } 100% { background-position: -100% 0 } }
+.rb-float .rb-bob { animation: rbBob 4.8s ease-in-out infinite; }
+@keyframes rbBob { 0%,100% { transform: translateY(0) rotate(0) } 50% { transform: translateY(-4%) rotate(-1.2deg) } }
+.rb-pad { position: absolute; left: 50%; bottom: -2%; width: 62%; height: 7%; transform: translateX(-50%); border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(34,211,238,.6), rgba(59,107,255,.25) 60%, transparent); filter: blur(2px); }
+.rb-pad::after { content: ""; position: absolute; inset: 22% 18%; border-radius: 50%; border: 1.5px solid rgba(34,211,238,.75); box-shadow: 0 0 14px rgba(34,211,238,.7); }
+.rb-float .rb-pad { animation: rbPad 4.8s ease-in-out infinite; }
+@keyframes rbPad { 0%,100% { transform: translateX(-50%) scale(1); opacity: 1 } 50% { transform: translateX(-50%) scale(.84); opacity: .65 } }
+.rb-wave .rb-bob { animation: rbHello 1.6s cubic-bezier(.3,.7,.3,1) 2, rbBob 4.8s ease-in-out 3.2s infinite; }
+@keyframes rbHello { 0%,100% { transform: translateY(0) rotate(0) } 20% { transform: translateY(-6%) rotate(-6deg) } 45% { transform: translateY(-3%) rotate(5deg) } 70% { transform: translateY(-5%) rotate(-3deg) } }
+.rb-talk .rb-img { animation: rbTalk 1.2s ease-in-out infinite; }
+@keyframes rbTalk { 0%,100% { filter: drop-shadow(0 26px 26px rgba(20,40,90,.28)) drop-shadow(0 0 14px rgba(34,211,238,.25)) } 50% { filter: drop-shadow(0 26px 26px rgba(20,40,90,.28)) drop-shadow(0 0 30px rgba(34,211,238,.6)) brightness(1.06) } }
+.rb-head .rb-img { filter: drop-shadow(0 8px 12px rgba(20,40,90,.3)); }
+@media (prefers-reduced-motion: reduce) { .rb *, .rb-pad { animation: none !important; } }
