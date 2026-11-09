@@ -1,16 +1,21 @@
 "use client";
 /**
  * Робот-көмекшінің дауысы — таза қазақша, тегін, тіркелусіз, кез келген браузерде.
- *  1) Робот жиі айтатын сөздер ашық MMS-TTS (kaz) моделімен алдын ала жазылған: /tts/kaz/clips/*.mp3 (бірден ойнайды).
- *  2) Жазылмаған жаңа бөліктерді сол модель браузердің өзінде дыбысқа айналдырады (Web Worker).
+ * Дауыс: ISSAI KazakhTTS2 (Piper «kk_KZ-issai-high», 3-диктор, әйел), CC-BY-4.0.
+ *  1) Робот жиі айтатын сөздер алдын ала жазылған: /tts/kk-issai/clips.bin (бір файл),
+ *     ал clips.json әр сөйлемнің сол файлдағы орнын береді [offset, length] — бірден ойнайды.
+ *  2) Жазылмаған жаңа бөліктерді сол дауыс браузердің өзінде дыбысқа айналдырады (Web Worker).
  *  3) Ол да мүмкін болмаса — браузердегі қазақша дауыс (бар болса). Орыс дауысына ешқашан түспейді.
  */
 import { chunksKk } from "./kk-normalize";
 
+const VOICE_DIR = "/tts/kk-issai";
+
 let ctx: AudioContext | null = null;
 let worker: Worker | null = null;
 let workerBroken = false;
-let manifestP: Promise<Record<string, string>> | null = null;
+let manifestP: Promise<Record<string, [number, number]>> | null = null;
+let wholeBin: Promise<ArrayBuffer | null> | null = null;
 let seq = 0;
 let current: { id: number; sources: AudioBufferSourceNode[] } | null = null;
 const waiting = new Map<string, { resolve: (b: AudioBuffer | null) => void }>();
@@ -26,7 +31,7 @@ function audio(): AudioContext | null {
 }
 
 function manifest() {
-  manifestP ??= fetch("/tts/kaz/clips.json").then((r) => (r.ok ? r.json() : {})).catch(() => ({}));
+  manifestP ??= fetch(`${VOICE_DIR}/clips.json`).then((r) => (r.ok ? r.json() : {})).catch(() => ({}));
   return manifestP;
 }
 
@@ -34,7 +39,7 @@ function getWorker(): Worker | null {
   if (workerBroken || typeof Worker === "undefined") return null;
   if (!worker) {
     try {
-      worker = new Worker(new URL("./kk-tts.worker.ts", import.meta.url), { type: "module" });
+      worker = new Worker(new URL("./kk-piper.worker.ts", import.meta.url), { type: "module" });
       worker.onmessage = (e: MessageEvent<{ type: string; id: number; idx: number; pcm?: Float32Array; rate?: number }>) => {
         const m = e.data;
         const w = waiting.get(`${m.id}:${m.idx}`);
@@ -63,11 +68,23 @@ function synthInBrowser(id: number, idx: number, text: string): Promise<AudioBuf
   });
 }
 
-async function clip(name: string): Promise<AudioBuffer | null> {
+/** Бір сөйлемнің дайын дыбысын clips.bin файлынан кесіп алады (Range сұранысы; сервер қолдамаса — бүкіл файл бір рет). */
+async function clip([offset, length]: [number, number]): Promise<AudioBuffer | null> {
   try {
-    const r = await fetch(`/tts/kaz/clips/${name}`);
-    if (!r.ok || !ctx) return null;
-    return await ctx.decodeAudioData(await r.arrayBuffer());
+    if (!ctx) return null;
+    let bytes: ArrayBuffer | null = null;
+    if (!wholeBin) {
+      const r = await fetch(`${VOICE_DIR}/clips.bin`, { headers: { Range: `bytes=${offset}-${offset + length - 1}` } });
+      if (r.status === 206) bytes = await r.arrayBuffer();
+      else if (r.ok) { const all = r.arrayBuffer(); wholeBin = all.catch(() => null); }
+      else return null;
+    }
+    if (!bytes) {
+      const all = await wholeBin;
+      if (!all) return null;
+      bytes = all.slice(offset, offset + length);
+    }
+    return await ctx.decodeAudioData(bytes);
   } catch {
     return null;
   }

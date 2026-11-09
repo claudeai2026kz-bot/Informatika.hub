@@ -5,3 +5,4 @@ storage/*
 !storage/.gitkeep
 *.tsbuildinfo
 next-env.d.ts
+public/tts/kk-issai/_parts
