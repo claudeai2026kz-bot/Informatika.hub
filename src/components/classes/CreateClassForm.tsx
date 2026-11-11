@@ -26,7 +26,7 @@ export default function CreateClassForm() {
       <div>
         <label className="text-sm font-semibold" htmlFor="cstudents">{t("Оқушылар тізімі (міндетті емес)")}</label>
         <textarea id="cstudents" name="students" rows={6} className="input mt-1 text-sm" placeholder={t("Әр жолға бір оқушы:\nАйбек Серікұлы\nАружан Нұрланқызы")} />
-        <p className="mt-1 text-xs muted">{t("Тізімсіз де болады: оқушы сілтемені ашып, атын жазса — кестеге өзі қосылады.")}</p>
+        <p className="mt-1 text-xs muted">{t("Тізімсіз де болады: оқушы сілтемені ашып, атын жазса, сынып бетінде шығады — бір батырмамен тізімге қосасыз.")}</p>
       </div>
       <button className="btn-primary w-full" disabled={pending}><Plus className="h-4 w-4" /> {t("Сынып құру")}</button>
     </form>

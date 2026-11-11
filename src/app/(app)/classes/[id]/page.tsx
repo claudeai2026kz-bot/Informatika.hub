@@ -11,6 +11,7 @@ import ClassGameRow from "@/components/classes/ClassGameRow";
 import AddGamePicker from "@/components/classes/AddGamePicker";
 import StudentsEditor from "@/components/classes/StudentsEditor";
 import ClassSettings from "@/components/classes/ClassSettings";
+import StrangerActions from "@/components/classes/StrangerActions";
 import { JournalToolbar, MarkCell, RemoveColumn } from "@/components/classes/JournalTools";
 import { getT } from "@/lib/i18n/server";
 
@@ -43,7 +44,7 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
   const user = await requireUser(`/classes/${id}`);
   const book = await loadGradebook(id, user.id);
   if (!book) notFound();
-  const { cls, games, rows, gameAvg, columns, colAvg } = book;
+  const { cls, games, rows, gameAvg, columns, colAvg, strangers } = book;
   const played = rows.filter((r) => r.done > 0);
   const classAvg = played.length ? played.reduce((a, r) => a + (r.avg ?? 0), 0) / played.length : null;
 
@@ -92,11 +93,26 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
             {t("Оқушылар сайтқа тіркелмейді. Сіз ойын сілтемесін WhatsApp-қа жібересіз, оқушы сілтемені ашып, атын таңдап (не жазып) ойнайды — балы осы кестеге өзі түседі. Ойыннан тыс бағаларды «Баған қосу» арқылы өзіңіз қоя аласыз.")}
           </div>
           <JournalToolbar classId={cls.id} />
+          {strangers.length > 0 && (
+            <div className="card mt-4 border border-amber-200 bg-amber-50/60 p-4 sm:p-5">
+              <h3 className="font-bold text-amber-900">{t("Тізімде жоқ есіммен ойнағандар ({n})", { n: strangers.length })}</h3>
+              <p className="mt-1 text-sm text-amber-900/80">{t("Бұл есімдер сынып тізімінде жоқ. Өз оқушыңыз болса — «Тізімге қосу» басыңыз, нәтижесі кестеге түседі. Бөгде не қате жазылған ат болса — өшіріңіз.")}</p>
+              <ul className="mt-3 divide-y divide-amber-100">
+                {strangers.map((s) => (
+                  <li key={s.name} className="flex flex-wrap items-center gap-3 py-2.5">
+                    <span className="font-semibold">{s.name}</span>
+                    <span className="text-xs muted">{s.cells.map((c, k) => (c ? `${games[k].title}: ${c.score}/${c.max}` : null)).filter(Boolean).join(" · ") || t("{n} рет ойнады", { n: s.tries })}</span>
+                    <span className="ml-auto"><StrangerActions classId={cls.id} name={s.name} /></span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           {cls.students.length === 0 && games.length === 0 && columns.length === 0 ? (
             <div className="card mt-4 p-10 text-center">
               <BarChart3 className="mx-auto h-10 w-10 text-sky-400" />
               <p className="mt-3 font-semibold">{t("Кесте әзірге бос")}</p>
-              <p className="mt-1 text-sm muted">{t("Оқушы тізімін қосыңыз не бірден ойын беріңіз — сілтеме арқылы ойнаған оқушылар кестеге өзі қосылады.")}</p>
+              <p className="mt-1 text-sm muted">{t("Оқушы тізімін қосыңыз не бірден ойын беріңіз — сілтеме арқылы ойнағандар осы бетте шығады, оларды бір батырмамен тізімге қосасыз.")}</p>
               <Link href={`/classes/${cls.id}?tab=games`} className="btn-primary mt-4"><Plus className="h-4 w-4" /> {t("Ойын беру")}</Link>
             </div>
           ) : (
@@ -133,7 +149,7 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
                   </thead>
                   <tbody>
                     {rows.length === 0 && (
-                      <tr><td colSpan={games.length + columns.length + 3} className="px-4 py-8 text-center muted">{t("Әзірге оқушы жоқ. «Оқушы қосу» батырмасымен тізім енгізіңіз не ойын сілтемесін жіберіңіз — ойнағандар өзі қосылады.")}</td></tr>
+                      <tr><td colSpan={games.length + columns.length + 3} className="px-4 py-8 text-center muted">{t("Әзірге оқушы жоқ. «Оқушы қосу» батырмасымен тізім енгізіңіз не ойын сілтемесін жіберіңіз — ойнағандар жоғарыда шығады.")}</td></tr>
                     )}
                     {rows.map((r, i) => (
                       <tr key={r.student.id} className="hover:bg-sky-50/50">

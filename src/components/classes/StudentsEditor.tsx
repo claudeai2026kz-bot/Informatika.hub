@@ -59,7 +59,7 @@ export default function StudentsEditor({ classId, students }: { classId: string;
         {msg?.error && <p className="mt-2 text-sm text-rose-600">{t(msg.error)}</p>}
         {msg?.ok && <p className="mt-2 text-sm text-emerald-700">{msg.ok}</p>}
         <button className="btn-primary mt-3 w-full" disabled={pending || !text.trim()}><UserPlus className="h-4 w-4" /> {t("Қосу")}</button>
-        <p className="mt-3 text-xs muted">{t("Тізімде жоқ оқушы сілтеме арқылы өз атын жазып кірсе, ол тізімге өзі қосылады.")}</p>
+        <p className="mt-3 text-xs muted">{t("Тізімде жоқ оқушы сілтеме арқылы өз атын жазып ойнаса, ол «Бағалар журналы» бетінде шығады — тізімге қосасыз не өшіресіз.")}</p>
       </form>
     </div>
   );

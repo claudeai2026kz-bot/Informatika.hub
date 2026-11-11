@@ -20,9 +20,19 @@ export async function loadGradebook(classId: string, teacherId: string) {
   });
   const byName = new Map(cls.students.map((s) => [s.name.toLowerCase(), s.id]));
   const cells = new Map<string, GradeCell>(); // `${studentId}:${gameId}`
+  // Тізімде жоқ есіммен ойнағандар: мұғалім тізімге қосады не өшіреді
+  const strangerMap = new Map<string, { name: string; tries: number; best: Map<string, { score: number; max: number }> }>();
   for (const r of results) {
     const sid = r.studentId ?? byName.get(r.studentName.toLowerCase());
-    if (!sid) continue;
+    if (!sid) {
+      const k = r.studentName.trim().toLowerCase();
+      const e = strangerMap.get(k) ?? { name: r.studentName.trim(), tries: 0, best: new Map() };
+      e.tries++;
+      const b = e.best.get(r.gameId);
+      if (!b || (r.maxScore ? r.score / r.maxScore : 0) > (b.max ? b.score / b.max : 0)) e.best.set(r.gameId, { score: r.score, max: r.maxScore });
+      strangerMap.set(k, e);
+      continue;
+    }
     const key = `${sid}:${r.gameId}`;
     const cur = cells.get(key);
     const pct = (x: { score: number; max: number }) => (x.max ? x.score / x.max : 0);
@@ -54,7 +64,8 @@ export async function loadGradebook(classId: string, teacherId: string) {
     const done = rows.map((r) => r.marks[i]).filter((m): m is number => m !== null);
     return { played: done.length, avg: done.length && c.max ? done.reduce((a, m) => a + m / c.max, 0) / done.length : null };
   });
-  return { cls, games, rows, gameAvg, columns: columns.map(({ marks: _m, ...c }) => c), colAvg };
+  const strangers = [...strangerMap.values()].map((e) => ({ name: e.name, tries: e.tries, cells: games.map((g) => e.best.get(g.id) ?? null) }));
+  return { cls, games, rows, gameAvg, strangers, columns: columns.map(({ marks: _m, ...c }) => c), colAvg };
 }
 
 export const pct = (v: number | null) => (v === null ? "—" : `${Math.round(v * 100)}%`);

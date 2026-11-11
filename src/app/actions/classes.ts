@@ -10,11 +10,15 @@ export type ClassState = { error?: string; ok?: string } | undefined;
 const nameS = z.string().trim().min(1, "Сынып атауын жазыңыз").max(30, "Атауы тым ұзын");
 const gradeS = z.coerce.number().int().min(5).max(11);
 const idS = z.string().cuid();
+/** Қате ID болса — null (әрекет үнсіз құламасын). */
+const okId = (v: unknown) => { const r = idS.safeParse(v); return r.success ? r.data : null; };
 
 async function ownClass(classId: string) {
   const user = await getCurrentUser();
   if (!user) return null;
-  const c = await db.classroom.findFirst({ where: { id: idS.parse(classId), teacherId: user.id }, select: { id: true, teacherId: true } });
+  const id = okId(classId);
+  if (!id) return null;
+  const c = await db.classroom.findFirst({ where: { id, teacherId: user.id }, select: { id: true, teacherId: true } });
   return c;
 }
 
@@ -72,10 +76,15 @@ function parseNames(text: string) {
 export async function addStudents(classId: string, text: string): Promise<ClassState> {
   const c = await ownClass(classId);
   if (!c) return { error: "Рұқсат жоқ" };
-  const names = parseNames(text);
-  if (!names.length) return { error: "Оқушылардың аты-жөнін жазыңыз (әр жолға біреуден)" };
-  if ((await db.classStudent.count({ where: { classId: c.id } })) + names.length > 60) return { error: "Бір сыныпта 60-тан артық оқушы болмайды" };
+  const parsed = parseNames(text);
+  if (!parsed.length) return { error: "Оқушылардың аты-жөнін жазыңыз (әр жолға біреуден)" };
+  const existing = await db.classStudent.findMany({ where: { classId: c.id }, select: { name: true } });
+  const have = new Set(existing.map((e) => e.name.toLowerCase()));
+  const names = parsed.filter((n) => !have.has(n.toLowerCase()));
+  if (!names.length) return { error: "Бұл оқушылар тізімде бар" };
+  if (existing.length + names.length > 60) return { error: "Бір сыныпта 60-тан артық оқушы болмайды" };
   const r = await db.classStudent.createMany({ data: names.map((n) => ({ classId: c.id, name: n })), skipDuplicates: true });
+  await linkResults(c.id, names);
   revalidatePath(`/classes/${c.id}`);
   return { ok: `${r.count} оқушы қосылды` };
 }
@@ -83,10 +92,12 @@ export async function addStudents(classId: string, text: string): Promise<ClassS
 export async function renameStudent(studentId: string, name: string): Promise<ClassState> {
   const user = await getCurrentUser();
   if (!user) return { error: "Жүйеге кіріңіз" };
-  const s = await db.classStudent.findFirst({ where: { id: idS.parse(studentId), classroom: { teacherId: user.id } } });
+  const s = await db.classStudent.findFirst({ where: { id: okId(studentId) ?? "", classroom: { teacherId: user.id } } });
   if (!s) return { error: "Рұқсат жоқ" };
   const n = z.string().trim().min(2).max(60).safeParse(name);
   if (!n.success) return { error: "Аты-жөні тым қысқа" };
+  const clash = await db.classStudent.findFirst({ where: { classId: s.classId, id: { not: s.id }, name: { equals: n.data, mode: "insensitive" } } });
+  if (clash) return { error: "Бұл есім сыныпта бар" };
   try {
     await db.classStudent.update({ where: { id: s.id }, data: { name: n.data } });
   } catch {
@@ -99,7 +110,7 @@ export async function renameStudent(studentId: string, name: string): Promise<Cl
 export async function removeStudent(studentId: string) {
   const user = await getCurrentUser();
   if (!user) return;
-  const s = await db.classStudent.findFirst({ where: { id: idS.parse(studentId), classroom: { teacherId: user.id } } });
+  const s = await db.classStudent.findFirst({ where: { id: okId(studentId) ?? "", classroom: { teacherId: user.id } } });
   if (!s) return;
   await db.classStudent.delete({ where: { id: s.id } });
   revalidatePath(`/classes/${s.classId}`);
@@ -110,7 +121,7 @@ export async function addGameToClass(classId: string, gameId: string): Promise<C
   const user = await getCurrentUser();
   const c = await ownClass(classId);
   if (!user || !c) return { error: "Рұқсат жоқ" };
-  const g = await db.game.findFirst({ where: { id: idS.parse(gameId), published: true, OR: [{ authorId: null }, { authorId: user.id }] }, select: { id: true } });
+  const g = await db.game.findFirst({ where: { id: okId(gameId) ?? "", published: true, OR: [{ authorId: null }, { authorId: user.id }] }, select: { id: true } });
   if (!g) return { error: "Ойын табылмады" };
   if ((await db.classGame.count({ where: { classId: c.id } })) >= 100) return { error: "Бір сыныпқа 100-ден артық ойын беруге болмайды" };
   await db.classGame.upsert({ where: { classId_gameId: { classId: c.id, gameId: g.id } }, create: { classId: c.id, gameId: g.id }, update: {} });
@@ -121,7 +132,7 @@ export async function addGameToClass(classId: string, gameId: string): Promise<C
 export async function removeGameFromClass(classId: string, gameId: string) {
   const c = await ownClass(classId);
   if (!c) return;
-  await db.classGame.deleteMany({ where: { classId: c.id, gameId: idS.parse(gameId) } });
+  await db.classGame.deleteMany({ where: { classId: c.id, gameId: okId(gameId) ?? "" } });
   revalidatePath(`/classes/${c.id}`);
 }
 
@@ -142,7 +153,7 @@ export async function addColumn(classId: string, title: string, max: number): Pr
 export async function removeColumn(columnId: string) {
   const user = await getCurrentUser();
   if (!user) return;
-  const col = await db.classColumn.findFirst({ where: { id: idS.parse(columnId), classroom: { teacherId: user.id } } });
+  const col = await db.classColumn.findFirst({ where: { id: okId(columnId) ?? "", classroom: { teacherId: user.id } } });
   if (!col) return;
   await db.classColumn.delete({ where: { id: col.id } });
   revalidatePath(`/classes/${col.classId}`);
@@ -152,8 +163,8 @@ export async function removeColumn(columnId: string) {
 export async function setMark(columnId: string, studentId: string, score: number | null): Promise<{ error?: string; score?: number | null }> {
   const user = await getCurrentUser();
   if (!user) return { error: "Жүйеге кіріңіз" };
-  const col = await db.classColumn.findFirst({ where: { id: idS.parse(columnId), classroom: { teacherId: user.id } } });
-  const st = col && (await db.classStudent.findFirst({ where: { id: idS.parse(studentId), classId: col.classId } }));
+  const col = await db.classColumn.findFirst({ where: { id: okId(columnId) ?? "", classroom: { teacherId: user.id } } });
+  const st = col && (await db.classStudent.findFirst({ where: { id: okId(studentId) ?? "", classId: col.classId } }));
   if (!col || !st) return { error: "Рұқсат жоқ" };
   if (score === null || Number.isNaN(Number(score))) {
     await db.classMark.deleteMany({ where: { columnId: col.id, studentId: st.id } });
@@ -164,4 +175,35 @@ export async function setMark(columnId: string, studentId: string, score: number
   await db.classMark.upsert({ where: { columnId_studentId: { columnId: col.id, studentId: st.id } }, create: { columnId: col.id, studentId: st.id, score: v }, update: { score: v } });
   revalidatePath(`/classes/${col.classId}`);
   return { score: v };
+}
+
+/** Тізімде жоқ есіммен сақталған нәтижелерді жаңа қосылған оқушыға байлау. */
+async function linkResults(classId: string, names: string[]) {
+  const studs = await db.classStudent.findMany({ where: { classId, name: { in: names } }, select: { id: true, name: true } });
+  for (const s of studs)
+    await db.studentResult.updateMany({ where: { classId, studentId: null, studentName: { equals: s.name, mode: "insensitive" } }, data: { studentId: s.id } });
+}
+
+/** «Тізімде жоқ» оқушыны тізімге қосу (нәтижелері журналға түседі). */
+export async function acceptStranger(classId: string, name: string): Promise<ClassState> {
+  const c = await ownClass(classId);
+  if (!c) return { error: "Рұқсат жоқ" };
+  const n = z.string().trim().min(2).max(60).safeParse(name.replace(/\s+/g, " "));
+  if (!n.success) return { error: "Аты-жөні тым қысқа" };
+  const found = await db.classStudent.findFirst({ where: { classId: c.id, name: { equals: n.data, mode: "insensitive" } } });
+  if (!found) {
+    if ((await db.classStudent.count({ where: { classId: c.id } })) >= 60) return { error: "Бір сыныпта 60-тан артық оқушы болмайды" };
+    try { await db.classStudent.create({ data: { classId: c.id, name: n.data } }); } catch { /* бір уақытта қосылса */ }
+  }
+  await linkResults(c.id, [found?.name ?? n.data]);
+  revalidatePath(`/classes/${c.id}`);
+  return { ok: "Тізімге қосылды" };
+}
+
+/** «Тізімде жоқ» есімнің нәтижелерін өшіру (бөгде адам не қате жазылған ат). */
+export async function dismissStranger(classId: string, name: string) {
+  const c = await ownClass(classId);
+  if (!c) return;
+  await db.studentResult.deleteMany({ where: { classId: c.id, studentId: null, studentName: { equals: name.trim(), mode: "insensitive" } } });
+  revalidatePath(`/classes/${c.id}`);
 }
