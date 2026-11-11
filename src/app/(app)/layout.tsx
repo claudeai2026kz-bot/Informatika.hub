@@ -12,7 +12,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <AppNav user={user && { name: user.name, role: user.role, avatar: user.avatarPath ? `/api/files/avatar/${user.id}` : null }} unread={unread} />
       <main className="mx-auto max-w-7xl px-4 sm:px-6 py-6 sm:py-8 pb-28 lg:pb-8 page-enter">{children}</main>
       <Footer />
-      <Assistant soundOn={user?.soundOn ?? true} />
+      <Assistant soundOn={user?.soundOn ?? true} accountVoice={user ? user.voiceOn : undefined} />
     </>
   );
 }

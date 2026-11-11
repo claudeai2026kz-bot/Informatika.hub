@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { X, Send, ArrowRight, Mic, Volume2, VolumeX } from "lucide-react";
 import Robot from "../Robot";
 import { speak, preloadVoice, setVoiceOff, voiceOff, VOICE_EVENT } from "@/lib/speech";
+import { setVoiceAction } from "@/app/actions/profile";
 import { useT } from "@/lib/i18n/client";
 
 type Msg = { from: "bot" | "me"; text: string; items?: { title: string; href: string; meta: string }[]; links?: { href: string; label: string }[] };
@@ -19,7 +20,7 @@ function makeRecognizer(): Rec | null {
 
 const SUGGEST = ["7-сынып II тоқсан Python презентация", "9-сынып БЖБ", "5-сыныпқа ойын", "Сайтты қалай қолданамын?"];
 
-export default function Assistant({ soundOn = true }: { soundOn?: boolean }) {
+export default function Assistant({ soundOn = true, accountVoice }: { soundOn?: boolean; accountVoice?: boolean }) {
   const t = useT();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -41,6 +42,8 @@ export default function Assistant({ soundOn = true }: { soundOn?: boolean }) {
     // Қазақша дауыс моделін бос уақытта алдын ала жүктейміз
     const idle = (window as unknown as { requestIdleCallback?: (cb: () => void) => void }).requestIdleCallback ?? ((cb: () => void) => setTimeout(cb, 2500));
     idle(() => preloadVoice());
+    // Кірген пайдаланушының аккаунттағы таңдауы осы құрылғыдағыдан басым
+    if (accountVoice !== undefined && accountVoice === voiceOff()) setVoiceOff(!accountVoice);
     try { setVoice(localStorage.getItem("ihub-voice") !== "off"); } catch { /* */ }
     let seen = false;
     try { seen = sessionStorage.getItem("ihub-welcome") === "1"; sessionStorage.setItem("ihub-welcome", "1"); } catch { /* */ }
@@ -52,6 +55,7 @@ export default function Assistant({ soundOn = true }: { soundOn?: boolean }) {
     const t1 = setTimeout(() => setIntro("leaving"), 6500);
     const t2 = setTimeout(() => setIntro("none"), 7400);
     return () => { clearTimeout(t0); clearTimeout(t1); clearTimeout(t2); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [soundOn]);
 
   function dismissIntro() {
@@ -63,6 +67,7 @@ export default function Assistant({ soundOn = true }: { soundOn?: boolean }) {
     const v = !voice;
     setVoice(v);
     setVoiceOff(!v);
+    if (accountVoice !== undefined) void setVoiceAction(v).catch(() => {});
   }
 
   // Баптаулардан (немесе басқа беттен) дауыс ауыстырылса — бірден ескереміз

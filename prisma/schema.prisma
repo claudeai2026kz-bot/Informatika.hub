@@ -26,6 +26,7 @@ model User {
   role         Role      @relation(fields: [roleId], references: [id])
   blocked      Boolean   @default(false)
   soundOn      Boolean   @default(true)
+  voiceOn      Boolean   @default(true)
   notifyOn     Boolean   @default(true)
   profilePublic Boolean  @default(false)
   theme        String?   // light | dark | read

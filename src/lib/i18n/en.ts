@@ -3,7 +3,7 @@ const dict: Record<string, string> = {
   "Робот дауысы": "Robot voice",
   "Робот сөйлейді. Өшірсеңіз, тек жазумен жауап береді": "The robot speaks aloud. Turn off to get text-only replies",
   "Өшірулі: робот үнсіз, тек жазумен жауап береді": "Off: the robot stays silent and replies in text only",
-  "Таңдау бірден сақталады (осы құрылғыда)": "Saved instantly (on this device)",
+  "Таңдау бірден аккаунтыңызға сақталады": "Saved to your account instantly",
   "Дауыс қосылды": "Voice is on",
   "(қысқа мерзімді жоспар)": "(short-term lesson plan)",
   ", пікір қалдырыңыз.": ", to leave a comment.",

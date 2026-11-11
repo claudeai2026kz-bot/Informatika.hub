@@ -3,23 +3,27 @@ import { useEffect, useState } from "react";
 import { Mic, MicOff } from "lucide-react";
 import { useT } from "@/lib/i18n/client";
 import { setVoiceOff, speak, voiceOff, VOICE_EVENT } from "@/lib/speech";
+import { setVoiceAction } from "@/app/actions/profile";
 
-/** Баптаулардағы «Робот дауысы» қосқышы. Басқанда бірден сақталады (осы құрылғыда). */
-export default function VoiceSwitch() {
+/** Баптаулардағы «Робот дауысы» қосқышы. Басқанда бірден аккаунтқа сақталады. */
+export default function VoiceSwitch({ initial }: { initial: boolean }) {
   const t = useT();
-  const [on, setOn] = useState(true);
+  const [on, setOn] = useState(initial);
 
   useEffect(() => {
     const sync = () => setOn(!voiceOff());
+    if (initial === voiceOff()) setVoiceOff(!initial); // аккаунттағы таңдау басым
     sync();
     window.addEventListener(VOICE_EVENT, sync);
     window.addEventListener("storage", sync);
     return () => { window.removeEventListener(VOICE_EVENT, sync); window.removeEventListener("storage", sync); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function change(v: boolean) {
     setOn(v);
     setVoiceOff(!v);
+    void setVoiceAction(v).catch(() => {});
     if (v) speak(t("Дауыс қосылды"));
   }
 

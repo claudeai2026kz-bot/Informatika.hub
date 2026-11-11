@@ -38,8 +38,8 @@ export default async function SettingsPage() {
         <PrefsSwitcher full />
       </div>
       <div className="card p-6">
-        <VoiceSwitch />
-        <div className="mt-2 pl-14 text-xs muted">{t("Таңдау бірден сақталады (осы құрылғыда)")}</div>
+        <VoiceSwitch initial={user.voiceOn} />
+        <div className="mt-2 pl-14 text-xs muted">{t("Таңдау бірден аккаунтыңызға сақталады")}</div>
       </div>
       <ActionForm action={updateSettings} className="card px-6 py-2 divide-y divide-sky-100">
         <Toggle name="soundOn" label={t("Робот дыбысы")} hint={t("Робот жауап бергенде қысқа дыбыстық белгі")} on={user.soundOn} icon={<Volume2 className="h-5 w-5" />} />

@@ -46,6 +46,7 @@ export type CurrentUser = {
   avatarPath: string | null;
   role: "USER" | "ADMIN";
   soundOn: boolean;
+  voiceOn: boolean;
   notifyOn: boolean;
   profilePublic: boolean;
 };
@@ -67,6 +68,7 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
     avatarPath: u.avatarPath,
     role: u.role.key === "ADMIN" ? "ADMIN" : "USER",
     soundOn: u.soundOn,
+    voiceOn: u.voiceOn,
     notifyOn: u.notifyOn,
     profilePublic: u.profilePublic,
   };

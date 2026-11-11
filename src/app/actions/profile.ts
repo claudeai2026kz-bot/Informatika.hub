@@ -59,3 +59,10 @@ export async function updateSettings(_: FormState, fd: FormData): Promise<FormSt
   revalidatePath("/", "layout");
   return { ok: "Баптаулар сақталды" };
 }
+
+/** Робот дауысын (сөйлеуін) аккаунтқа сақтайды — қай құрылғыдан кірсе де сол күйі тұрады. */
+export async function setVoiceAction(on: boolean): Promise<void> {
+  const u = await getCurrentUser();
+  if (!u) return;
+  await db.user.update({ where: { id: u.id }, data: { voiceOn: on === true } });
+}
