@@ -4,7 +4,10 @@ import { getCurrentUser } from "@/lib/auth";
 import { GAME_TYPES } from "@/lib/labels";
 import { crosswordLayout, publicQuestion, type QuestionRow } from "@/lib/games";
 import Link from "next/link";
-import { Pencil, Wand2 } from "lucide-react";
+import { Pencil, Wand2, ArrowLeftRight, User } from "lucide-react";
+import { isChoiceType } from "@/lib/labels";
+import LiveLaunch from "@/components/games/live/LiveLaunch";
+import Tug from "@/components/games/modes/Tug";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import FavoriteButton from "@/components/FavoriteButton";
 import GamePlayer from "@/components/games/GamePlayer";
@@ -17,9 +20,10 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return { title: g?.title ?? (await getT())("Ойын") };
 }
 
-export default async function GamePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function GamePage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ as?: string }> }) {
   const t = await getT();
   const { id } = await params;
+  const { as } = await searchParams;
   const user = await getCurrentUser();
   const g = await db.game.findUnique({ where: { id }, include: { questions: { orderBy: { order: "asc" } }, topic: true } });
   if (!g || (!g.published && user?.role !== "ADMIN")) notFound();
@@ -27,7 +31,10 @@ export default async function GamePage({ params }: { params: Promise<{ id: strin
   const fav = user ? await db.favorite.findFirst({ where: { userId: user.id, gameId: id } }) : null;
   const sentCount = user ? await db.studentResult.count({ where: { gameId: id, teacherId: user.id } }) : 0;
   const seed = Math.floor(Math.random() * 1000);
-  const questions = g.questions.map((q) => publicQuestion(g.type, q as QuestionRow, seed));
+  const asTug = as === "tug" && isChoiceType(g.type);
+  const practice = as === "solo" && g.type === "LIVE";
+  const questions = g.questions.map((q) => publicQuestion(asTug ? "TUGOFWAR" : g.type, q as QuestionRow, seed));
+  const board = asTug || ["TUGOFWAR", "BOARD", "LIVE", "TEAMESCAPE"].includes(g.type);
   const I = GAME_ICONS[g.type];
   const gt = GAME_TYPES.find((x) => x.key === g.type);
 
@@ -44,11 +51,20 @@ export default async function GamePage({ params }: { params: Promise<{ id: strin
             {mine && <Link href={`/games/${g.id}/edit`} className="btn-soft btn-sm"><Pencil className="h-4 w-4" /> {t("Сұрақтарды өзгерту")}</Link>}
             <Link href={`/games/new?from=${g.id}`} className="btn-ghost btn-sm"><Wand2 className="h-4 w-4" /> {t(mine ? "Көшірмесін жасау" : "Өз тақырыбыма бейімдеу")}</Link>
           </div>
+          {isChoiceType(g.type) && g.questions.length > 0 && (g.type !== "TUGOFWAR" || !!user) && (
+            <div className="mt-3 flex flex-wrap items-center gap-2 rounded-2xl bg-sky-50 p-2.5">
+              <span className="px-1 text-xs font-bold uppercase tracking-wide text-sky-700">{t("Басқаша ойнау:")}</span>
+              {(asTug || practice) && <Link href={`/games/${g.id}`} className="btn-ghost btn-sm"><User className="h-4 w-4" /> {t("Негізгі түрі")}</Link>}
+              {g.type === "LIVE" && !practice && <Link href={`/games/${g.id}?as=solo`} className="btn-ghost btn-sm"><User className="h-4 w-4" /> {t("Жеке жаттығу")}</Link>}
+              {g.type !== "TUGOFWAR" && !asTug && <Link href={`/games/${g.id}?as=tug`} className="btn-soft btn-sm"><ArrowLeftRight className="h-4 w-4" /> {t("Арқан тарту (тақтада)")}</Link>}
+              {g.type !== "LIVE" && <LiveLaunch gameId={g.id} loggedIn={!!user} compact />}
+            </div>
+          )}
         </div>
         <FavoriteButton target={{ gameId: g.id }} initial={!!fav} loggedIn={!!user} />
       </header>
-      <SendToStudents gameId={g.id} title={g.title} teacherId={user?.id ?? null} results={sentCount} />
-      <GamePlayer
+      {!board && <SendToStudents gameId={g.id} title={g.title} teacherId={user?.id ?? null} results={sentCount} />}
+      {asTug ? <Tug questions={questions as never} /> : <GamePlayer
         gameId={g.id}
         type={g.type}
         title={g.title}
@@ -56,7 +72,8 @@ export default async function GamePage({ params }: { params: Promise<{ id: strin
         timeLimit={g.timeLimit}
         layout={g.type === "CROSSWORD" ? crosswordLayout(g.questions) : null}
         loggedIn={!!user}
-      />
+        practice={practice}
+      />}
     </div>
   );
 }

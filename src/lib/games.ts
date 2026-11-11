@@ -1,5 +1,7 @@
 /** Ойын ұпайын есептеу. Таза функциялар: сервер де, тест те қолданады. */
 import type { GameType } from "@prisma/client";
+import { mazeSolved } from "./maze";
+import { cipherCheck, type Cipher } from "./cipher";
 
 export type QuestionRow = { id: string; prompt: string; data: unknown; answer: unknown; points: number; explanation?: string | null };
 
@@ -11,7 +13,11 @@ export function scoreQuestion(type: GameType, q: QuestionRow, given: unknown): {
     case "QUIZ":
     case "RAPID":
     case "TRUEFALSE":
-    case "CLIMB": {
+    case "CLIMB":
+    case "SHOOTER":
+    case "TUGOFWAR":
+    case "DUEL":
+    case "LIVE": {
       const ok = Number.isInteger(given) && given === q.answer;
       return { score: ok ? q.points : 0, max: q.points, correct: ok };
     }
@@ -39,6 +45,34 @@ export function scoreQuestion(type: GameType, q: QuestionRow, given: unknown): {
       const score = Math.max(0, found - Math.floor(mistakes / 3)); // әр 3 қате 1 балл кемітеді
       return { score, max: pairs, correct: found === pairs && score === pairs };
     }
+    case "MAZE": {
+      const ok = mazeSolved(q.data, given);
+      return { score: ok ? q.points : 0, max: q.points, correct: ok };
+    }
+    case "PIXEL": {
+      const rows = Array.isArray(q.answer) ? (q.answer as string[]) : [];
+      const g = Array.isArray(given) ? given : [];
+      const right = rows.filter((r, i) => typeof g[i] === "string" && (g[i] as string).replace(/\s/g, "") === r).length;
+      return { score: right * q.points, max: rows.length * q.points, correct: right === rows.length };
+    }
+    case "CIPHER": {
+      const d = (q.data ?? {}) as { cipher?: Cipher; shift?: number };
+      const { encOk, decOk } = cipherCheck(String(q.answer ?? ""), d.cipher ?? "caesar", d.shift ?? 3, given);
+      const score = encOk && decOk ? q.points : encOk || decOk ? Math.floor(q.points / 2) : 0;
+      return { score, max: q.points, correct: encOk && decOk };
+    }
+    case "BOARD": // ұпайды мұғалім тақтада өзі береді
+      return { score: 0, max: q.points, correct: false };
+    case "ESCAPE": {
+      if (Array.isArray((q.data as { options?: unknown[] })?.options) && Number.isInteger(q.answer)) {
+        const ok = given === q.answer;
+        return { score: ok ? q.points : 0, max: q.points, correct: ok };
+      }
+      const accepted = (Array.isArray(q.answer) ? q.answer : [q.answer]).map(norm);
+      const ok = accepted.includes(norm(given));
+      return { score: ok ? q.points : 0, max: q.points, correct: ok };
+    }
+    case "TEAMESCAPE":
     case "LOGIC":
     case "CODING": {
       const accepted = (Array.isArray(q.answer) ? q.answer : [q.answer]).map(norm);
@@ -80,6 +114,11 @@ export function publicQuestion(type: GameType, q: QuestionRow, seed: number) {
     const order = cards.map((_, i) => i).sort((a, b) => ((a * 9301 + seed * 49297) % 233280) - ((b * 9301 + seed * 49297) % 233280));
     return { id: q.id, prompt: q.prompt, points: q.points, data: { cards: order.map((i) => cards[i]) } };
   }
+  // Тақтадағы ойындар (мұғалім экраны) мен жұптық шифр: жауап ойын ішінде керек
+  if (type === "TUGOFWAR" || type === "BOARD") return { id: q.id, prompt: q.prompt, points: q.points, data: { ...data, answer: q.answer, explanation: q.explanation ?? null } };
+  if (type === "CIPHER") return { id: q.id, prompt: q.prompt, points: q.points, data: { ...data, word: q.answer } };
+  if (type === "PIXEL") return { id: q.id, prompt: q.prompt, points: q.points, data: { ...data, target: q.answer } };
+  if (type === "TEAMESCAPE") return { id: q.id, prompt: q.prompt, points: q.points, data: { parts: ((data.clues as unknown[]) ?? []).length } };
   return { id: q.id, prompt: q.prompt, points: q.points, data };
 }
 

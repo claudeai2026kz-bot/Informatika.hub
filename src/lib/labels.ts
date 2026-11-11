@@ -18,17 +18,37 @@ export const ABBR: Record<string, string> = {
 };
 
 export const GAME_TYPES = [
-  { key: "QUIZ", name: "Тест сұрақтары", desc: "Бірнеше нұсқаның ішінен дұрыс жауапты таңда" },
-  { key: "MATCHING", name: "Сәйкестендіру", desc: "Ұғымдар мен анықтамаларды жұптастыр" },
-  { key: "CROSSWORD", name: "Сөзжұмбақ", desc: "Сұрақтарға жауап беріп, торды толтыр" },
-  { key: "RAPID", name: "Жылдам сұрақтар", desc: "Уақыт шектеулі, жылдам ойла" },
-  { key: "LOGIC", name: "Логикалық тапсырмалар", desc: "Ойлан да, жауабын жаз" },
-  { key: "CODING", name: "Программалау тапсырмалары", desc: "Кодтың нәтижесін анықта не толықтыр" },
-  { key: "TRUEFALSE", name: "Дұрыс па, бұрыс па", desc: "Тұжырымның дұрыс не бұрыс екенін тез анықта" },
-  { key: "CLIMB", name: "Шыңға шық", desc: "Сұрақтар біртіндеп қиындайды, бір қате — өрмелеу тоқтайды" },
-  { key: "ORDERING", name: "Ретімен қой", desc: "Қадамдарды не код жолдарын дұрыс ретке қой" },
-  { key: "MEMORY", name: "Жұбын тап", desc: "Карточкаларды аударып, ұғым мен анықтаманы жұпта" },
+  { key: "QUIZ", mode: "solo", name: "Тест сұрақтары", desc: "Бірнеше нұсқаның ішінен дұрыс жауапты таңда" },
+  { key: "MATCHING", mode: "solo", name: "Сәйкестендіру", desc: "Ұғымдар мен анықтамаларды жұптастыр" },
+  { key: "CROSSWORD", mode: "solo", name: "Сөзжұмбақ", desc: "Сұрақтарға жауап беріп, торды толтыр" },
+  { key: "RAPID", mode: "solo", name: "Жылдам сұрақтар", desc: "Уақыт шектеулі, жылдам ойла" },
+  { key: "LOGIC", mode: "solo", name: "Логикалық тапсырмалар", desc: "Ойлан да, жауабын жаз" },
+  { key: "CODING", mode: "solo", name: "Программалау тапсырмалары", desc: "Кодтың нәтижесін анықта не толықтыр" },
+  { key: "TRUEFALSE", mode: "solo", name: "Дұрыс па, бұрыс па", desc: "Тұжырымның дұрыс не бұрыс екенін тез анықта" },
+  { key: "CLIMB", mode: "solo", name: "Шыңға шық", desc: "Сұрақтар біртіндеп қиындайды, бір қате — өрмелеу тоқтайды" },
+  { key: "ORDERING", mode: "solo", name: "Ретімен қой", desc: "Қадамдарды не код жолдарын дұрыс ретке қой" },
+  { key: "MEMORY", mode: "solo", name: "Жұбын тап", desc: "Карточкаларды аударып, ұғым мен анықтаманы жұпта" },
+  { key: "MAZE", mode: "solo", name: "Робот-лабиринт", desc: "Командалар құрастырып, роботты жұлдызға жеткіз" },
+  { key: "PIXEL", mode: "solo", name: "Пиксель сурет", desc: "Суретті 0 мен 1 кодына айналдыр не кодтан сурет сал" },
+  { key: "SHOOTER", mode: "solo", name: "Ғарыш атқышы", desc: "Дұрыс жауабы бар астероидты атып түсір" },
+  { key: "ESCAPE", mode: "solo", name: "Қашу бөлмесі", desc: "Бөлмедегі жұмбақтарды шешіп, есікті аш" },
+  { key: "TUGOFWAR", mode: "pair", name: "Арқан тарту", desc: "Тақтада екі оқушы не екі команда жарысады" },
+  { key: "DUEL", mode: "pair", name: "Дуэль", desc: "Досыңа шақыру жібер, кім көп балл алады?" },
+  { key: "CIPHER", mode: "pair", name: "Шифр жібер", desc: "Біреуің сөзді шифрлайсың, жұбың оны ашады" },
+  { key: "LIVE", mode: "group", name: "Сынып жарысы", desc: "Бүкіл сынып телефоннан бір уақытта жауап береді" },
+  { key: "BOARD", mode: "group", name: "Ұпай тақтасы", desc: "Командалар тақырып пен бағаны таңдап, ұпай жинайды" },
+  { key: "TEAMESCAPE", mode: "group", name: "Командалық қашу бөлмесі", desc: "Әр мүшеде кодтың бір бөлігі ғана бар — бірігіп шешіңдер" },
 ] as const;
+
+export type GameMode = "solo" | "pair" | "group";
+export const GAME_MODES: { key: GameMode; name: string; desc: string }[] = [
+  { key: "solo", name: "Жеке", desc: "Әр оқушы өзі ойнайды" },
+  { key: "pair", name: "Жұппен", desc: "Екі оқушы бірге не бір-біріне қарсы" },
+  { key: "group", name: "Топпен", desc: "Командалар мен бүкіл сынып" },
+];
+/** Сұрақтары «нұсқалы» ойындар: оларды Сынып жарысы не Арқан тарту түрінде де ойнауға болады. */
+export const CHOICE_TYPES = ["QUIZ", "RAPID", "TRUEFALSE", "CLIMB", "SHOOTER", "TUGOFWAR", "DUEL", "LIVE"] as const;
+export const isChoiceType = (t: string) => (CHOICE_TYPES as readonly string[]).includes(t);
 
 type Tr = (s: string) => string;
 const same: Tr = (s) => s;

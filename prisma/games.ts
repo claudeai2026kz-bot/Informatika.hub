@@ -8,12 +8,15 @@ import type { PrismaClient, GameType } from "@prisma/client";
  *  CODING / LOGIC: answer — қабылданатын жауап(тар), code — көрсетілетін код
  *  CROSSWORD: answer — сөз, cw — торда басталатын орны мен бағыты (сөздер қиылысады)
  */
-type Q = { prompt: string; items?: string[]; options?: string[]; answer?: number | string | string[]; code?: string; explanation?: string; cw?: { row: number; col: number; dir: "across" | "down" } };
+type Q = { prompt: string; data?: Record<string, unknown>; points?: number; items?: string[]; options?: string[]; answer?: number | string | string[]; code?: string; explanation?: string; cw?: { row: number; col: number; dir: "across" | "down" } };
 type G = {
   type: GameType; grade: number; quarter: number; topic?: string; title: string; description: string; timeLimit?: number;
   questions?: Q[]; pairs?: { prompt: string; left: string[]; right: string[] };
 };
 
+import { NEW_GAMES } from "./games-new";
+
+export type SeedGame = G;
 export const GAMES: G[] = [
   {
     type: "QUIZ", grade: 5, quarter: 1, topic: "Екілік ақпаратты ұсыну", title: "Ақпарат және екілік код",
@@ -462,7 +465,7 @@ export const GAMES: G[] = [
 
 export async function importGames(db: PrismaClient) {
   let added = 0;
-  for (const g of GAMES) {
+  for (const g of [...GAMES, ...NEW_GAMES]) {
     if (await db.game.findFirst({ where: { gradeId: g.grade, title: g.title } })) continue;
     const topic = g.topic
       ? await db.topic.findFirst({ where: { title: g.topic, quarter: { gradeId: g.grade, number: g.quarter } }, select: { id: true } })
@@ -472,10 +475,10 @@ export async function importGames(db: PrismaClient) {
       : (g.questions ?? []).map((q, i) => ({
           order: i,
           prompt: q.prompt,
-          data: q.items ? { items: q.items } : g.type === "TRUEFALSE" ? { options: ["Дұрыс", "Бұрыс"] } : q.cw ? { ...q.cw, len: String(q.answer).length } : { ...(q.options ? { options: q.options } : {}), ...(q.code ? { code: q.code } : {}) },
-          answer: (q.items ? q.items.map((_, k) => k) : q.answer) as number | number[] | string | string[],
+          data: { ...(q.items ? { items: q.items } : g.type === "TRUEFALSE" ? { options: ["Дұрыс", "Бұрыс"] } : q.cw ? { ...q.cw, len: String(q.answer).length } : { ...(q.options ? { options: q.options } : {}), ...(q.code ? { code: q.code } : {}) }), ...(q.data ?? {}) },
+          answer: (q.items ? q.items.map((_, k) => k) : q.answer ?? 0) as number | number[] | string | string[],
           explanation: q.explanation ?? null,
-          points: 1,
+          points: q.points ?? 1,
         }));
     await db.game.create({
       data: {

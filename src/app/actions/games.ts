@@ -11,11 +11,13 @@ async function loadGame(gameId: string) {
 }
 
 /** Бір сұрақты тексеру (тест пен жылдам сұрақтарда бірден нәтиже көрсету үшін). */
-export async function checkAnswer(gameId: string, questionId: string, given: unknown) {
+export async function checkAnswer(gameId: string, questionId: string, given: unknown, reveal = false) {
   const g = await loadGame(gameId);
   const q = g.questions.find((x) => x.id === questionId);
   if (!q) throw new Error("Сұрақ табылмады");
   const r = scoreQuestion(g.type, q as QuestionRow, given);
+  // Қашу бөлмесінде жауап бірден айтылмайды: оқушы қайта байқайды, қаласа ғана ашады
+  if (g.type === "ESCAPE" && !r.correct && !reveal) return { correct: false, answer: null, explanation: null };
   return { correct: r.correct, answer: q.answer, explanation: q.explanation };
 }
 

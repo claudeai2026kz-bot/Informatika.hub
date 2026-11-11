@@ -6,6 +6,15 @@ import { Play, RotateCcw, Check, X, Timer, ArrowRight, Trophy, Loader2 } from "l
 import { checkAnswer, submitGame } from "@/app/actions/games";
 import Robot from "../Robot";
 import { Climb, Ordering, Memory } from "./NewModes";
+import Maze from "./modes/Maze";
+import Pixel from "./modes/Pixel";
+import Shooter from "./modes/Shooter";
+import Escape from "./modes/Escape";
+import Cipher from "./modes/Cipher";
+import Tug from "./modes/Tug";
+import Board from "./modes/Board";
+import { DuelStart } from "./modes/Duel";
+import LiveLaunch from "./live/LiveLaunch";
 import { useT } from "@/lib/i18n/client";
 
 const RULES: Record<string, string> = {
@@ -13,16 +22,25 @@ const RULES: Record<string, string> = {
   CLIMB: "Әр дұрыс жауап сені шыңға қарай бір биіктікке көтереді. Бір қате жауап — өрмелеу тоқтайды. Бір рет көмек алуға болады.",
   ORDERING: "Қадамдарды немесе код жолдарын дұрыс ретке қой.",
   MEMORY: "Карточкаларды екіден аударып, ұғым мен анықтаманың жұбын тап. Әр 3 қате 1 балл кемітеді.",
+  MAZE: "Командалардан бағдарлама құрастыр: робот жұлдызға жетсе, деңгей өтті. «Қайтала» блогы бағдарламаны қысқартады.",
+  PIXEL: "Жанған шаршы — 1, сөнген шаршы — 0. Әр дұрыс жол балл әкеледі.",
+  SHOOTER: "Дұрыс жауап жазылған астероидты бас — зымыран оны атып түсіреді. Қате атсаң, бір жүрек кетеді. 3 жүрек бар.",
+  ESCAPE: "Бөлмедегі жарқыраған заттарды басып, жұмбақтарды шеш. Бәрін шешсең, есік ашылады. Балл бірінші дұрыс жауапқа беріледі.",
+  CIPHER: "Екі оқушы бір құрылғыда ойнайды: бірі сөзді шифрлайды, екіншісі ашады. Әр сөзден кейін рөлдер ауысады.",
 };
+/** Өз бастау экраны бар ойындар */
+const OWN_INTRO = ["TUGOFWAR", "BOARD", "DUEL", "LIVE", "TEAMESCAPE", "CIPHER"];
 
 type Q = { id: string; prompt: string; points: number; data: Record<string, unknown> };
 type Layout = { rows: number; cols: number; words: { id: string; n: number; row: number; col: number; dir: "across" | "down"; len: number }[] } | null;
 type Result = Awaited<ReturnType<typeof submitGame>>;
 
-export default function GamePlayer({ gameId, type, title, questions, timeLimit, layout, loggedIn, student }: {
+export default function GamePlayer({ gameId, type, title, questions, timeLimit, layout, loggedIn, student, practice }: {
   gameId: string; type: string; title: string; questions: Q[]; timeLimit: number | null; layout: Layout; loggedIn: boolean;
   /** Оқушы мұғалімнің сілтемесімен ойнаса — нәтиже мұғалімге жіберіледі */
   student?: { teacherId: string; name: string; className?: string };
+  /** Сынып жарысының сұрақтарын жеке жаттығу ретінде ойнау */
+  practice?: boolean;
 }) {
   const t = useT();
   const [phase, setPhase] = useState<"intro" | "play" | "done">("intro");
@@ -38,7 +56,12 @@ export default function GamePlayer({ gameId, type, title, questions, timeLimit, 
 
   if (questions.length === 0) return <div className="card p-10 text-center muted">{t("Бұл ойынға әлі сұрақ қосылмаған.")}</div>;
 
-  if (phase === "intro")
+  if (type === "TUGOFWAR") return <Tug questions={questions} />;
+  if (type === "BOARD") return <Board questions={questions} />;
+  if (type === "DUEL") return <DuelStart gameId={gameId} title={title} questions={questions} teacherId={student?.teacherId ?? null} />;
+  if ((type === "LIVE" || type === "TEAMESCAPE") && !practice) return <LiveLaunch gameId={gameId} team={type === "TEAMESCAPE"} loggedIn={loggedIn} />;
+
+  if (phase === "intro" && !OWN_INTRO.includes(type))
     return (
       <div className="card p-8 sm:p-12 text-center">
         <div className="flex justify-center"><Robot size={150} wave /></div>
@@ -58,7 +81,12 @@ export default function GamePlayer({ gameId, type, title, questions, timeLimit, 
       {type === "CLIMB" && <Climb gameId={gameId} questions={questions} onDone={(a) => { setAnswers(a); finish(a); }} />}
       {type === "ORDERING" && <Ordering gameId={gameId} questions={questions} onDone={(a) => { setAnswers(a); finish(a); }} />}
       {type === "MEMORY" && <Memory q={questions[0]} onDone={(v) => finish({ [questions[0].id]: v })} />}
-      {(type === "QUIZ" || type === "RAPID" || type === "TRUEFALSE" || type === "LOGIC" || type === "CODING") && (
+      {type === "MAZE" && <Maze questions={questions} onDone={(a) => finish(a)} />}
+      {type === "PIXEL" && <PixelSeq questions={questions} onDone={(a) => finish(a)} />}
+      {type === "SHOOTER" && <Shooter gameId={gameId} questions={questions} onDone={(a) => finish(a)} />}
+      {type === "ESCAPE" && <Escape gameId={gameId} questions={questions} onDone={(a) => finish(a)} />}
+      {type === "CIPHER" && <Cipher questions={questions} onDone={(a) => finish(a)} />}
+      {(type === "QUIZ" || type === "RAPID" || type === "TRUEFALSE" || type === "LOGIC" || type === "CODING" || type === "LIVE") && (
         <Stepper gameId={gameId} type={type} questions={questions} timeLimit={timeLimit ?? 10}
           onDone={(a) => { setAnswers(a); finish(a); }} />
       )}
@@ -67,6 +95,14 @@ export default function GamePlayer({ gameId, type, title, questions, timeLimit, 
       <span className="sr-only">{title} {Object.keys(answers).length}</span>
     </div>
   );
+}
+
+/* ---------- Пиксель сурет: бірнеше сурет болса, кезекпен ---------- */
+function PixelSeq({ questions, onDone }: { questions: Q[]; onDone: (a: Record<string, unknown>) => void }) {
+  const [i, setI] = useState(0);
+  const [a, setA] = useState<Record<string, unknown>>({});
+  const q = questions[i];
+  return <Pixel key={q.id} q={q} onDone={(v) => { const n = { ...a, [q.id]: v }; setA(n); if (i + 1 < questions.length) setI(i + 1); else onDone(n); }} />;
 }
 
 /* ---------- Тест / Жылдам сұрақтар / Логика / Программалау ---------- */
@@ -107,7 +143,7 @@ function Stepper({ gameId, type, questions, timeLimit, onDone }: { gameId: strin
     if (i + 1 < questions.length) setI(i + 1); else onDone(a);
   }
 
-  const isChoice = type === "QUIZ" || type === "RAPID" || type === "TRUEFALSE";
+  const isChoice = type === "QUIZ" || type === "RAPID" || type === "TRUEFALSE" || type === "LIVE";
   return (
     <div className="card p-6 sm:p-8">
       <div className="flex items-center justify-between gap-3 text-sm">
@@ -316,7 +352,7 @@ function ResultView({ result, questions, type, onRestart }: { result: Result; qu
           </div>
         </div>
       </div>
-      {type !== "MATCHING" && type !== "MEMORY" && (
+      {type !== "MATCHING" && type !== "MEMORY" && type !== "MAZE" && type !== "PIXEL" && (
         <ul className="mt-8 space-y-2">
           {questions.map((q, k) => {
             const d = result.details.find((x) => x.id === q.id);

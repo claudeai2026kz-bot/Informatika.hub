@@ -2,10 +2,12 @@ import "server-only";
 import { z } from "zod";
 import type { GameType, Prisma } from "@prisma/client";
 import { autoLayout } from "./crossword";
+import { isLevel, mazeHasPath } from "./maze";
+import { cleanWord } from "./cipher";
 
 /** Ойынды сақтауға дайындау: тексеру + сұрақтарды базаға жазылатын түрге келтіру (әкімші де, мұғалім де қолданады). */
 export const gameSchema = z.object({
-  type: z.enum(["QUIZ", "MATCHING", "CROSSWORD", "RAPID", "LOGIC", "CODING", "TRUEFALSE", "CLIMB", "ORDERING", "MEMORY"]),
+  type: z.enum(["QUIZ", "MATCHING", "CROSSWORD", "RAPID", "LOGIC", "CODING", "TRUEFALSE", "CLIMB", "ORDERING", "MEMORY", "MAZE", "PIXEL", "SHOOTER", "ESCAPE", "TUGOFWAR", "DUEL", "CIPHER", "LIVE", "BOARD", "TEAMESCAPE"]),
   title: z.string().trim().min(3, "Атауы кемінде 3 таңба").max(200),
   description: z.string().trim().max(1000).default(""),
   grade: z.coerce.number().int().min(5).max(11),
@@ -17,7 +19,7 @@ export const gameSchema = z.object({
     data: z.record(z.unknown()).default({}),
     answer: z.unknown(),
     explanation: z.string().trim().max(1000).optional(),
-    points: z.number().int().min(1).max(100).default(1),
+    points: z.number().int().min(1, "Балл кемінде 1").max(1000, "Балл 1000-нан аспауы керек").default(1),
   })).min(1, "Кемінде бір сұрақ қосыңыз").max(200),
 });
 
@@ -28,8 +30,31 @@ function validateQuestion(type: GameType, q: z.infer<typeof gameSchema>["questio
   } else if (type === "ORDERING") {
     const it = q.data.items as unknown;
     if (!Array.isArray(it) || it.length < 3 || it.length > 8 || it.some((x) => typeof x !== "string" || !x.trim())) return at + "3-тен 8-ге дейін қадамды дұрыс ретімен толтырыңыз";
-  } else if (type === "QUIZ" || type === "RAPID" || type === "CLIMB") {
+  } else if (type === "MAZE") {
+    if (!isLevel(q.data)) return at + "лабиринтте робот пен жұлдыздың орнын белгілеңіз";
+    if (!mazeHasPath(q.data)) return at + "робот жұлдызға жете алмайды: қабырғалардың арасынан жол қалдырыңыз";
+  } else if (type === "PIXEL") {
+    const rows = q.answer as unknown;
+    if (!Array.isArray(rows) || rows.length < 3 || rows.length > 10 || rows.some((r) => typeof r !== "string" || !/^[01]{3,10}$/.test(r) || r.length !== (rows[0] as string).length)) return at + "сурет 3–10 жол, 3–10 бағаннан тұруы керек";
+    if (!rows.some((r: string) => r.includes("1"))) return at + "суретті салыңыз (кемінде бір шаршы)";
+  } else if (type === "CIPHER") {
+    const w = cleanWord(String(q.answer ?? ""));
+    if (w.length < 2 || w.length > 12) return at + "құпия сөз 2–12 әріптен тұруы керек";
+    if (/[A-Z]/.test(w) && /[А-ЯӘҒҚҢӨҰҮҺІЁ]/.test(w)) return at + "сөз не тек латын, не тек кирилл әріптерімен жазылсын";
+  } else if (type === "BOARD") {
+    if (typeof q.data.category !== "string" || !q.data.category.trim()) return at + "тақырыбын (бағанын) жазыңыз";
+    if (typeof q.answer !== "string" || !q.answer.trim()) return at + "дұрыс жауапты жазыңыз";
+  } else if (type === "TEAMESCAPE") {
+    const c = q.data.clues as unknown;
+    if (!Array.isArray(c) || c.length < 1 || c.length > 4 || c.some((x) => typeof x !== "string" || !x.trim())) return at + "1–4 кеңес бөлігін толтырыңыз";
+    const a = q.answer;
+    if (!Array.isArray(a) || a.length === 0 || a.some((x) => typeof x !== "string" || !x.trim())) return at + "есіктің кодын (дұрыс жауапты) жазыңыз";
+  } else if (type === "ESCAPE" && !Array.isArray(q.data.options)) {
+    const a = q.answer;
+    if (!Array.isArray(a) || a.length === 0 || a.some((x) => typeof x !== "string" || !x.trim())) return at + "кемінде бір дұрыс жауап жазыңыз";
+  } else if (type === "QUIZ" || type === "RAPID" || type === "CLIMB" || type === "SHOOTER" || type === "TUGOFWAR" || type === "DUEL" || type === "LIVE" || type === "ESCAPE") {
     const opts = q.data.options as unknown;
+    if (type === "SHOOTER" && Array.isArray(opts) && opts.length > 4) return at + "ғарыш атқышында ең көбі 4 нұсқа болады";
     if (!Array.isArray(opts) || opts.length < 2 || opts.some((o) => typeof o !== "string" || !o.trim())) return at + "кемінде 2 жауап нұсқасын толтырыңыз";
     if (!Number.isInteger(q.answer) || (q.answer as number) < 0 || (q.answer as number) >= opts.length) return at + "дұрыс жауапты белгілеңіз";
   } else if (type === "MATCHING" || type === "MEMORY") {
@@ -94,7 +119,13 @@ export function prepareGame(payload: unknown, opts: { autoCrossword?: boolean } 
     if (d.type === "TRUEFALSE") data = { options: ["Дұрыс", "Бұрыс"] };
     if (d.type === "ORDERING") { data = { items: (q.data.items as string[]).map((s) => s.trimEnd()) }; answer = (q.data.items as string[]).map((_, i) => i); }
     if (d.type === "CROSSWORD") { answer = String(q.answer).trim().toUpperCase(); data = { ...q.data, len: (answer as string).length }; }
-    if (d.type === "LOGIC" || d.type === "CODING") answer = (q.answer as string[]).map((s) => s.trim());
+    if (d.type === "LOGIC" || d.type === "CODING" || d.type === "TEAMESCAPE" || (d.type === "ESCAPE" && !Array.isArray(q.data.options))) answer = (q.answer as string[]).map((s) => s.trim()).filter(Boolean);
+    if (d.type === "MAZE") { const l = q.data as unknown as { w: number; h: number; walls: number[]; start: number; dir: number; goal: number; limit?: number }; data = { w: l.w, h: l.h, walls: [...new Set(l.walls)], start: l.start, dir: l.dir, goal: l.goal, ...(l.limit ? { limit: Math.max(1, Math.min(30, l.limit)) } : {}) }; answer = 0; }
+    if (d.type === "PIXEL") data = { mode: q.data.mode === "paint" ? "paint" : "code", color: typeof q.data.color === "string" && /^#[0-9a-f]{6}$/i.test(q.data.color) ? q.data.color : "#A78BFA" };
+    if (d.type === "CIPHER") { answer = cleanWord(String(q.answer)); data = { cipher: q.data.cipher === "number" ? "number" : "caesar", shift: Math.max(1, Math.min(10, Number(q.data.shift) || 3)) }; }
+    if (d.type === "BOARD") { answer = String(q.answer).trim(); data = { category: String(q.data.category).trim().slice(0, 40) }; }
+    if (d.type === "TEAMESCAPE") data = { clues: (q.data.clues as string[]).map((c) => c.trim()) };
+    if (d.type === "ESCAPE") data = { ...(Array.isArray(q.data.options) ? { options: q.data.options } : {}), ...(typeof q.data.hint === "string" && q.data.hint.trim() ? { hint: q.data.hint.trim() } : {}) };
     return { order, prompt: q.prompt, data: data as Prisma.InputJsonValue, answer: answer as Prisma.InputJsonValue, explanation: q.explanation || null, points: d.type === "MATCHING" || d.type === "MEMORY" ? (q.data.left as string[]).length : q.points };
   });
   if (d.type === "CROSSWORD") {
@@ -102,7 +133,7 @@ export function prepareGame(payload: unknown, opts: { autoCrossword?: boolean } 
     if (err) return { error: err };
   }
   return {
-    base: { type: d.type, title: d.title, description: d.description, gradeId: d.grade, topicId: d.topicId ?? null, timeLimit: d.type === "RAPID" ? d.timeLimit ?? 10 : null },
+    base: { type: d.type, title: d.title, description: d.description, gradeId: d.grade, topicId: d.topicId ?? null, timeLimit: d.type === "RAPID" ? d.timeLimit ?? 10 : d.type === "LIVE" ? d.timeLimit ?? 20 : null },
     questions,
     published: d.published,
   };

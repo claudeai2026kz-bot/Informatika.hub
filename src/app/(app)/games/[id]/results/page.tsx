@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import ScoreEdit from "@/components/games/ScoreEdit";
 import { getT } from "@/lib/i18n/server";
 
 export async function generateMetadata() {
@@ -26,8 +27,9 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
       <p className="muted mt-1">{g.title}</p>
       <div className="mt-5 grid grid-cols-2 gap-3 max-w-md">
         <div className="card p-4"><div className="text-2xl font-extrabold">{rows.length}</div><div className="text-sm muted">{t("ойнады")}</div></div>
-        <div className="card p-4"><div className="text-2xl font-extrabold">{Math.round(avg * 10 * 10) / 10} / 10</div><div className="text-sm muted">{t("орташа балл")}</div></div>
+        <div className="card p-4"><div className="text-2xl font-extrabold">{Math.round(avg * 100)}%</div><div className="text-sm muted">{t("орташа нәтиже")}</div></div>
       </div>
+      {rows.length > 0 && <p className="mt-4 text-sm muted">{t("Баллды «+» және «−» батырмаларымен өзіңіз өзгерте аласыз (мысалы, ауызша жауап үшін).")}</p>}
       {rows.length === 0 ? (
         <div className="card p-10 mt-6 text-center muted">{t("Әзірге ешкім ойнаған жоқ. Сілтемені оқушыларға жіберіңіз.")}</div>
       ) : (
@@ -41,7 +43,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ id: st
                 <tr key={r.id} className="border-b border-sky-50 last:border-0">
                   <td className="px-4 py-3 font-semibold">{r.studentName}</td>
                   <td className="px-4 py-3">{r.className || "—"}</td>
-                  <td className="px-4 py-3"><span className={`chip ${r.score / Math.max(1, r.maxScore) >= 0.7 ? "bg-emerald-100 text-emerald-700" : r.score / Math.max(1, r.maxScore) >= 0.4 ? "bg-amber-100 text-amber-700" : "bg-rose-100 text-rose-700"}`}>{r.score} / {r.maxScore}</span></td>
+                  <td className="px-4 py-3"><ScoreEdit id={r.id} score={r.score} max={r.maxScore} /></td>
                   <td className="px-4 py-3 muted">{fmt.format(r.createdAt)}</td>
                 </tr>
               ))}

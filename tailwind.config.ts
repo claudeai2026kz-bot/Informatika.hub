@@ -7,8 +7,8 @@ export default {
       colors: {
         ink: { DEFAULT: "#20304D", soft: "#4A5A78", mute: "#7C8AA5" },
         sky: { 50: "#F4FAFF", 100: "#EAF5FF", 200: "#CFE8FD", 400: "#67B7F7", 500: "#3C9EEB", 600: "#2484D1" },
-        lilac: { 100: "#EDE8FF", 200: "#DCD2FF", 400: "#A78BFA", 500: "#8B6CF0" },
-        gold: { 100: "#FFF4D6", 400: "#F5C451", 500: "#E6A817" },
+        lilac: { 50: "#F7F4FF", 100: "#EDE8FF", 200: "#DCD2FF", 300: "#C4B5FD", 400: "#A78BFA", 500: "#8B6CF0", 600: "#6D4FD8", 700: "#5638B8" },
+        gold: { 100: "#FFF4D6", 200: "#FFE7A3", 300: "#FFD873", 400: "#F5C451", 500: "#E6A817" },
       },
       fontFamily: { sans: ["'Inter Variable'", "'Noto Sans'", "system-ui", "sans-serif"] },
       borderRadius: { xl2: "1.25rem", xl3: "1.75rem" },

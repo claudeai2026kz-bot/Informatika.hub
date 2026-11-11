@@ -44,6 +44,7 @@ model User {
   gameResults   GameResult[]
   studentResults StudentResult[]
   authoredGames Game[] @relation("AuthoredGames")
+  liveSessions  LiveSession[]
   resetTokens   PasswordResetToken[]
 }
 
@@ -212,6 +213,16 @@ enum GameType {
   CLIMB
   ORDERING
   MEMORY
+  MAZE
+  PIXEL
+  SHOOTER
+  ESCAPE
+  TUGOFWAR
+  DUEL
+  CIPHER
+  LIVE
+  BOARD
+  TEAMESCAPE
 }
 
 model Game {
@@ -236,6 +247,8 @@ model Game {
   favorites   Favorite[]
   results     GameResult[]
   studentResults StudentResult[]
+  liveSessions   LiveSession[]
+  duels          Duel[]
 
   @@index([type, gradeId])
 }
@@ -371,4 +384,72 @@ model StudentResult {
   createdAt   DateTime @default(now())
 
   @@index([teacherId, gameId])
+}
+
+/// Тірі ойын (Сынып жарысы, Командалық қашу бөлмесі): мұғалім тақтада жүргізеді, оқушылар кодпен телефоннан кіреді.
+model LiveSession {
+  id        String       @id @default(cuid())
+  code      String       @unique
+  gameId    String
+  game      Game         @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  hostId    String
+  host      User         @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  /// lobby | question | reveal | ended
+  state     String       @default("lobby")
+  current   Int          @default(-1)
+  startedAt DateTime?
+  /// 0 — әркім өзі үшін; 2–6 — командалар саны
+  teams     Int          @default(0)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  players   LivePlayer[]
+  answers   LiveAnswer[]
+
+  @@index([hostId])
+}
+
+model LivePlayer {
+  id        String       @id @default(cuid())
+  sessionId String
+  session   LiveSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  name      String
+  team      Int          @default(0)
+  score     Int          @default(0)
+  /// мұғалім қолмен қосқан/алған балл
+  bonus     Int          @default(0)
+  joinedAt  DateTime     @default(now())
+  answers   LiveAnswer[]
+
+  @@unique([sessionId, name])
+}
+
+model LiveAnswer {
+  id        String      @id @default(cuid())
+  sessionId String
+  session   LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  playerId  String
+  player    LivePlayer  @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  qIndex    Int
+  value     Json
+  correct   Boolean
+  points    Int         @default(0)
+  ms        Int         @default(0)
+  createdAt DateTime    @default(now())
+
+  @@index([sessionId, qIndex])
+}
+
+/// Дуэль: бірінші оқушы ойнап, досына сілтеме жібереді; екіншісі сол сұрақтарға жауап береді.
+model Duel {
+  id        String   @id @default(cuid())
+  gameId    String
+  game      Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  teacherId String?
+  aName     String
+  aScore    Int
+  aMs       Int
+  bName     String?
+  bScore    Int?
+  bMs       Int?
+  createdAt DateTime @default(now())
 }
