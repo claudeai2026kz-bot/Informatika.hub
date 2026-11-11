@@ -6,8 +6,9 @@ import type { PrismaClient, GameType } from "@prisma/client";
  *  QUIZ / RAPID: options + answer (дұрыс нұсқаның индексі, 0-ден)
  *  MATCHING: бір сұрақ, left[i] ↔ right[i] (сайт оң жақты өзі араластырады)
  *  CODING / LOGIC: answer — қабылданатын жауап(тар), code — көрсетілетін код
+ *  CROSSWORD: answer — сөз, cw — торда басталатын орны мен бағыты (сөздер қиылысады)
  */
-type Q = { prompt: string; options?: string[]; answer?: number | string | string[]; code?: string; explanation?: string };
+type Q = { prompt: string; options?: string[]; answer?: number | string | string[]; code?: string; explanation?: string; cw?: { row: number; col: number; dir: "across" | "down" } };
 type G = {
   type: GameType; grade: number; quarter: number; topic?: string; title: string; description: string; timeLimit?: number;
   questions?: Q[]; pairs?: { prompt: string; left: string[]; right: string[] };
@@ -239,6 +240,118 @@ export const GAMES: G[] = [
       { prompt: "ChatGPT сияқты жүйелер не істейді?",  options: ["Мәтін құрастырады", "Тек сурет салады", "Тек ән айтады", "Электр өндіреді"],  answer: 0 },
     ],
   },
+  {
+    type: "CROSSWORD", grade: 5, quarter: 1, topic: "Екілік ақпаратты ұсыну", title: "5-сынып сөзжұмбағы: ақпарат және робот",
+    description: "10 сөзден тұратын сөзжұмбақ. Сұрақты басып, әріптерді торға жазыңыз.",
+    questions: [
+      { prompt: "8 биттен тұратын өлшем бірлігі", answer: "БАЙТ", cw: { row: 0, col: 1, dir: "down" } },
+      { prompt: "Хабарды жасыру үшін қолданылатын құпия кодтау тәсілі", answer: "ШИФР", cw: { row: 0, col: 3, dir: "down" } },
+      { prompt: "Аккаунтты қорғайтын құпия сөз (басқаша атауы)", answer: "ПАРОЛЬ", cw: { row: 0, col: 6, dir: "down" } },
+      { prompt: "Сурет салуға арналған түстер жиыны", answer: "ПАЛИТРА", cw: { row: 1, col: 0, dir: "across" } },
+      { prompt: "Роботтың «сезім мүшесі»: жарықты, қашықтықты өлшейді", answer: "ДАТЧИК", cw: { row: 1, col: 9, dir: "down" } },
+      { prompt: "Программа бойынша жұмыс істейтін автоматты құрылғы", answer: "РОБОТ", cw: { row: 3, col: 5, dir: "across" } },
+      { prompt: "Сызықтар мен фигуралардан тұратын графика түрі", answer: "ВЕКТОР", cw: { row: 4, col: 4, dir: "down" } },
+      { prompt: "Растрлық суреттің ең кішкентай нүктесі", answer: "ПИКСЕЛЬ", cw: { row: 5, col: 0, dir: "across" } },
+      { prompt: "Ақпараттың ең кіші өлшем бірлігі", answer: "БИТ", cw: { row: 7, col: 2, dir: "across" } },
+      { prompt: "Компьютерге зиян келтіретін программа", answer: "ВИРУС", cw: { row: 9, col: 2, dir: "across" } },
+    ],
+  },
+  {
+    type: "CROSSWORD", grade: 6, quarter: 1, topic: "Компьютер қалай жұмыс істейді", title: "6-сынып сөзжұмбағы: компьютер және Python",
+    description: "10 сөзден тұратын сөзжұмбақ. Сұрақты басып, әріптерді торға жазыңыз.",
+    questions: [
+      { prompt: "Басқа бетке не файлға апаратын мәтін", answer: "СІЛТЕМЕ", cw: { row: 0, col: 0, dir: "across" } },
+      { prompt: "Бейнені экранға шығаратын құрылғы", answer: "МОНИТОР", cw: { row: 0, col: 5, dir: "down" } },
+      { prompt: "Программада мән сақтайтын атау", answer: "АЙНЫМАЛЫ", cw: { row: 2, col: 3, dir: "across" } },
+      { prompt: "Мәтін теру құрылғысы", answer: "ПЕРНЕТАҚТА", cw: { row: 3, col: 0, dir: "down" } },
+      { prompt: "Басқа біреудің еңбегін өзінікі етіп көрсету", answer: "ПЛАГИАТ", cw: { row: 3, col: 11, dir: "down" } },
+      { prompt: "Құжатты қағазға басып шығаратын құрылғы", answer: "ПРИНТЕР", cw: { row: 4, col: 3, dir: "down" } },
+      { prompt: "Программалау тілінде командаларды жазу ережелері", answer: "СИНТАКСИС", cw: { row: 4, col: 9, dir: "down" } },
+      { prompt: "Компьютерде денсаулыққа зиянсыз жұмыс істеу туралы ғылым", answer: "ЭРГОНОМИКА", cw: { row: 5, col: 2, dir: "across" } },
+      { prompt: "Экрандағы меңзерді жылжытатын құрылғы", answer: "ТІНТУІР", cw: { row: 8, col: 0, dir: "across" } },
+      { prompt: "Компьютердің «миы», есептеулерді орындайды", answer: "ПРОЦЕССОР", cw: { row: 12, col: 3, dir: "across" } },
+    ],
+  },
+  {
+    type: "CROSSWORD", grade: 7, quarter: 1, topic: "Файлдардың форматтары", title: "7-сынып сөзжұмбағы: кестелер, файлдар, шарт",
+    description: "10 сөзден тұратын сөзжұмбақ. Сұрақты басып, әріптерді торға жазыңыз.",
+    questions: [
+      { prompt: "Сандық деректерді суретпен көрсету", answer: "ДИАГРАММА", cw: { row: 0, col: 2, dir: "across" } },
+      { prompt: "Адам мен компьютердің өзара әрекеттесу тәсілі (терезелер, батырмалар)", answer: "ИНТЕРФЕЙС", cw: { row: 0, col: 3, dir: "down" } },
+      { prompt: "Вирустарды тауып, жоятын программа", answer: "АНТИВИРУС", cw: { row: 0, col: 10, dir: "down" } },
+      { prompt: "Жолдар мен бағандардан тұратын құрылым", answer: "КЕСТЕ", cw: { row: 2, col: 0, dir: "across" } },
+      { prompt: "if операторынан кейін жазылатын тексеріс", answer: "ШАРТ", cw: { row: 2, col: 7, dir: "across" } },
+      { prompt: "1024 байт", answer: "КИЛОБАЙТ", cw: { row: 3, col: 6, dir: "down" } },
+      { prompt: "Дискіде атауымен сақталған ақпарат", answer: "ФАЙЛ", cw: { row: 5, col: 3, dir: "across" } },
+      { prompt: "Электрондық кестеде жол мен бағанның қиылысы", answer: "ҰЯШЫҚ", cw: { row: 5, col: 8, dir: "down" } },
+      { prompt: "Компьютердің ақпаратты сақтайтын бөлігі", answer: "ЖАДЫ", cw: { row: 8, col: 5, dir: "across" } },
+      { prompt: "Файлдың түрін көрсететін кеңейтпе (мысалы .docx)", answer: "ФОРМАТ", cw: { row: 10, col: 1, dir: "across" } },
+    ],
+  },
+  {
+    type: "CROSSWORD", grade: 8, quarter: 3, topic: "For циклі", title: "8-сынып сөзжұмбағы: циклдер және қауіпсіздік",
+    description: "10 сөзден тұратын сөзжұмбақ. Сұрақты басып, әріптерді торға жазыңыз.",
+    questions: [
+      { prompt: "Басқа компьютерлерге қызмет көрсететін қуатты компьютер", answer: "СЕРВЕР", cw: { row: 0, col: 10, dir: "down" } },
+      { prompt: "Компьютерлік жүйеге рұқсатсыз кіретін адам", answer: "ХАКЕР", cw: { row: 1, col: 4, dir: "down" } },
+      { prompt: "Жалған сайт арқылы құпиясөз ұрлау", answer: "ФИШИНГ", cw: { row: 1, col: 6, dir: "down" } },
+      { prompt: "Деректерді жинап, талдайтын ғылым", answer: "СТАТИСТИКА", cw: { row: 1, col: 8, dir: "down" } },
+      { prompt: "Процессорды салқындататын металл бөлшек", answer: "РАДИАТОР", cw: { row: 2, col: 3, dir: "across" } },
+      { prompt: "Электрондық кестедегі СУММ, СРЗНАЧ сияқты дайын формула", answer: "ФУНКЦИЯ", cw: { row: 3, col: 2, dir: "down" } },
+      { prompt: "Командаларды бірнеше рет қайталау", answer: "ЦИКЛ", cw: { row: 6, col: 0, dir: "across" } },
+      { prompt: "Бір-бірімен байланысқан компьютерлер", answer: "ЖЕЛІ", cw: { row: 7, col: 4, dir: "down" } },
+      { prompt: "Циклдің бір рет орындалуы", answer: "ИТЕРАЦИЯ", cw: { row: 8, col: 2, dir: "across" } },
+      { prompt: "Сұралмаған жаппай жарнамалық хаттар", answer: "СПАМ", cw: { row: 10, col: 6, dir: "across" } },
+    ],
+  },
+  {
+    type: "CROSSWORD", grade: 9, quarter: 3, topic: "Бірөлшемді массив", title: "9-сынып сөзжұмбағы: массивтер және деректер базасы",
+    description: "10 сөзден тұратын сөзжұмбақ. Сұрақты басып, әріптерді торға жазыңыз.",
+    questions: [
+      { prompt: "Құрылғыны операциялық жүйемен байланыстыратын программа", answer: "ДРАЙВЕР", cw: { row: 0, col: 3, dir: "across" } },
+      { prompt: "Кейіпкердің қозғалысын көрсету", answer: "АНИМАЦИЯ", cw: { row: 0, col: 5, dir: "down" } },
+      { prompt: "Массивтегі элементтің реттік нөмірі", answer: "ИНДЕКС", cw: { row: 2, col: 5, dir: "across" } },
+      { prompt: "Элементтерді өсу не кему ретімен орналастыру", answer: "СҰРЫПТАУ", cw: { row: 2, col: 10, dir: "down" } },
+      { prompt: "Массивтің бір мүшесі", answer: "ЭЛЕМЕНТ", cw: { row: 3, col: 1, dir: "down" } },
+      { prompt: "Деректер базасындағы кестенің бағаны", answer: "ӨРІС", cw: { row: 3, col: 3, dir: "down" } },
+      { prompt: "Бір атаумен сақталған элементтер тізбегі", answer: "МАССИВ", cw: { row: 6, col: 1, dir: "across" } },
+      { prompt: "Шартқа сай жазбаларды ғана көрсету құралы", answer: "СҮЗГІ", cw: { row: 6, col: 8, dir: "down" } },
+      { prompt: "Деректер базасындағы кестенің жолы", answer: "ЖАЗБА", cw: { row: 8, col: 6, dir: "across" } },
+      { prompt: "Желіде сөйлесудің әдеп ережелері", answer: "ЭТИКЕТ", cw: { row: 9, col: 0, dir: "across" } },
+    ],
+  },
+  {
+    type: "CROSSWORD", grade: 10, quarter: 1, topic: "Компьютерлік желілердің жұмыс жасау принциптері", title: "10-сынып сөзжұмбағы: желілер, логика, HTML",
+    description: "10 сөзден тұратын сөзжұмбақ. Сұрақты басып, әріптерді торға жазыңыз.",
+    questions: [
+      { prompt: "Веб-беттерді ашатын программа", answer: "БРАУЗЕР", cw: { row: 0, col: 0, dir: "down" } },
+      { prompt: "Логикалық ЖӘНЕ амалы", answer: "КОНЪЮНКЦИЯ", cw: { row: 0, col: 7, dir: "down" } },
+      { prompt: "Логикалық ЕМЕС амалы", answer: "ИНВЕРСИЯ", cw: { row: 0, col: 10, dir: "down" } },
+      { prompt: "Сайттың атауы (мысалы: kz, gov)", answer: "ДОМЕН", cw: { row: 1, col: 6, dir: "across" } },
+      { prompt: "Компьютерлердің ақпарат алмасу ережелері (мысалы HTTP)", answer: "ПРОТОКОЛ", cw: { row: 3, col: 3, dir: "down" } },
+      { prompt: "HTML-дегі <p>, <a> сияқты белгі", answer: "ТЕГ", cw: { row: 3, col: 9, dir: "across" } },
+      { prompt: "Төбелер мен қырлардан тұратын құрылым", answer: "ГРАФ", cw: { row: 4, col: 2, dir: "across" } },
+      { prompt: "Желілерді байланыстыратын құрылғы", answer: "РОУТЕР", cw: { row: 6, col: 0, dir: "across" } },
+      { prompt: "Функцияның өзін-өзі шақыруы", answer: "РЕКУРСИЯ", cw: { row: 8, col: 1, dir: "across" } },
+      { prompt: "CSS арқылы беріледі: түс, қаріп, өлшем", answer: "СТИЛЬ", cw: { row: 10, col: 0, dir: "across" } },
+    ],
+  },
+  {
+    type: "CROSSWORD", grade: 11, quarter: 1, topic: "Жасанды интеллект", title: "11-сынып сөзжұмбағы: жасанды интеллект",
+    description: "10 сөзден тұратын сөзжұмбақ. Сұрақты басып, әріптерді торға жазыңыз.",
+    questions: [
+      { prompt: "Деректерден үйренген ЖИ жүйесі", answer: "МОДЕЛЬ", cw: { row: 0, col: 0, dir: "down" } },
+      { prompt: "ЖИ-ге берілетін мәтіндік сұраныс, нұсқау", answer: "ПРОМПТ", cw: { row: 1, col: 2, dir: "down" } },
+      { prompt: "Нейрондық желінің негізгі элементі", answer: "НЕЙРОН", cw: { row: 1, col: 6, dir: "down" } },
+      { prompt: "Компьютер жасаған, шынайы емес (шындық түрі)", answer: "ВИРТУАЛДЫ", cw: { row: 1, col: 11, dir: "down" } },
+      { prompt: "Машиналық оқытудағы модельдің «оқулығы»", answer: "ДЕРЕКТЕР", cw: { row: 2, col: 0, dir: "across" } },
+      { prompt: "Адаммен мәтін арқылы сөйлесетін программа", answer: "ЧАТБОТ", cw: { row: 5, col: 9, dir: "down" } },
+      { prompt: "360 градусқа түсірілген сурет", answer: "ПАНОРАМА", cw: { row: 6, col: 4, dir: "across" } },
+      { prompt: "Виртуалды әлемдегі адамның кейіпкері", answer: "АВАТАР", cw: { row: 6, col: 5, dir: "down" } },
+      { prompt: "Нысандарды топтарға бөлу (классификация)", answer: "ЖІКТЕУ", cw: { row: 9, col: 2, dir: "across" } },
+      { prompt: "Есепті шешуге арналған әрекеттер тізбегі", answer: "АЛГОРИТМ", cw: { row: 11, col: 1, dir: "across" } },
+    ],
+  },
 ];
 
 export async function importGames(db: PrismaClient) {
@@ -253,7 +366,7 @@ export async function importGames(db: PrismaClient) {
       : (g.questions ?? []).map((q, i) => ({
           order: i,
           prompt: q.prompt,
-          data: { ...(q.options ? { options: q.options } : {}), ...(q.code ? { code: q.code } : {}) },
+          data: q.cw ? { ...q.cw, len: String(q.answer).length } : { ...(q.options ? { options: q.options } : {}), ...(q.code ? { code: q.code } : {}) },
           answer: q.answer as number | string | string[],
           explanation: q.explanation ?? null,
           points: 1,
