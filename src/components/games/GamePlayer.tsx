@@ -11,8 +11,10 @@ type Q = { id: string; prompt: string; points: number; data: Record<string, unkn
 type Layout = { rows: number; cols: number; words: { id: string; n: number; row: number; col: number; dir: "across" | "down"; len: number }[] } | null;
 type Result = Awaited<ReturnType<typeof submitGame>>;
 
-export default function GamePlayer({ gameId, type, title, questions, timeLimit, layout, loggedIn }: {
+export default function GamePlayer({ gameId, type, title, questions, timeLimit, layout, loggedIn, student }: {
   gameId: string; type: string; title: string; questions: Q[]; timeLimit: number | null; layout: Layout; loggedIn: boolean;
+  /** Оқушы мұғалімнің сілтемесімен ойнаса — нәтиже мұғалімге жіберіледі */
+  student?: { teacherId: string; name: string; className?: string };
 }) {
   const t = useT();
   const [phase, setPhase] = useState<"intro" | "play" | "done">("intro");
@@ -23,7 +25,7 @@ export default function GamePlayer({ gameId, type, title, questions, timeLimit, 
 
   function restart() { setAnswers({}); setResult(null); setRound((r) => r + 1); setPhase("play"); }
   function finish(final: Record<string, unknown>) {
-    start(async () => { const r = await submitGame(gameId, final); setResult(r); setPhase("done"); });
+    start(async () => { const r = await submitGame(gameId, final, student); setResult(r); setPhase("done"); });
   }
 
   if (questions.length === 0) return <div className="card p-10 text-center muted">{t("Бұл ойынға әлі сұрақ қосылмаған.")}</div>;
@@ -34,7 +36,7 @@ export default function GamePlayer({ gameId, type, title, questions, timeLimit, 
         <div className="flex justify-center"><Robot size={150} wave /></div>
         <h2 className="mt-4 text-2xl font-bold">{t("Дайынсыз ба?")}</h2>
         <p className="mt-2 muted">{t("{n} сұрақ", { n: questions.length })}{type === "RAPID" ? ` · ${t("әр сұраққа {s} секунд", { s: timeLimit ?? 10 })}` : ""}. {t("Ұпай автоматты түрде есептеледі.")}</p>
-        {!loggedIn && <p className="mt-2 text-sm text-amber-700">{t("Нәтижеңіз сақталуы үшін жүйеге кіріңіз.")}</p>}
+        {!loggedIn && !student && <p className="mt-2 text-sm text-amber-700">{t("Нәтижеңіз сақталуы үшін жүйеге кіріңіз.")}</p>}
         <button onClick={() => setPhase("play")} className="btn-primary h-12 px-8 mt-6 text-base"><Play className="h-5 w-5" /> {t("Ойынды бастау")}</button>
       </div>
     );
@@ -295,10 +297,10 @@ function ResultView({ result, questions, type, onRestart }: { result: Result; qu
         </div>
         <div className="text-center sm:text-left">
           <h2 className="text-2xl font-bold">{msg}</h2>
-          <p className="mt-1 muted">{result.saved ? t("Нәтиже сақталды. Ең жақсы нәтижеңіз: {n} ұпай.", { n: result.best ?? 0 }) : t("Нәтижені сақтау үшін жүйеге кіріңіз.")}</p>
+          <p className="mt-1 muted">{result.sent ? t("Нәтижең мұғаліміңе жіберілді ✅") : result.saved ? t("Нәтиже сақталды. Ең жақсы нәтижеңіз: {n} ұпай.", { n: result.best ?? 0 }) : t("Нәтижені сақтау үшін жүйеге кіріңіз.")}</p>
           <div className="mt-5 flex flex-wrap gap-2 justify-center sm:justify-start">
             <button onClick={onRestart} className="btn-primary"><RotateCcw className="h-4 w-4" /> {t("Қайта ойнау")}</button>
-            <Link href="/games" className="btn-ghost">{t("Басқа ойындар")}</Link>
+            {!result.sent && <Link href="/games" className="btn-ghost">{t("Басқа ойындар")}</Link>}
           </div>
         </div>
       </div>

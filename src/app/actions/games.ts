@@ -20,20 +20,32 @@ export async function checkAnswer(gameId: string, questionId: string, given: unk
 }
 
 /** Ойынды аяқтау: ұпай серверде есептеледі, нәтиже сақталады. */
-export async function submitGame(gameId: string, answers: Record<string, unknown>) {
+const studentSchema = z.object({
+  teacherId: z.string().cuid(),
+  name: z.string().trim().min(2).max(60),
+  className: z.string().trim().max(20).default(""),
+});
+
+export async function submitGame(gameId: string, answers: Record<string, unknown>, student?: { teacherId: string; name: string; className?: string }) {
   const g = await loadGame(gameId);
   const res = scoreGame(g.type, g.questions as QuestionRow[], answers ?? {});
   const user = await getCurrentUser();
   await db.game.update({ where: { id: g.id }, data: { plays: { increment: 1 } } });
   let best: number | null = null;
-  if (user) {
+  let sent = false;
+  const st = student ? studentSchema.safeParse(student) : null;
+  if (st?.success && (await db.user.findUnique({ where: { id: st.data.teacherId }, select: { id: true } }))) {
+    await db.studentResult.create({ data: { gameId: g.id, teacherId: st.data.teacherId, studentName: st.data.name, className: st.data.className, score: res.score, maxScore: res.max } });
+    sent = true;
+  } else if (user) {
     await db.gameResult.create({ data: { userId: user.id, gameId: g.id, score: res.score, maxScore: res.max } });
     best = (await db.gameResult.aggregate({ where: { userId: user.id, gameId: g.id }, _max: { score: true } }))._max.score;
   }
   return {
     ...res,
     best,
-    saved: !!user,
+    saved: !!user && !sent,
+    sent,
     solutions: g.questions.map((q) => ({ id: q.id, answer: q.answer, explanation: q.explanation })),
   };
 }

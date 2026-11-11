@@ -6,6 +6,7 @@ import { crosswordLayout, publicQuestion, type QuestionRow } from "@/lib/games";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import FavoriteButton from "@/components/FavoriteButton";
 import GamePlayer from "@/components/games/GamePlayer";
+import SendToStudents from "@/components/games/SendToStudents";
 import { GAME_ICONS } from "@/components/games/icons";
 
 import { getT } from "@/lib/i18n/server";
@@ -21,6 +22,7 @@ export default async function GamePage({ params }: { params: Promise<{ id: strin
   const g = await db.game.findUnique({ where: { id }, include: { questions: { orderBy: { order: "asc" } }, topic: true } });
   if (!g || (!g.published && user?.role !== "ADMIN")) notFound();
   const fav = user ? await db.favorite.findFirst({ where: { userId: user.id, gameId: id } }) : null;
+  const sentCount = user ? await db.studentResult.count({ where: { gameId: id, teacherId: user.id } }) : 0;
   const seed = Math.floor(Math.random() * 1000);
   const questions = g.questions.map((q) => publicQuestion(g.type, q as QuestionRow, seed));
   const I = GAME_ICONS[g.type];
@@ -38,6 +40,7 @@ export default async function GamePage({ params }: { params: Promise<{ id: strin
         </div>
         <FavoriteButton target={{ gameId: g.id }} initial={!!fav} loggedIn={!!user} />
       </header>
+      <SendToStudents gameId={g.id} title={g.title} teacherId={user?.id ?? null} results={sentCount} />
       <GamePlayer
         gameId={g.id}
         type={g.type}

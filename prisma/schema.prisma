@@ -42,6 +42,7 @@ model User {
   history       UserHistory[]
   notifications Notification[]
   gameResults   GameResult[]
+  studentResults StudentResult[]
   resetTokens   PasswordResetToken[]
 }
 
@@ -226,6 +227,7 @@ model Game {
   questions   GameQuestion[]
   favorites   Favorite[]
   results     GameResult[]
+  studentResults StudentResult[]
 
   @@index([type, gradeId])
 }
@@ -345,4 +347,20 @@ model ActivityLog {
   action    String
   target    String?
   createdAt DateTime @default(now())
+}
+
+/// Мұғалім сілтемемен жіберген ойынды оқушы тіркелмей ойнағандағы нәтиже.
+model StudentResult {
+  id          String   @id @default(cuid())
+  gameId      String
+  game        Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  teacherId   String
+  teacher     User     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  studentName String
+  className   String   @default("")
+  score       Int
+  maxScore    Int
+  createdAt   DateTime @default(now())
+
+  @@index([teacherId, gameId])
 }
