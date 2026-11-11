@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { CURRICULUM, REMOVED, SECTIONS } from "./curriculum";
 import { importContent } from "./import-content";
+import { importGames } from "./games";
 
 const db = new PrismaClient();
 
@@ -50,6 +51,7 @@ async function main() {
   }
 
   await importContent(db);
+  await importGames(db);
 
   // Бірінші әкімші тек осы жерде, ортаның айнымалылары арқылы жасалады.
   const email = process.env.ADMIN_EMAIL?.toLowerCase();
