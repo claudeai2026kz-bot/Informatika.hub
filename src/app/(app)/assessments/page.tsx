@@ -1,9 +1,20 @@
 import Link from "next/link";
 import type { Prisma } from "@prisma/client";
-import { ClipboardCheck, Download } from "lucide-react";
+import { ClipboardCheck, Download, ArrowLeft, ChevronRight } from "lucide-react";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { GRADES, QUARTER_LABELS } from "@/lib/labels";
+
+// Әр сыныпқа бөлек, бірақ үйлесімді түс: көк → көгілдір → жасыл → сары → қызғылт сары → қызғылт → күлгін
+const GRADE_COLORS = [
+  "from-[#3B82F6] to-[#60A5FA] shadow-[0_14px_28px_-14px_#3B82F6]",
+  "from-[#0891B2] to-[#22D3EE] shadow-[0_14px_28px_-14px_#0891B2]",
+  "from-[#059669] to-[#34D399] shadow-[0_14px_28px_-14px_#059669]",
+  "from-[#D97706] to-[#FBBF24] shadow-[0_14px_28px_-14px_#D97706]",
+  "from-[#EA580C] to-[#FB923C] shadow-[0_14px_28px_-14px_#EA580C]",
+  "from-[#DB2777] to-[#F472B6] shadow-[0_14px_28px_-14px_#DB2777]",
+  "from-[#7C3AED] to-[#A78BFA] shadow-[0_14px_28px_-14px_#7C3AED]",
+];
 import FilterBar from "@/components/FilterBar";
 import FavoriteButton from "@/components/FavoriteButton";
 import Pagination from "@/components/Pagination";
@@ -33,13 +44,20 @@ export default async function AssessmentsPage({ searchParams }: { searchParams: 
     ...(topic && { topicId: topic }), ...(sp.variant && { variant: sp.variant }),
     ...(q && { OR: [{ title: { contains: q, mode: "insensitive" } }, { description: { contains: q, mode: "insensitive" } }] }),
   };
-  const [items, total, topics, variants, favs] = await Promise.all([
+  const showGrades = !grade && !quarter && !topic && !sp.variant && !q;
+  const [items, total, topics, variants, favs, perGrade] = await Promise.all([
     db.assessment.findMany({ where, orderBy: [{ gradeId: "asc" }, { createdAt: "desc" }], skip: (page - 1) * PER, take: PER, include: { quarter: true, topic: true } }),
     db.assessment.count({ where }),
     grade ? db.topic.findMany({ where: { quarter: { gradeId: grade, ...(quarter && { number: quarter }) } }, select: { id: true, title: true }, orderBy: { order: "asc" } }) : [],
     db.assessment.findMany({ where: { published: true }, distinct: ["variant"], select: { variant: true } }),
     user ? db.favorite.findMany({ where: { userId: user.id, assessmentId: { not: null } }, select: { assessmentId: true } }) : [],
+    showGrades ? db.assessment.groupBy({ by: ["gradeId", "kind"], where: { published: true }, _count: { _all: true } }) : [],
   ]);
+  const cnt = (g: number, k: string) => perGrade.find((x) => x.gradeId === g && x.kind === k)?._count._all ?? 0;
+  const link = (u: Partial<SP>) => {
+    const s = new URLSearchParams(Object.entries({ ...sp, page: undefined, ...u }).filter(([, v]) => v) as [string, string][]);
+    return `/assessments?${s}`;
+  };
   const favSet = new Set(favs.map((f) => f.assessmentId));
   const tab = (k?: string) => {
     const s = new URLSearchParams(Object.entries({ ...sp, kind: k, page: undefined }).filter(([, v]) => v) as [string, string][]);
@@ -59,13 +77,47 @@ export default async function AssessmentsPage({ searchParams }: { searchParams: 
 
       <div className="mt-4">
         <FilterBar placeholder={t("Тапсырма атауы бойынша іздеу…")} filters={[
-          { name: "grade", label: t("Сынып"), options: GRADES.map((g) => ({ value: String(g), label: t("{g}-сынып", { g }) })) },
+          ...(grade ? [] : [{ name: "grade", label: t("Сынып"), options: GRADES.map((g) => ({ value: String(g), label: t("{g}-сынып", { g }) })) }]),
           { name: "quarter", label: t("Тоқсан"), options: [1, 2, 3, 4].map((n) => ({ value: String(n), label: t(QUARTER_LABELS[n]) })) },
           { name: "topic", label: t("Тақырып"), options: topics.map((x) => ({ value: String(x.id), label: x.title })) },
           { name: "variant", label: t("Нұсқа"), options: variants.map((v) => ({ value: v.variant, label: v.variant })) },
         ]} />
       </div>
 
+      {showGrades ? (
+        <section className="mt-8">
+          <h2 className="text-xl sm:text-2xl font-bold">{t("Сыныпты таңдаңыз")}</h2>
+          <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+            {GRADES.map((g, i) => {
+              const b = cnt(g, "BZHB"), tz = cnt(g, "TZHB"), n = kind ? cnt(g, kind) : b + tz;
+              return (
+                <Link key={g} href={link({ grade: String(g) })} className={`card card-hover border-transparent bg-gradient-to-br ${GRADE_COLORS[i]} text-white px-3 py-5 text-center transition hover:-translate-y-0.5`}>
+                  <div className="text-4xl font-extrabold">{g}</div>
+                  <div className="text-xs font-semibold text-white/85">{t("сынып")}</div>
+                  <div className="mt-3 flex justify-center gap-1.5 text-[11px] font-bold">
+                    {n ? (<>
+                      {kind !== "TZHB" && <span className="rounded-full bg-white/90 px-2 py-0.5 text-ink">{t("БЖБ")} {b}</span>}
+                      {kind !== "BZHB" && <span className="rounded-full bg-white/90 px-2 py-0.5 text-ink">{t("ТЖБ")} {tz}</span>}
+                    </>) : <span className="rounded-full bg-white/25 px-2 py-0.5">{t("Әзірге жоқ")}</span>}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      ) : (
+      <>
+      {grade && (
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <Link href={link({ grade: undefined, quarter: undefined, topic: undefined })} className="btn-ghost btn-sm"><ArrowLeft className="h-4 w-4" /> {t("Барлық сыныптар")}</Link>
+          <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-1">{t("{g}-сынып", { g: grade })}<ChevronRight className="h-5 w-5 text-ink-mute" /></h2>
+          <div className="flex flex-wrap gap-1.5">
+            {[undefined, 1, 2, 3, 4].map((n) => (
+              <Link key={n ?? 0} href={link({ quarter: n ? String(n) : undefined, topic: undefined })} aria-current={quarter === n ? "page" : undefined} className={`rounded-xl px-3.5 py-1.5 text-sm font-semibold transition ${quarter === n ? "bg-sky-500 text-white" : "bg-white border border-sky-100 text-ink-soft hover:bg-sky-50"}`}>{n ? t(QUARTER_LABELS[n]) : t("Барлығы")}</Link>
+            ))}
+          </div>
+        </div>
+      )}
       <p className="mt-6 mb-4 text-sm muted">{t("{n} тапсырма табылды", { n: total })}</p>
       {items.length ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -87,6 +139,8 @@ export default async function AssessmentsPage({ searchParams }: { searchParams: 
         </div>
       ) : <div className="card p-12 text-center muted">{t("Сүзгіге сай тапсырма табылмады.")}</div>}
       <Pagination page={page} pages={Math.ceil(total / PER)} base="/assessments" params={{ ...sp, page: undefined }} />
+      </>
+      )}
     </div>
   );
 }

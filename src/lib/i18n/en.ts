@@ -786,5 +786,7 @@ const dict: Record<string, string> = {
   "Әріп нөмірі (А=1, Ә=2 …)": "Letter number (A=1, B=2 …)",
   "Өткізу": "Skip",
   "−{s} балл": "−{s} pts",
+  "Барлық сыныптар": "All grades",
+  "Әзірге жоқ": "None yet",
 };
 export default dict;
