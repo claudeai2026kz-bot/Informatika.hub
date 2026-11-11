@@ -455,6 +455,12 @@ model ClassGame {
   classroom Classroom @relation(fields: [classId], references: [id], onDelete: Cascade)
   gameId    String
   game      Game      @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  /// 0 — шексіз; әйтпесе бір оқушыға рұқсат етілген ойнау саны
+  attempts  Int       @default(0)
+  /// журналға қай нәтиже түседі: best | first | last
+  countMode String    @default("best")
+  /// осы уақыттан кейін сілтеме жабылады
+  dueAt     DateTime?
   createdAt DateTime  @default(now())
 
   @@unique([classId, gameId])

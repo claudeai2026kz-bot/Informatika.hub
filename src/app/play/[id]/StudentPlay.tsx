@@ -1,10 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
-import { User, Search } from "lucide-react";
+import { User, Search, Clock, Lock } from "lucide-react";
+import { classGameStatus } from "@/app/actions/games";
 import GamePlayer from "@/components/games/GamePlayer";
 import { useT } from "@/lib/i18n/client";
+const fmtDue = (d: Date) => { const p = (n: number) => String(n).padStart(2, "0"); return `${p(d.getDate())}.${p(d.getMonth() + 1)}, ${p(d.getHours())}:${p(d.getMinutes())}`; };
 
-type Classroom = { id: string; name: string; students: { id: string; name: string }[] };
+type Classroom = { id: string; name: string; students: { id: string; name: string }[]; attempts?: number; dueAt?: string | null };
 type Props = Omit<React.ComponentProps<typeof GamePlayer>, "student"> & { teacherId: string | null; classroom?: Classroom | null };
 
 /** Алдымен оқушы аты-жөнін жазады (сынып сілтемесінде — тізімнен таңдайды), сосын ойын басталады. */
@@ -16,6 +18,10 @@ export default function StudentPlay({ teacherId, classroom, ...game }: Props) {
   const [typing, setTyping] = useState(false);
   const [q, setQ] = useState("");
   const [ready, setReady] = useState(false);
+  const [block, setBlock] = useState<"closed" | "limit" | null>(null);
+  const [checking, setChecking] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const storeKey = classroom ? `ihub-class-${classroom.id}` : "";
   useEffect(() => {
     try {
@@ -38,13 +44,26 @@ export default function StudentPlay({ teacherId, classroom, ...game }: Props) {
       const n = chosen && !free ? chosen.name : name.trim();
       return <GamePlayer {...game} student={{ teacherId, name: n, className: classroom.name, classId: classroom.id, studentId: chosen && !free ? chosen.id : undefined }} />;
     }
-    const ok = free ? name.trim().length >= 2 : !!chosen;
+    const ok = (free ? name.trim().length >= 2 : !!chosen) && !checking;
+    const due = classroom.dueAt && mounted ? new Date(classroom.dueAt) : null;
+    if (block === "closed" || (due && due.getTime() < Date.now()))
+      return (
+        <div className="card p-8 max-w-lg mx-auto text-center">
+          <Lock className="mx-auto h-10 w-10 text-rose-400" />
+          <h2 className="mt-3 text-xl font-bold">{t("Бұл ойынның мерзімі бітті")}</h2>
+          <p className="mt-1 muted">{t("Мұғаліміңе хабарлас.")}</p>
+        </div>
+      );
     const shown = q ? list.filter((s) => s.name.toLowerCase().includes(q.toLowerCase())) : list;
     return (
       <form className="card p-6 sm:p-10 max-w-xl mx-auto" onSubmit={(e) => {
         e.preventDefault(); if (!ok) return;
         try { if (chosen && !free) localStorage.setItem(storeKey, chosen.id); else localStorage.setItem("ihub-student-name", name.trim()); } catch { /* */ }
-        setReady(true);
+        setChecking(true);
+        classGameStatus(classroom.id, game.gameId, chosen && !free ? chosen.id : undefined, free ? name.trim() : undefined)
+          .then((b) => { setBlock(b); if (!b) setReady(true); })
+          .catch(() => setReady(true))
+          .finally(() => setChecking(false));
       }}>
         <div className="flex items-center gap-3">
           <span className="grid h-11 w-11 place-items-center rounded-xl bg-sky-100 text-sky-600"><User className="h-5 w-5" /></span>
@@ -53,6 +72,13 @@ export default function StudentPlay({ teacherId, classroom, ...game }: Props) {
             <p className="text-sm muted">{t("{c} сыныбы · нәтижең мұғаліміңнің журналына түседі.", { c: classroom.name })}</p>
           </div>
         </div>
+        {(due || (classroom.attempts ?? 0) > 0) && (
+          <p className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            {due && <span className="inline-flex items-center gap-1.5"><Clock className="h-4 w-4" /> {t("Мерзімі: {d}", { d: fmtDue(due) })}</span>}
+            {(classroom.attempts ?? 0) > 0 && <span>{t("Ойнауға болады: {n} рет", { n: classroom.attempts! })}</span>}
+          </p>
+        )}
+        {block === "limit" && <p className="mt-4 rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700" role="alert">{t("Сен бұл ойынды ойнап қойғансың. Қайта ойнауға рұқсат жоқ.")}</p>}
         {free ? (
           <>
             <label className="block mt-6 text-sm font-semibold" htmlFor="sname">{t("Аты-жөнің")}</label>
@@ -69,7 +95,7 @@ export default function StudentPlay({ teacherId, classroom, ...game }: Props) {
             )}
             <div className="mt-4 grid gap-2 sm:grid-cols-2 max-h-[46vh] overflow-y-auto pr-1" role="radiogroup" aria-label={t("Оқушылар тізімі")}>
               {shown.map((s) => (
-                <button key={s.id} type="button" role="radio" aria-checked={picked === s.id} onClick={() => setPicked(s.id)}
+                <button key={s.id} type="button" role="radio" aria-checked={picked === s.id} onClick={() => { setPicked(s.id); setBlock(null); }}
                   className={`rounded-xl border px-4 py-3 text-left font-semibold transition ${picked === s.id ? "border-sky-500 bg-sky-50 text-sky-800 ring-2 ring-sky-300" : "border-sky-100 hover:border-sky-300 hover:bg-sky-50/60"}`}>
                   {s.name}
                 </button>

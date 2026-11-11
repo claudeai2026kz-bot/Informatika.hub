@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Download, Users, Gamepad2, BarChart3, Settings, Plus, Table2, CheckCircle2, PencilLine } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
-import { loadGradebook, pct } from "@/lib/classes";
+import { loadGradebook, pct, markOf } from "@/lib/classes";
 import { GAME_TYPES, GRADE_STYLES } from "@/lib/labels";
 import { GAME_ICONS } from "@/components/games/icons";
 import Breadcrumbs from "@/components/Breadcrumbs";
@@ -117,7 +117,7 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
             </div>
           ) : (
             <>
-              <p className="mt-4 text-sm muted">{t("Ойын бағандарында — оқушының ең жақсы нәтижесі (басып, балды өзгертуге болады). Өз бағандарыңызға санды жазып, Enter басыңыз.")}</p>
+              <p className="mt-4 text-sm muted">{t("«Баға» бағаны: 85% және жоғары — 5, 65% — 4, 40% — 3, одан төмен — 2.")} {t("Ойын бағандарында — ойынның «Баптау» бөлімінде таңдалған нәтиже (әдетте ең жақсысы). Басып, балды өзгертуге болады. Өз бағандарыңызға санды жазып, Enter басыңыз.")}</p>
               <div className="card mt-3 overflow-x-auto">
                 <table className="w-full text-sm border-separate border-spacing-0">
                   <thead>
@@ -145,11 +145,12 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
                       ))}
                       <th className="px-3 py-3 border-b border-sky-100 text-center font-semibold">{t("Барлығы")}</th>
                       <th className="px-3 py-3 border-b border-sky-100 text-center font-semibold">{t("Орташа")}</th>
+                      <th className="px-3 py-3 border-b border-sky-100 text-center font-semibold" title={t("85% және жоғары — 5, 65% — 4, 40% — 3, одан төмен — 2")}>{t("Баға")}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {rows.length === 0 && (
-                      <tr><td colSpan={games.length + columns.length + 3} className="px-4 py-8 text-center muted">{t("Әзірге оқушы жоқ. «Оқушы қосу» батырмасымен тізім енгізіңіз не ойын сілтемесін жіберіңіз — ойнағандар жоғарыда шығады.")}</td></tr>
+                      <tr><td colSpan={games.length + columns.length + 4} className="px-4 py-8 text-center muted">{t("Әзірге оқушы жоқ. «Оқушы қосу» батырмасымен тізім енгізіңіз не ойын сілтемесін жіберіңіз — ойнағандар жоғарыда шығады.")}</td></tr>
                     )}
                     {rows.map((r, i) => (
                       <tr key={r.student.id} className="hover:bg-sky-50/50">
@@ -173,6 +174,9 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
                         <td className="px-3 py-2 border-b border-sky-50 text-center">
                           {r.avg === null ? <span className="text-ink-mute">—</span> : <span className={`inline-block rounded-lg px-2 py-1 font-bold ${tone(r.avg)}`}>{pct(r.avg)}</span>}
                         </td>
+                        <td className="px-3 py-2 border-b border-sky-50 text-center">
+                          {r.avg === null ? <span className="text-ink-mute">—</span> : <span className={`inline-grid h-9 w-9 place-items-center rounded-full text-base font-extrabold ${tone(r.avg)}`}>{markOf(r.avg)}</span>}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -188,6 +192,7 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
                         ))}
                         <td />
                         <td className="px-3 py-3 text-center font-bold">{pct(classAvg)}</td>
+                        <td className="px-3 py-3 text-center font-bold">{markOf(classAvg) ?? "—"}</td>
                       </tr>
                     </tfoot>
                   )}
@@ -212,7 +217,8 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
                   const gt = GAME_TYPES.find((x) => x.key === g.type);
                   return (
                     <ClassGameRow key={g.id} classId={cls.id} game={{ id: g.id, title: g.title, type: g.type, meta: `${gt ? t(gt.name) : ""} · ${t("{n} сұрақ", { n: g._count.questions })}` }}
-                      played={gameAvg[k].played} total={rows.length} avg={pct(gameAvg[k].avg)} />
+                      played={gameAvg[k].played} total={rows.length} avg={pct(gameAvg[k].avg)}
+                      settings={{ attempts: g.attempts, countMode: g.countMode, dueAt: g.dueAt ? g.dueAt.toISOString() : null }} />
                   );
                 })}
               </div>

@@ -17,7 +17,9 @@ export async function loadGradebook(classId: string, teacherId: string) {
   const results = await db.studentResult.findMany({
     where: { classId: cls.id, teacherId },
     select: { id: true, gameId: true, studentId: true, studentName: true, score: true, maxScore: true },
+    orderBy: { createdAt: "asc" },
   });
+  const modeOf = new Map(cls.games.map((cg) => [cg.gameId, cg.countMode]));
   const byName = new Map(cls.students.map((s) => [s.name.toLowerCase(), s.id]));
   const cells = new Map<string, GradeCell>(); // `${studentId}:${gameId}`
   // Тізімде жоқ есіммен ойнағандар: мұғалім тізімге қосады не өшіреді
@@ -39,10 +41,12 @@ export async function loadGradebook(classId: string, teacherId: string) {
     if (!cur) cells.set(key, { score: r.score, max: r.maxScore, tries: 1, resultId: r.id });
     else {
       const next = { score: r.score, max: r.maxScore };
-      cells.set(key, pct(next) > pct(cur) ? { ...next, tries: cur.tries + 1, resultId: r.id } : { ...cur, tries: cur.tries + 1 });
+      const mode = modeOf.get(r.gameId) ?? "best";
+      const take = mode === "last" || (mode === "best" && pct(next) > pct(cur));
+      cells.set(key, take ? { ...next, tries: cur.tries + 1, resultId: r.id } : { ...cur, tries: cur.tries + 1 });
     }
   }
-  const games = cls.games.map((cg) => cg.game);
+  const games = cls.games.map((cg) => ({ ...cg.game, attempts: cg.attempts, countMode: cg.countMode, dueAt: cg.dueAt }));
   const columns = cls.columns.map((c) => ({ id: c.id, title: c.title, max: c.maxScore, marks: new Map(c.marks.map((m) => [m.studentId, m.score])) }));
   const rows = cls.students.map((s) => {
     const row = games.map((g) => cells.get(`${s.id}:${g.id}`) ?? null);
@@ -67,5 +71,9 @@ export async function loadGradebook(classId: string, teacherId: string) {
   const strangers = [...strangerMap.values()].map((e) => ({ name: e.name, tries: e.tries, cells: games.map((g) => e.best.get(g.id) ?? null) }));
   return { cls, games, rows, gameAvg, strangers, columns: columns.map(({ marks: _m, ...c }) => c), colAvg };
 }
+
+/** Пайызды 5 балдық бағаға айналдыру (85% — 5, 65% — 4, 40% — 3, одан төмен — 2). */
+export const MARK_STEPS = [{ min: 0.85, m: 5 }, { min: 0.65, m: 4 }, { min: 0.4, m: 3 }, { min: 0, m: 2 }];
+export const markOf = (p: number | null) => (p === null ? null : MARK_STEPS.find((x) => p >= x.min - 1e-9)!.m);
 
 export const pct = (v: number | null) => (v === null ? "—" : `${Math.round(v * 100)}%`);

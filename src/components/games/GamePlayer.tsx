@@ -345,7 +345,7 @@ function ResultView({ result, questions, type, onRestart }: { result: Result; qu
         </div>
         <div className="text-center sm:text-left">
           <h2 className="text-2xl font-bold">{msg}</h2>
-          <p className="mt-1 muted">{result.sent ? t("Нәтижең мұғаліміңе жіберілді ✅") : result.saved ? t("Нәтиже сақталды. Ең жақсы нәтижеңіз: {n} ұпай.", { n: result.best ?? 0 }) : t("Нәтижені сақтау үшін жүйеге кіріңіз.")}</p>
+          <p className="mt-1 muted">{result.blocked === "closed" ? t("Бұл ойынның мерзімі бітті, нәтиже жіберілмеді.") : result.blocked === "limit" ? t("Сен бұл ойынды ойнап қойғансың, нәтиже қайта жіберілмеді.") : result.sent ? t("Нәтижең мұғаліміңе жіберілді ✅") : result.saved ? t("Нәтиже сақталды. Ең жақсы нәтижеңіз: {n} ұпай.", { n: result.best ?? 0 }) : t("Нәтижені сақтау үшін жүйеге кіріңіз.")}</p>
           <div className="mt-5 flex flex-wrap gap-2 justify-center sm:justify-start">
             <button onClick={onRestart} className="btn-primary"><RotateCcw className="h-4 w-4" /> {t("Қайта ойнау")}</button>
             {!result.sent && <Link href="/games" className="btn-ghost">{t("Басқа ойындар")}</Link>}

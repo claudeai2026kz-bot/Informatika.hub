@@ -1,7 +1,7 @@
 "use client";
 import { useState, useTransition } from "react";
-import { UserPlus, Trash2, Pencil, Check, X } from "lucide-react";
-import { addStudents, removeStudent, renameStudent } from "@/app/actions/classes";
+import { UserPlus, Trash2, Pencil, Check, X, Merge } from "lucide-react";
+import { addStudents, mergeStudents, removeStudent, renameStudent } from "@/app/actions/classes";
 import { useT } from "@/lib/i18n/client";
 
 type S = { id: string; name: string; done: number };
@@ -11,6 +11,7 @@ export default function StudentsEditor({ classId, students }: { classId: string;
   const [text, setText] = useState("");
   const [msg, setMsg] = useState<{ error?: string; ok?: string }>();
   const [edit, setEdit] = useState<{ id: string; name: string } | null>(null);
+  const [merge, setMerge] = useState<{ id: string; into: string } | null>(null);
   const [pending, start] = useTransition();
 
   return (
@@ -20,6 +21,7 @@ export default function StudentsEditor({ classId, students }: { classId: string;
           <h2 className="font-bold">{t("Сынып тізімі")}</h2>
           <span className="text-sm muted">{t("{n} оқушы", { n: students.length })}</span>
         </div>
+        {msg?.ok?.includes("→") && <p className="mx-5 mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">{msg.ok}</p>}
         {students.length === 0 ? (
           <p className="p-8 text-center muted">{t("Тізім бос. Оң жақтан оқушыларды қосыңыз.")}</p>
         ) : (
@@ -27,7 +29,20 @@ export default function StudentsEditor({ classId, students }: { classId: string;
             {students.map((s, i) => (
               <li key={s.id} className="flex items-center gap-3 px-5 py-2.5">
                 <span className="w-6 text-right text-xs muted tabular-nums">{i + 1}.</span>
-                {edit?.id === s.id ? (
+                {merge?.id === s.id ? (
+                  <form className="flex flex-1 flex-wrap items-center gap-2" onSubmit={(e) => {
+                    e.preventDefault(); if (!merge.into) return;
+                    start(async () => { const r = await mergeStudents(s.id, merge.into); setMsg(r); setMerge(null); });
+                  }}>
+                    <span className="text-sm"><b>{s.name}</b> →</span>
+                    <select className="input h-9 flex-1 min-w-[160px] py-0 text-sm" value={merge.into} onChange={(e) => setMerge({ ...merge, into: e.target.value })} aria-label={t("Кімге біріктіру")} autoFocus>
+                      <option value="">{t("Кімге біріктіру?")}</option>
+                      {students.filter((o) => o.id !== s.id).map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
+                    </select>
+                    <button className="btn-primary btn-sm" disabled={pending || !merge.into}>{t("Біріктіру")}</button>
+                    <button type="button" className="btn-ghost btn-sm" onClick={() => setMerge(null)} aria-label={t("Болдырмау")}><X className="h-4 w-4" /></button>
+                  </form>
+                ) : edit?.id === s.id ? (
                   <form className="flex flex-1 gap-2" onSubmit={(e) => { e.preventDefault(); start(async () => { const r = await renameStudent(s.id, edit.name); if (r?.error) setMsg(r); else setEdit(null); }); }}>
                     <input className="input h-9 flex-1" value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} maxLength={60} autoFocus aria-label={t("Аты-жөні")} />
                     <button className="btn-primary btn-sm" disabled={pending} aria-label={t("Сақтау")}><Check className="h-4 w-4" /></button>
@@ -38,6 +53,7 @@ export default function StudentsEditor({ classId, students }: { classId: string;
                     <span className="flex-1 font-semibold">{s.name}</span>
                     <span className="text-xs muted hidden sm:inline">{t("{n} ойын ойнады", { n: s.done })}</span>
                     <button type="button" className="btn-ghost btn-sm" onClick={() => setEdit({ id: s.id, name: s.name })} aria-label={t("Өзгерту")}><Pencil className="h-4 w-4" /></button>
+                    {students.length > 1 && <button type="button" className="btn-ghost btn-sm" title={t("Бір оқушы екі рет жазылып қалса — біріктіру")} onClick={() => setMerge({ id: s.id, into: "" })} aria-label={t("Біріктіру")}><Merge className="h-4 w-4" /></button>}
                     <button type="button" className="btn-ghost btn-sm text-rose-600" disabled={pending} aria-label={t("Өшіру")}
                       onClick={() => { if (confirm(t("{n} тізімнен өшірілсін бе?", { n: s.name }))) start(() => removeStudent(s.id)); }}>
                       <Trash2 className="h-4 w-4" />

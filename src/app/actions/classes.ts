@@ -207,3 +207,48 @@ export async function dismissStranger(classId: string, name: string) {
   await db.studentResult.deleteMany({ where: { classId: c.id, studentId: null, studentName: { equals: name.trim(), mode: "insensitive" } } });
   revalidatePath(`/classes/${c.id}`);
 }
+
+/** Сынып ойынының баптауы: ойнау саны, журналға қай нәтиже түседі, мерзімі. */
+export async function updateClassGame(classId: string, gameId: string, opts: { attempts: number; countMode: string; dueAt: string | null }): Promise<ClassState> {
+  const c = await ownClass(classId);
+  const gid = okId(gameId);
+  if (!c || !gid) return { error: "Рұқсат жоқ" };
+  const attempts = Math.max(0, Math.min(10, Math.round(Number(opts.attempts) || 0)));
+  const countMode = ["best", "first", "last"].includes(opts.countMode) ? opts.countMode : "best";
+  let dueAt: Date | null = null;
+  if (opts.dueAt) {
+    dueAt = new Date(opts.dueAt);
+    if (Number.isNaN(dueAt.getTime())) return { error: "Мерзім дұрыс емес" };
+  }
+  await db.classGame.updateMany({ where: { classId: c.id, gameId: gid }, data: { attempts, countMode, dueAt } });
+  revalidatePath(`/classes/${c.id}`);
+  return { ok: "Сақталды" };
+}
+
+/** Бір оқушы тізімде екі рет шығып қалса: «from» оқушының нәтижелері мен бағаларын «into»-ға көшіріп, «from»-ды өшіреміз. */
+export async function mergeStudents(fromId: string, intoId: string): Promise<ClassState> {
+  const user = await getCurrentUser();
+  if (!user) return { error: "Жүйеге кіріңіз" };
+  const a = okId(fromId), b = okId(intoId);
+  if (!a || !b || a === b) return { error: "Екі түрлі оқушыны таңдаңыз" };
+  const [from, into] = await Promise.all([
+    db.classStudent.findFirst({ where: { id: a, classroom: { teacherId: user.id } }, include: { marks: true } }),
+    db.classStudent.findFirst({ where: { id: b, classroom: { teacherId: user.id } }, include: { marks: true } }),
+  ]);
+  if (!from || !into || from.classId !== into.classId) return { error: "Рұқсат жоқ" };
+  const intoMarks = new Map(into.marks.map((m) => [m.columnId, m]));
+  await db.$transaction([
+    db.studentResult.updateMany({ where: { studentId: from.id }, data: { studentId: into.id, studentName: into.name } }),
+    db.studentResult.updateMany({ where: { classId: from.classId, studentId: null, studentName: { equals: from.name, mode: "insensitive" } }, data: { studentId: into.id, studentName: into.name } }),
+    // қолмен қойылған бағалар: екеуінде де болса — жоғарысы қалады
+    ...from.marks.map((m) => {
+      const ex = intoMarks.get(m.columnId);
+      return ex
+        ? db.classMark.update({ where: { id: ex.id }, data: { score: Math.max(ex.score, m.score) } })
+        : db.classMark.create({ data: { columnId: m.columnId, studentId: into.id, score: m.score } });
+    }),
+    db.classStudent.delete({ where: { id: from.id } }),
+  ]);
+  revalidatePath(`/classes/${from.classId}`);
+  return { ok: `«${from.name}» → «${into.name}» біріктірілді` };
+}

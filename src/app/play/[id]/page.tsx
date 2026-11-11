@@ -23,6 +23,7 @@ export default async function PlayPage({ params, searchParams }: { params: Promi
     ? await db.classroom.findUnique({ where: { id: classParam }, select: { id: true, name: true, teacherId: true, students: { select: { id: true, name: true }, orderBy: { name: "asc" } } } })
     : null;
   const teacherId = cls?.teacherId ?? teacherParam;
+  const cg = cls ? await db.classGame.findUnique({ where: { classId_gameId: { classId: cls.id, gameId: id } }, select: { attempts: true, dueAt: true } }) : null;
   const g = await db.game.findFirst({ where: { id, published: true }, include: { questions: { orderBy: { order: "asc" } }, topic: true } });
   if (!g) notFound();
   const teacher = teacherId ? await db.user.findUnique({ where: { id: teacherId }, select: { id: true, name: true } }) : null;
@@ -48,7 +49,7 @@ export default async function PlayPage({ params, searchParams }: { params: Promi
           gameId={g.id} type={g.type} title={g.title} questions={questions as never} timeLimit={g.timeLimit}
           layout={g.type === "CROSSWORD" ? crosswordLayout(g.questions) : null}
           teacherId={teacher?.id ?? null} loggedIn={!!viewer}
-          classroom={cls && teacher ? { id: cls.id, name: cls.name, students: cls.students } : null}
+          classroom={cls && teacher ? { id: cls.id, name: cls.name, students: cls.students, attempts: cg?.attempts ?? 0, dueAt: cg?.dueAt?.toISOString() ?? null } : null}
         />
       </div>
     </div>

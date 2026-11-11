@@ -1,5 +1,5 @@
 import { getCurrentUser } from "@/lib/auth";
-import { loadGradebook } from "@/lib/classes";
+import { loadGradebook, markOf } from "@/lib/classes";
 import { buildXlsx, type Cell } from "@/lib/xlsx";
 
 /** Сынып журналын .xlsx файлы ретінде жүктеу (Excel). */
@@ -12,7 +12,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
   // Әр ойынның ең көп баллы (тақырыпқа жазамыз, ұяшықта — тек сан, Excel-де есептеуге ыңғайлы)
   const maxOf = games.map((_, k) => Math.max(0, ...rows.map((r) => r.cells[k]?.max ?? 0)) || null);
-  const header: Cell[] = ["№", "Оқушы", ...games.map((g, k) => (maxOf[k] ? `${g.title} (${maxOf[k]} балл)` : g.title)), ...columns.map((c) => `${c.title} (${c.max} балл)`), "Барлығы (балл)", "Ең көп балл", "Орташа (%)"];
+  const header: Cell[] = ["№", "Оқушы", ...games.map((g, k) => (maxOf[k] ? `${g.title} (${maxOf[k]} балл)` : g.title)), ...columns.map((c) => `${c.title} (${c.max} балл)`), "Барлығы (балл)", "Ең көп балл", "Орташа (%)", "Баға (5)"];
   const body: Cell[][] = rows.map((r, i) => [
     i + 1,
     r.student.name,
@@ -21,12 +21,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     r.done ? r.sum : "",
     r.done ? r.max : "",
     r.avg === null ? "" : Math.round(r.avg * 100),
+    markOf(r.avg) ?? "",
   ]);
   const played = rows.filter((r) => r.avg !== null);
   const avgAll = played.length ? Math.round((played.reduce((a, r) => a + (r.avg ?? 0), 0) / played.length) * 100) : "";
-  const footer: Cell[] = ["", "Сынып орташасы (%)", ...[...gameAvg, ...colAvg].map((a) => (a.avg === null ? "" : Math.round(a.avg * 100))), "", "", avgAll];
+  const footer: Cell[] = ["", "Сынып орташасы (%)", ...[...gameAvg, ...colAvg].map((a) => (a.avg === null ? "" : Math.round(a.avg * 100))), "", "", avgAll, ""];
 
-  const file = buildXlsx(cls.name, [header, ...body, [], footer], [5, 28, ...games.map(() => 16), ...columns.map(() => 14), 14, 12, 12]);
+  const file = buildXlsx(cls.name, [header, ...body, [], footer], [5, 28, ...games.map(() => 16), ...columns.map(() => 14), 14, 12, 12, 10]);
   const date = new Date().toISOString().slice(0, 10);
   const fname = `${cls.name} журнал ${date}.xlsx`.replace(/[\\/:*?"<>|«»]/g, "");
   return new Response(file as unknown as BodyInit, {
