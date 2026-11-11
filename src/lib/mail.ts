@@ -21,7 +21,7 @@ export function mailConfigured() {
   return smtpConfigured() || resendConfigured();
 }
 
-let transport: nodemailer.Transporter | null = null;
+let transport: ReturnType<typeof nodemailer.createTransport> | null = null;
 function smtp() {
   if (!transport) {
     const port = Number(process.env.SMTP_PORT || 465);
