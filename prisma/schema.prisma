@@ -407,8 +407,33 @@ model Classroom {
   students  ClassStudent[]
   games     ClassGame[]
   results   StudentResult[]
+  columns   ClassColumn[]
 
   @@index([teacherId])
+}
+
+/// Мұғалім журналға өзі қосатын баған (мысалы, «Үй жұмысы», «Ауызша жауап»): балды қолмен қояды.
+model ClassColumn {
+  id        String      @id @default(cuid())
+  classId   String
+  classroom Classroom   @relation(fields: [classId], references: [id], onDelete: Cascade)
+  title     String
+  maxScore  Int         @default(10)
+  createdAt DateTime    @default(now())
+  marks     ClassMark[]
+
+  @@index([classId])
+}
+
+model ClassMark {
+  id        String       @id @default(cuid())
+  columnId  String
+  column    ClassColumn  @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  studentId String
+  student   ClassStudent @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  score     Int
+
+  @@unique([columnId, studentId])
 }
 
 model ClassStudent {
@@ -418,6 +443,7 @@ model ClassStudent {
   name      String
   createdAt DateTime        @default(now())
   results   StudentResult[]
+  marks     ClassMark[]
 
   @@unique([classId, name])
 }

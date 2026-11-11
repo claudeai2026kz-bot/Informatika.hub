@@ -124,3 +124,44 @@ export async function removeGameFromClass(classId: string, gameId: string) {
   await db.classGame.deleteMany({ where: { classId: c.id, gameId: idS.parse(gameId) } });
   revalidatePath(`/classes/${c.id}`);
 }
+
+/** Журналға қолмен толтырылатын баған қосу (мысалы, «Үй жұмысы»). */
+export async function addColumn(classId: string, title: string, max: number): Promise<ClassState> {
+  const c = await ownClass(classId);
+  if (!c) return { error: "Рұқсат жоқ" };
+  const t = z.string().trim().min(1, "Баған атауын жазыңыз").max(40, "Атауы тым ұзын").safeParse(title);
+  if (!t.success) return { error: t.error.issues[0].message };
+  const m = z.coerce.number().int().min(1).max(100).safeParse(max);
+  if (!m.success) return { error: "Ең көп балл 1-ден 100-ге дейін болуы керек" };
+  if ((await db.classColumn.count({ where: { classId: c.id } })) >= 40) return { error: "Бағандар саны шегіне жетті (40)" };
+  await db.classColumn.create({ data: { classId: c.id, title: t.data, maxScore: m.data } });
+  revalidatePath(`/classes/${c.id}`);
+  return { ok: "Баған қосылды" };
+}
+
+export async function removeColumn(columnId: string) {
+  const user = await getCurrentUser();
+  if (!user) return;
+  const col = await db.classColumn.findFirst({ where: { id: idS.parse(columnId), classroom: { teacherId: user.id } } });
+  if (!col) return;
+  await db.classColumn.delete({ where: { id: col.id } });
+  revalidatePath(`/classes/${col.classId}`);
+}
+
+/** Қолмен баға қою. score=null — бағаны өшіру. */
+export async function setMark(columnId: string, studentId: string, score: number | null): Promise<{ error?: string; score?: number | null }> {
+  const user = await getCurrentUser();
+  if (!user) return { error: "Жүйеге кіріңіз" };
+  const col = await db.classColumn.findFirst({ where: { id: idS.parse(columnId), classroom: { teacherId: user.id } } });
+  const st = col && (await db.classStudent.findFirst({ where: { id: idS.parse(studentId), classId: col.classId } }));
+  if (!col || !st) return { error: "Рұқсат жоқ" };
+  if (score === null || Number.isNaN(Number(score))) {
+    await db.classMark.deleteMany({ where: { columnId: col.id, studentId: st.id } });
+    revalidatePath(`/classes/${col.classId}`);
+    return { score: null };
+  }
+  const v = Math.max(0, Math.min(col.maxScore, Math.round(Number(score))));
+  await db.classMark.upsert({ where: { columnId_studentId: { columnId: col.id, studentId: st.id } }, create: { columnId: col.id, studentId: st.id, score: v }, update: { score: v } });
+  revalidatePath(`/classes/${col.classId}`);
+  return { score: v };
+}

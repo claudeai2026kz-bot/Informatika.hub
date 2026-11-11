@@ -9,6 +9,7 @@ export async function loadGradebook(classId: string, teacherId: string) {
     where: { id: classId, teacherId },
     include: {
       students: { orderBy: { name: "asc" } },
+      columns: { orderBy: { createdAt: "asc" }, include: { marks: true } },
       games: { orderBy: { createdAt: "asc" }, include: { game: { select: { id: true, title: true, type: true, gradeId: true, _count: { select: { questions: true } } } } } },
     },
   });
@@ -32,19 +33,28 @@ export async function loadGradebook(classId: string, teacherId: string) {
     }
   }
   const games = cls.games.map((cg) => cg.game);
+  const columns = cls.columns.map((c) => ({ id: c.id, title: c.title, max: c.maxScore, marks: new Map(c.marks.map((m) => [m.studentId, m.score])) }));
   const rows = cls.students.map((s) => {
     const row = games.map((g) => cells.get(`${s.id}:${g.id}`) ?? null);
-    const done = row.filter((c): c is NonNullable<GradeCell> => !!c);
+    const marks = columns.map((c) => (c.marks.has(s.id) ? c.marks.get(s.id)! : null));
+    const done = [
+      ...row.filter((c): c is NonNullable<GradeCell> => !!c),
+      ...marks.flatMap((m, k) => (m === null ? [] : [{ score: m, max: columns[k].max }])),
+    ];
     const sum = done.reduce((a, c) => a + c.score, 0);
     const max = done.reduce((a, c) => a + c.max, 0);
     const avg = done.length ? done.reduce((a, c) => a + (c.max ? c.score / c.max : 0), 0) / done.length : null;
-    return { student: s, cells: row, sum, max, avg, done: done.length };
+    return { student: s, cells: row, marks, sum, max, avg, done: done.length };
   });
   const gameAvg = games.map((_, i) => {
     const done = rows.map((r) => r.cells[i]).filter((c): c is NonNullable<GradeCell> => !!c);
     return { played: done.length, avg: done.length ? done.reduce((a, c) => a + (c.max ? c.score / c.max : 0), 0) / done.length : null };
   });
-  return { cls, games, rows, gameAvg };
+  const colAvg = columns.map((c, i) => {
+    const done = rows.map((r) => r.marks[i]).filter((m): m is number => m !== null);
+    return { played: done.length, avg: done.length && c.max ? done.reduce((a, m) => a + m / c.max, 0) / done.length : null };
+  });
+  return { cls, games, rows, gameAvg, columns: columns.map(({ marks: _m, ...c }) => c), colAvg };
 }
 
 export const pct = (v: number | null) => (v === null ? "—" : `${Math.round(v * 100)}%`);

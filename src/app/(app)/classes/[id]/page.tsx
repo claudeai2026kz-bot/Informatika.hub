@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Download, Users, Gamepad2, BarChart3, Settings, Plus, Table2, CheckCircle2 } from "lucide-react";
+import { Download, Users, Gamepad2, BarChart3, Settings, Plus, Table2, CheckCircle2, PencilLine } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { loadGradebook, pct } from "@/lib/classes";
@@ -11,6 +11,7 @@ import ClassGameRow from "@/components/classes/ClassGameRow";
 import AddGamePicker from "@/components/classes/AddGamePicker";
 import StudentsEditor from "@/components/classes/StudentsEditor";
 import ClassSettings from "@/components/classes/ClassSettings";
+import { JournalToolbar, MarkCell, RemoveColumn } from "@/components/classes/JournalTools";
 import { getT } from "@/lib/i18n/server";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -42,7 +43,7 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
   const user = await requireUser(`/classes/${id}`);
   const book = await loadGradebook(id, user.id);
   if (!book) notFound();
-  const { cls, games, rows, gameAvg } = book;
+  const { cls, games, rows, gameAvg, columns, colAvg } = book;
   const played = rows.filter((r) => r.done > 0);
   const classAvg = played.length ? played.reduce((a, r) => a + (r.avg ?? 0), 0) / played.length : null;
 
@@ -83,20 +84,24 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
         <section className="mt-6">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <Stat n={cls.students.length} l={t("оқушы")} />
-            <Stat n={games.length} l={t("берілген ойын")} />
+            <Stat n={games.length + columns.length} l={t("баған (ойын + өз бағаңыз)")} />
             <Stat n={pct(classAvg)} l={t("сынып орташасы")} />
-            <Stat n={`${played.length} / ${cls.students.length}`} l={t("кемі бір ойын ойнады")} />
+            <Stat n={`${played.length} / ${cls.students.length}`} l={t("бағасы бар оқушы")} />
           </div>
-          {cls.students.length === 0 || games.length === 0 ? (
-            <div className="card mt-6 p-10 text-center">
+          <div className="mt-5 rounded-xl bg-sky-50 p-4 text-sm text-sky-900">
+            {t("Оқушылар сайтқа тіркелмейді. Сіз ойын сілтемесін WhatsApp-қа жібересіз, оқушы сілтемені ашып, атын таңдап (не жазып) ойнайды — балы осы кестеге өзі түседі. Ойыннан тыс бағаларды «Баған қосу» арқылы өзіңіз қоя аласыз.")}
+          </div>
+          <JournalToolbar classId={cls.id} />
+          {cls.students.length === 0 && games.length === 0 && columns.length === 0 ? (
+            <div className="card mt-4 p-10 text-center">
               <BarChart3 className="mx-auto h-10 w-10 text-sky-400" />
-              <p className="mt-3 font-semibold">{t("Журнал әзірге бос")}</p>
-              <p className="mt-1 text-sm muted">{cls.students.length === 0 ? t("Алдымен «Оқушылар» бөлімінде сынып тізімін қосыңыз.") : t("«Ойындар» бөлімінде сыныпқа ойын беріп, сілтемесін оқушыларға жіберіңіз.")}</p>
-              <Link href={`/classes/${cls.id}?tab=${cls.students.length === 0 ? "students" : "games"}`} className="btn-primary mt-4">{cls.students.length === 0 ? t("Оқушыларды қосу") : t("Ойын беру")}</Link>
+              <p className="mt-3 font-semibold">{t("Кесте әзірге бос")}</p>
+              <p className="mt-1 text-sm muted">{t("Оқушы тізімін қосыңыз не бірден ойын беріңіз — сілтеме арқылы ойнаған оқушылар кестеге өзі қосылады.")}</p>
+              <Link href={`/classes/${cls.id}?tab=games`} className="btn-primary mt-4"><Plus className="h-4 w-4" /> {t("Ойын беру")}</Link>
             </div>
           ) : (
             <>
-              <p className="mt-5 text-sm muted">{t("Әр ұяшықта — оқушының сол ойындағы ең жақсы нәтижесі. Баллды өзгерту үшін ұяшықты басыңыз.")}</p>
+              <p className="mt-4 text-sm muted">{t("Ойын бағандарында — оқушының ең жақсы нәтижесі (басып, балды өзгертуге болады). Өз бағандарыңызға санды жазып, Enter басыңыз.")}</p>
               <div className="card mt-3 overflow-x-auto">
                 <table className="w-full text-sm border-separate border-spacing-0">
                   <thead>
@@ -113,11 +118,23 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
                           </th>
                         );
                       })}
+                      {columns.map((c) => (
+                        <th key={c.id} className="px-2 py-3 border-b border-sky-100 align-bottom min-w-[90px] max-w-[140px] bg-amber-50/60">
+                          <div className="flex flex-col items-center gap-1 text-center text-xs font-semibold leading-tight">
+                            <span className="flex items-center gap-1"><PencilLine className="h-4 w-4 text-amber-600" /><RemoveColumn id={c.id} title={c.title} /></span>
+                            <span className="line-clamp-2" title={c.title}>{c.title}</span>
+                            <span className="muted font-normal">{t("{n} балл", { n: c.max })}</span>
+                          </div>
+                        </th>
+                      ))}
                       <th className="px-3 py-3 border-b border-sky-100 text-center font-semibold">{t("Барлығы")}</th>
                       <th className="px-3 py-3 border-b border-sky-100 text-center font-semibold">{t("Орташа")}</th>
                     </tr>
                   </thead>
                   <tbody>
+                    {rows.length === 0 && (
+                      <tr><td colSpan={games.length + columns.length + 3} className="px-4 py-8 text-center muted">{t("Әзірге оқушы жоқ. «Оқушы қосу» батырмасымен тізім енгізіңіз не ойын сілтемесін жіберіңіз — ойнағандар өзі қосылады.")}</td></tr>
+                    )}
                     {rows.map((r, i) => (
                       <tr key={r.student.id} className="hover:bg-sky-50/50">
                         <td className="sticky left-0 z-10 bg-white px-4 py-2.5 border-b border-sky-50 font-semibold whitespace-nowrap"><span className="mr-2 text-xs muted tabular-nums">{i + 1}.</span>{r.student.name}</td>
@@ -131,6 +148,11 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
                             ) : <span className="text-ink-mute">—</span>}
                           </td>
                         ))}
+                        {r.marks.map((m, k) => (
+                          <td key={columns[k].id} className="px-2 py-1.5 border-b border-sky-50 text-center bg-amber-50/30">
+                            <MarkCell columnId={columns[k].id} studentId={r.student.id} value={m} max={columns[k].max} label={`${r.student.name}: ${columns[k].title}`} />
+                          </td>
+                        ))}
                         <td className="px-3 py-2 border-b border-sky-50 text-center font-bold tabular-nums">{r.done ? `${r.sum}/${r.max}` : "—"}</td>
                         <td className="px-3 py-2 border-b border-sky-50 text-center">
                           {r.avg === null ? <span className="text-ink-mute">—</span> : <span className={`inline-block rounded-lg px-2 py-1 font-bold ${tone(r.avg)}`}>{pct(r.avg)}</span>}
@@ -138,19 +160,21 @@ export default async function ClassPage({ params, searchParams }: { params: Prom
                       </tr>
                     ))}
                   </tbody>
-                  <tfoot>
-                    <tr className="bg-sky-50/70 font-semibold">
-                      <td className="sticky left-0 z-10 bg-sky-50 px-4 py-3">{t("Сынып орташасы")}</td>
-                      {gameAvg.map((a, k) => (
-                        <td key={games[k].id} className="px-2 py-3 text-center text-xs">
-                          <div className="font-bold text-sm">{pct(a.avg)}</div>
-                          <div className="muted">{t("{n} ойнады", { n: `${a.played}/${rows.length}` })}</div>
-                        </td>
-                      ))}
-                      <td />
-                      <td className="px-3 py-3 text-center font-bold">{pct(classAvg)}</td>
-                    </tr>
-                  </tfoot>
+                  {rows.length > 0 && (
+                    <tfoot>
+                      <tr className="bg-sky-50/70 font-semibold">
+                        <td className="sticky left-0 z-10 bg-sky-50 px-4 py-3">{t("Сынып орташасы")}</td>
+                        {[...gameAvg, ...colAvg].map((a, k) => (
+                          <td key={k} className="px-2 py-3 text-center text-xs">
+                            <div className="font-bold text-sm">{pct(a.avg)}</div>
+                            <div className="muted">{t(k < gameAvg.length ? "{n} ойнады" : "{n} бағаланды", { n: `${a.played}/${rows.length}` })}</div>
+                          </td>
+                        ))}
+                        <td />
+                        <td className="px-3 py-3 text-center font-bold">{pct(classAvg)}</td>
+                      </tr>
+                    </tfoot>
+                  )}
                 </table>
               </div>
             </>
