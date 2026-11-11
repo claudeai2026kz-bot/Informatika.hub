@@ -32,3 +32,23 @@ describe("ойын ұпайы", () => {
     expect(l).toMatchObject({ rows: 7, cols: 9 });
   });
 });
+
+describe("жаңа ойын түрлері", () => {
+  const q = (id: string, data: unknown, answer: unknown) => ({ id, prompt: "", data, answer, points: 1 });
+  it("Ретімен қой: тек толық дұрыс рет ұпай береді", () => {
+    const x = q("o", { items: ["a", "b", "c"] }, [0, 1, 2]);
+    expect(scoreQuestion("ORDERING", x, [0, 1, 2]).score).toBe(1);
+    expect(scoreQuestion("ORDERING", x, [1, 0, 2]).score).toBe(0);
+  });
+  it("Жұбын тап: әр 3 қате 1 балл кемітеді", () => {
+    const x = q("m", { left: Array(10).fill("l"), right: Array(10).fill("r") }, []);
+    expect(scoreQuestion("MEMORY", x, { found: 10, mistakes: 2 })).toMatchObject({ score: 10, max: 10 });
+    expect(scoreQuestion("MEMORY", x, { found: 10, mistakes: 7 }).score).toBe(8);
+    expect(scoreQuestion("MEMORY", x, { found: 99, mistakes: -5 }).score).toBe(10);
+  });
+  it("Шыңға шық: бірінші қатеден кейін ұпай жоқ", () => {
+    const qs = [q("1", { options: ["a", "b"] }, 0), q("2", { options: ["a", "b"] }, 0), q("3", { options: ["a", "b"] }, 0)];
+    expect(scoreGame("CLIMB", qs, { 1: 0, 2: 1, 3: 0 }).score).toBe(1);
+    expect(scoreGame("CLIMB", qs, { 1: 0, 2: 0, 3: 0 }).score).toBe(3);
+  });
+});

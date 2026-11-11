@@ -208,6 +208,10 @@ enum GameType {
   RAPID
   LOGIC
   CODING
+  TRUEFALSE
+  CLIMB
+  ORDERING
+  MEMORY
 }
 
 model Game {

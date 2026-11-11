@@ -9,7 +9,9 @@ export const norm = (s: unknown) => String(s ?? "").trim().toLowerCase().replace
 export function scoreQuestion(type: GameType, q: QuestionRow, given: unknown): { score: number; max: number; correct: boolean } {
   switch (type) {
     case "QUIZ":
-    case "RAPID": {
+    case "RAPID":
+    case "TRUEFALSE":
+    case "CLIMB": {
       const ok = Number.isInteger(given) && given === q.answer;
       return { score: ok ? q.points : 0, max: q.points, correct: ok };
     }
@@ -23,6 +25,20 @@ export function scoreQuestion(type: GameType, q: QuestionRow, given: unknown): {
       const ok = norm(given).replace(/\s/g, "") === norm(q.answer).replace(/\s/g, "");
       return { score: ok ? q.points : 0, max: q.points, correct: ok };
     }
+    case "ORDERING": {
+      const n = ((q.data as { items?: unknown[] })?.items ?? []).length;
+      const g = Array.isArray(given) ? given : [];
+      const ok = n > 0 && g.length === n && g.every((v, i) => v === i);
+      return { score: ok ? q.points : 0, max: q.points, correct: ok };
+    }
+    case "MEMORY": {
+      const pairs = ((q.data as { left?: unknown[] })?.left ?? []).length;
+      const g = (given ?? {}) as { found?: unknown; mistakes?: unknown };
+      const found = Math.min(pairs, Math.max(0, Number.isInteger(g.found) ? (g.found as number) : 0));
+      const mistakes = Math.max(0, Number.isInteger(g.mistakes) ? (g.mistakes as number) : 0);
+      const score = Math.max(0, found - Math.floor(mistakes / 3)); // әр 3 қате 1 балл кемітеді
+      return { score, max: pairs, correct: found === pairs && score === pairs };
+    }
     case "LOGIC":
     case "CODING": {
       const accepted = (Array.isArray(q.answer) ? q.answer : [q.answer]).map(norm);
@@ -34,8 +50,10 @@ export function scoreQuestion(type: GameType, q: QuestionRow, given: unknown): {
 
 export function scoreGame(type: GameType, questions: QuestionRow[], answers: Record<string, unknown>) {
   let score = 0, max = 0;
+  let fallen = false; // «Шыңға шық»: бірінші қатеден кейінгі сұрақтар есептелмейді
   const details = questions.map((q) => {
     const r = scoreQuestion(type, q, answers[q.id]);
+    if (type === "CLIMB") { if (fallen) r.score = 0, r.correct = false; if (!r.correct) fallen = true; }
     score += r.score; max += r.max;
     return { id: q.id, ...r };
   });
@@ -49,6 +67,18 @@ export function publicQuestion(type: GameType, q: QuestionRow, seed: number) {
     const right = (data.right as string[]) ?? [];
     const order = right.map((_, i) => i).sort((a, b) => ((a * 9301 + seed) % 233) - ((b * 9301 + seed) % 233));
     return { id: q.id, prompt: q.prompt, points: q.points, data: { left: data.left, right: order.map((i) => ({ i, text: right[i] })) } };
+  }
+  if (type === "ORDERING") {
+    const items = (data.items as string[]) ?? [];
+    let order = items.map((_, i) => i).sort((a, b) => ((a * 7919 + seed * 31) % 101) - ((b * 7919 + seed * 31) % 101));
+    if (order.every((v, i) => v === i) && order.length > 1) order = [...order.slice(1), order[0]]; // дұрыс реті бірден көрінбесін
+    return { id: q.id, prompt: q.prompt, points: q.points, data: { items: order.map((i) => ({ i, text: items[i] })) } };
+  }
+  if (type === "MEMORY") {
+    const left = (data.left as string[]) ?? [], right = (data.right as string[]) ?? [];
+    const cards = [...left.map((text, p) => ({ p, side: "L", text })), ...right.map((text, p) => ({ p, side: "R", text }))];
+    const order = cards.map((_, i) => i).sort((a, b) => ((a * 9301 + seed * 49297) % 233280) - ((b * 9301 + seed * 49297) % 233280));
+    return { id: q.id, prompt: q.prompt, points: q.points, data: { cards: order.map((i) => cards[i]) } };
   }
   return { id: q.id, prompt: q.prompt, points: q.points, data };
 }

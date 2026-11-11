@@ -8,7 +8,7 @@ import type { PrismaClient, GameType } from "@prisma/client";
  *  CODING / LOGIC: answer — қабылданатын жауап(тар), code — көрсетілетін код
  *  CROSSWORD: answer — сөз, cw — торда басталатын орны мен бағыты (сөздер қиылысады)
  */
-type Q = { prompt: string; options?: string[]; answer?: number | string | string[]; code?: string; explanation?: string; cw?: { row: number; col: number; dir: "across" | "down" } };
+type Q = { prompt: string; items?: string[]; options?: string[]; answer?: number | string | string[]; code?: string; explanation?: string; cw?: { row: number; col: number; dir: "across" | "down" } };
 type G = {
   type: GameType; grade: number; quarter: number; topic?: string; title: string; description: string; timeLimit?: number;
   questions?: Q[]; pairs?: { prompt: string; left: string[]; right: string[] };
@@ -352,6 +352,112 @@ export const GAMES: G[] = [
       { prompt: "Есепті шешуге арналған әрекеттер тізбегі", answer: "АЛГОРИТМ", cw: { row: 11, col: 1, dir: "across" } },
     ],
   },
+  {
+    type: "TRUEFALSE", grade: 5, quarter: 4, topic: "Интернетте жұмыс істеудің қандай қауіп-қатері бар?", title: "Интернет қауіпсіздігі: дұрыс па, бұрыс па?",
+    description: "10 тұжырым. Әрқайсысы дұрыс па, бұрыс па — анықта.",
+    questions: [
+      { prompt: "Құпиясөзді ең жақын досыңа айтуға болады.", answer: 1, explanation: "Құпиясөзді ешкімге айтпаймыз, тек ата-анаға." },
+      { prompt: "Антивирус компьютерді зиянды программалардан қорғайды.", answer: 0 },
+      { prompt: "Бейтаныс адамнан келген сілтемені бірден ашу қауіпсіз.", answer: 1 },
+      { prompt: "https:// деп басталатын сайт байланысты шифрлайды.", answer: 0 },
+      { prompt: "Барлық сайттарға бір ғана құпиясөз қою — дұрыс әдет.", answer: 1, explanation: "Әр сайтқа бөлек құпиясөз қойған қауіпсіз." },
+      { prompt: "Интернетте біреу қорқытса, үлкендерге айту керек.", answer: 0 },
+      { prompt: "Үйдің мекенжайын әлеуметтік желіге жазуға болады.", answer: 1 },
+      { prompt: "Компьютерде ұзақ отырғанда үзіліс жасау керек.", answer: 0 },
+      { prompt: "«Сіз ұттыңыз!» деген хаттардың бәрі шын.", answer: 1, explanation: "Мұндай хаттар көбінесе алаяқтық." },
+      { prompt: "Мықты құпиясөзде әріп, сан және таңба болады.", answer: 0 },
+    ],
+  },
+  {
+    type: "TRUEFALSE", grade: 8, quarter: 1, topic: "Компьютердің ішкі құрылымы мен қосымша құрылғылары", title: "Компьютер құрылғылары: дұрыс па, бұрыс па?",
+    description: "Компьютердің ішкі құрылымы туралы 10 тұжырым.",
+    questions: [
+      { prompt: "Процессор — компьютердің есептеулерді орындайтын негізгі құрылғысы.", answer: 0 },
+      { prompt: "Жедел жады (ЖЖҚ) компьютер өшкенде де ақпаратты сақтайды.", answer: 1, explanation: "ЖЖҚ өшкенде тазарады." },
+      { prompt: "Монитор — ақпаратты шығару құрылғысы.", answer: 0 },
+      { prompt: "Пернетақта — ақпаратты шығару құрылғысы.", answer: 1, explanation: "Пернетақта — енгізу құрылғысы." },
+      { prompt: "Аналық тақта компьютердің барлық бөлшектерін байланыстырады.", answer: 0 },
+      { prompt: "Процессордың жиілігі гигабайтпен өлшенеді.", answer: 1, explanation: "Жиілік гигагерцпен (ГГц) өлшенеді." },
+      { prompt: "SSD диск әдеттегі қатты дисктен (HDD) жылдамырақ жұмыс істейді.", answer: 0 },
+      { prompt: "Бейнекарта суретті экранға шығаруға жауап береді.", answer: 0 },
+      { prompt: "Қуат блогы деректерді сақтайды.", answer: 1, explanation: "Қуат блогы бөлшектерге электр береді." },
+      { prompt: "Радиатор мен желдеткіш процессорды салқындатады.", answer: 0 },
+    ],
+  },
+  {
+    type: "CLIMB", grade: 7, quarter: 3, topic: "Тармақталған алгоритмдерді программалау", title: "Python шыңы",
+    description: "10 сұрақ жеңілден қиынға қарай. Бір қате — өрмелеу тоқтайды.",
+    questions: [
+      { prompt: "Python-да экранға мәтін шығаратын команда?", options: ["print()", "input()", "show()", "write()"], answer: 0 },
+      { prompt: "Пайдаланушыдан мән енгізетін команда?", options: ["print()", "input()", "get()", "read()"], answer: 1 },
+      { prompt: "Бүтін санның типі қалай аталады?", options: ["str", "float", "int", "bool"], answer: 2 },
+      { prompt: "Мына код не шығарады?", code: "print(\"5\" + \"3\")", options: ["8", "53", "35", "Қате"], answer: 1 },
+      { prompt: "x = 10 болса, x > 5 and x < 8 неге тең?", options: ["True", "False", "10", "Қате"], answer: 1 },
+      { prompt: "Мына код не шығарады?", code: "n = 15\nif n % 2 == 0:\n    print(\"A\")\nelif n % 3 == 0:\n    print(\"B\")\nelse:\n    print(\"C\")", options: ["A", "B", "C", "Ештеңе"], answer: 1 },
+      { prompt: "int(\"7\") + 3 неге тең?", options: ["73", "10", "\"10\"", "Қате"], answer: 1 },
+      { prompt: "Мына код не шығарады?", code: "a = 4\nb = 9\nif not a > b:\n    print(\"Иә\")\nelse:\n    print(\"Жоқ\")", options: ["Иә", "Жоқ", "True", "Қате"], answer: 0 },
+      { prompt: "Үш санның ең үлкенін табу үшін неше салыстыру жеткілікті?", options: ["1", "2", "3", "4"], answer: 1 },
+      { prompt: "Мына код не шығарады?", code: "x = 7\ny = 0\nif x > 5:\n    y += 1\nif x > 6:\n    y += 1\nif x > 7:\n    y += 1\nprint(y)", options: ["0", "1", "2", "3"], answer: 2, explanation: "x > 7 шарты орындалмайды, сондықтан y = 2." },
+    ],
+  },
+  {
+    type: "CLIMB", grade: 10, quarter: 1, topic: "Компьютерлік желілердің жұмыс жасау принциптері", title: "Желілер шыңы",
+    description: "Желілер мен санау жүйелері: жеңілден қиынға. Бір қате — өрмелеу тоқтайды.",
+    questions: [
+      { prompt: "Бір ғимараттағы компьютерлер желісі қалай аталады?", options: ["Жергілікті желі (LAN)", "Ғаламдық желі (WAN)", "Интернет", "Bluetooth"], answer: 0 },
+      { prompt: "Желілерді бір-бірімен байланыстыратын құрылғы?", options: ["Принтер", "Маршрутизатор", "Сканер", "Монитор"], answer: 1 },
+      { prompt: "Веб-беттерді жіберу хаттамасы?", options: ["FTP", "SMTP", "HTTP", "USB"], answer: 2 },
+      { prompt: "IPv4 адресі неше саннан (октеттен) тұрады?", options: ["2", "4", "6", "8"], answer: 1 },
+      { prompt: "Қайсысы дұрыс IPv4 адресі?", options: ["192.168.1.300", "192.168.1.10", "192.168.1", "256.1.1.1"], answer: 1, explanation: "Әр сан 0–255 аралығында болуы керек." },
+      { prompt: "DNS не істейді?", options: ["Домен атауын IP адреске айналдырады", "Файлды сығады", "Вирусты жояды", "Хат жібереді"], answer: 0 },
+      { prompt: "Екілік 1100 саны ондық жүйеде нешеге тең?", options: ["10", "11", "12", "14"], answer: 2 },
+      { prompt: "Ондық 100 саны екілік жүйеде қалай жазылады?", options: ["1100100", "1010101", "1100010", "1000100"], answer: 0 },
+      { prompt: "Он алтылық A3 саны ондық жүйеде нешеге тең?", options: ["103", "163", "173", "153"], answer: 1, explanation: "A·16 + 3 = 160 + 3 = 163" },
+      { prompt: "1 байтпен неше түрлі мән жазуға болады?", options: ["8", "128", "255", "256"], answer: 3, explanation: "2⁸ = 256" },
+    ],
+  },
+  {
+    type: "ORDERING", grade: 6, quarter: 3, topic: "Сызықтық алгоритмдерді программалау", title: "Алгоритмді ретке қой",
+    description: "10 тапсырма: әрекеттерді не код жолдарын дұрыс ретке қой.",
+    questions: [
+      { prompt: "Шай демдеу алгоритмі", items: ["Шәйнекке су құю", "Суды қайнату", "Шайнекке шай салу", "Қайнаған су құю", "Кесеге құю"] },
+      { prompt: "Компьютерді қосу", items: ["Қуат батырмасын басу", "Операциялық жүйе жүктелуін күту", "Құпиясөз енгізу", "Жұмыс үстеліне кіру"] },
+      { prompt: "Python-да екі санның қосындысын табу", items: ["a = int(input())", "b = int(input())", "s = a + b", "print(s)"] },
+      { prompt: "Файлды сақтау", items: ["Файл мәзірін ашу", "«Басқаша сақтау» таңдау", "Файл атын жазу", "«Сақтау» басу"] },
+      { prompt: "Тіктөртбұрыштың ауданын есептеу", items: ["Ұзындығын енгізу", "Енін енгізу", "Ұзындықты енге көбейту", "Нәтижені шығару"] },
+      { prompt: "Суретті Paint-те салу", items: ["Paint-ті ашу", "Құралды таңдау", "Түсті таңдау", "Сурет салу", "Файлды сақтау"] },
+      { prompt: "Хат жіберу", items: ["Поштаны ашу", "«Жаңа хат» басу", "Алушының адресін жазу", "Хат мәтінін жазу", "«Жіберу» басу"] },
+      { prompt: "Сандарды кішіден үлкенге ретте: 2⁰, 2³, 2¹, 2²", items: ["2⁰", "2¹", "2²", "2³"] },
+      { prompt: "Өлшем бірліктерін кішіден үлкенге қой", items: ["Бит", "Байт", "Килобайт", "Мегабайт", "Гигабайт"] },
+      { prompt: "Программаны жазу кезеңдері", items: ["Есептің шартын түсіну", "Алгоритм құру", "Код жазу", "Программаны тексеру"] },
+    ],
+  },
+  {
+    type: "ORDERING", grade: 9, quarter: 3, topic: "Сұрыптау", title: "Python кодын жина",
+    description: "Код жолдарын дұрыс ретке қойып, жұмыс істейтін программа жина.",
+    questions: [
+      { prompt: "Тізімнің элементтерін қосындылау", items: ["a = [3, 5, 2]", "s = 0", "for x in a:", "    s += x", "print(s)"] },
+      { prompt: "Тізімге 3 сан енгізу", items: ["a = []", "for i in range(3):", "    x = int(input())", "    a.append(x)"] },
+      { prompt: "Ең үлкен элементті табу", items: ["a = [4, 9, 1]", "m = a[0]", "for x in a:", "    if x > m:", "        m = x", "print(m)"] },
+      { prompt: "Тізімді сұрыптап шығару", items: ["a = [5, 1, 4]", "a.sort()", "print(a)"] },
+      { prompt: "Жұп элементтерді санау", items: ["k = 0", "for x in a:", "    if x % 2 == 0:", "        k += 1", "print(k)"] },
+      { prompt: "Тізімнің соңғы элементін жою", items: ["a = [1, 2, 3]", "a.pop()", "print(a)"] },
+      { prompt: "Тізімді кері ретпен шығару", items: ["a = [1, 2, 3]", "a.reverse()", "print(a)"] },
+      { prompt: "Көпіршікті сұрыптаудың бір қадамы", items: ["for i in range(len(a) - 1):", "    if a[i] > a[i + 1]:", "        a[i], a[i + 1] = a[i + 1], a[i]"] },
+      { prompt: "Элементті іздеу", items: ["x = int(input())", "if x in a:", "    print(\"Бар\")", "else:", "    print(\"Жоқ\")"] },
+      { prompt: "Массив өңдеу кезеңдері", items: ["Массивті жасау", "Элементтерді енгізу", "Элементтерді өңдеу", "Нәтижені шығару"] },
+    ],
+  },
+  {
+    type: "MEMORY", grade: 8, quarter: 1, topic: "Заманауи кибер қауіп-қатер", title: "Жұбын тап: кибер қауіпсіздік",
+    description: "Карточкаларды аударып, ұғым мен анықтаманың жұбын тап.",
+    pairs: { prompt: "Ұғым мен анықтаманың жұбын тап", left: ["Фишинг", "Вирус", "Антивирус", "Спам", "Брандмауэр", "Хакер", "Құпиясөз", "Резервтік көшірме", "Шифрлау", "Екі факторлы кіру"], right: ["Жалған сайтпен құпиясөз ұрлау", "Өзін-өзі көбейтетін зиянды программа", "Зиянды программаны табады", "Сұралмаған жаппай хаттар", "Желіні рұқсатсыз кіруден қорғайды", "Жүйеге рұқсатсыз кіретін адам", "Аккаунтты қорғайтын құпия сөз", "Деректердің сақтық көшірмесі", "Ақпаратты кодпен жасыру", "Құпиясөз + SMS код"] },
+  },
+  {
+    type: "MEMORY", grade: 11, quarter: 1, topic: "Жасанды интеллект", title: "Жұбын тап: жасанды интеллект",
+    description: "ЖИ ұғымдарын анықтамаларымен жұпта.",
+    pairs: { prompt: "Ұғым мен анықтаманың жұбын тап", left: ["Нейрон", "Деректер", "Модель", "Чатбот", "Жіктеу", "Промпт", "VR", "AR", "Алгоритм", "Машиналық оқыту"], right: ["Нейрондық желінің негізгі элементі", "Модель үйренетін мәліметтер", "Деректерден үйренген жүйе", "Мәтінмен сөйлесетін программа", "Нысандарды топтарға бөлу", "ЖИ-ге берілетін нұсқау", "Толық виртуалды шындық", "Шынайы әлемге сурет қосу", "Әрекеттердің нақты тізбегі", "Компьютердің мысалдардан үйренуі"] },
+  },
 ];
 
 export async function importGames(db: PrismaClient) {
@@ -361,13 +467,13 @@ export async function importGames(db: PrismaClient) {
     const topic = g.topic
       ? await db.topic.findFirst({ where: { title: g.topic, quarter: { gradeId: g.grade, number: g.quarter } }, select: { id: true } })
       : null;
-    const questions = g.type === "MATCHING" && g.pairs
+    const questions = (g.type === "MATCHING" || g.type === "MEMORY") && g.pairs
       ? [{ order: 0, prompt: g.pairs.prompt, data: { left: g.pairs.left, right: g.pairs.right }, answer: g.pairs.left.map((_, i) => i), points: g.pairs.left.length }]
       : (g.questions ?? []).map((q, i) => ({
           order: i,
           prompt: q.prompt,
-          data: q.cw ? { ...q.cw, len: String(q.answer).length } : { ...(q.options ? { options: q.options } : {}), ...(q.code ? { code: q.code } : {}) },
-          answer: q.answer as number | string | string[],
+          data: q.items ? { items: q.items } : g.type === "TRUEFALSE" ? { options: ["Дұрыс", "Бұрыс"] } : q.cw ? { ...q.cw, len: String(q.answer).length } : { ...(q.options ? { options: q.options } : {}), ...(q.code ? { code: q.code } : {}) },
+          answer: (q.items ? q.items.map((_, k) => k) : q.answer) as number | number[] | string | string[],
           explanation: q.explanation ?? null,
           points: 1,
         }));

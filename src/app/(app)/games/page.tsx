@@ -42,7 +42,7 @@ export default async function GamesPage({ searchParams }: { searchParams: Promis
           <Link href="/games/new" className="btn-primary btn-sm"><Plus className="h-4 w-4" /> {t("Өз ойынымды жасау")}</Link>
         </div>
       </div>
-      <div className="mt-6 grid grid-cols-3 sm:grid-cols-6 gap-2">
+      <div className="mt-6 grid grid-cols-3 sm:grid-cols-5 gap-2">
         {GAME_TYPES.map((gt) => {
           const I = GAME_ICONS[gt.key];
           const on = type === gt.key;

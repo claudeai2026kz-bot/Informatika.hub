@@ -5,7 +5,7 @@ import { autoLayout } from "./crossword";
 
 /** Ойынды сақтауға дайындау: тексеру + сұрақтарды базаға жазылатын түрге келтіру (әкімші де, мұғалім де қолданады). */
 export const gameSchema = z.object({
-  type: z.enum(["QUIZ", "MATCHING", "CROSSWORD", "RAPID", "LOGIC", "CODING"]),
+  type: z.enum(["QUIZ", "MATCHING", "CROSSWORD", "RAPID", "LOGIC", "CODING", "TRUEFALSE", "CLIMB", "ORDERING", "MEMORY"]),
   title: z.string().trim().min(3, "Атауы кемінде 3 таңба").max(200),
   description: z.string().trim().max(1000).default(""),
   grade: z.coerce.number().int().min(5).max(11),
@@ -23,11 +23,16 @@ export const gameSchema = z.object({
 
 function validateQuestion(type: GameType, q: z.infer<typeof gameSchema>["questions"][number], n: number): string | null {
   const at = `${n + 1}-сұрақ: `;
-  if (type === "QUIZ" || type === "RAPID") {
+  if (type === "TRUEFALSE") {
+    if (q.answer !== 0 && q.answer !== 1) return at + "«Дұрыс» не «Бұрыс» деп белгілеңіз";
+  } else if (type === "ORDERING") {
+    const it = q.data.items as unknown;
+    if (!Array.isArray(it) || it.length < 3 || it.length > 8 || it.some((x) => typeof x !== "string" || !x.trim())) return at + "3-тен 8-ге дейін қадамды дұрыс ретімен толтырыңыз";
+  } else if (type === "QUIZ" || type === "RAPID" || type === "CLIMB") {
     const opts = q.data.options as unknown;
     if (!Array.isArray(opts) || opts.length < 2 || opts.some((o) => typeof o !== "string" || !o.trim())) return at + "кемінде 2 жауап нұсқасын толтырыңыз";
     if (!Number.isInteger(q.answer) || (q.answer as number) < 0 || (q.answer as number) >= opts.length) return at + "дұрыс жауапты белгілеңіз";
-  } else if (type === "MATCHING") {
+  } else if (type === "MATCHING" || type === "MEMORY") {
     const l = q.data.left as unknown, r = q.data.right as unknown;
     if (!Array.isArray(l) || !Array.isArray(r) || l.length < 2 || l.length !== r.length || [...l, ...r].some((x) => typeof x !== "string" || !x.trim())) return at + "кемінде 2 толық жұп енгізіңіз";
   } else if (type === "CROSSWORD") {
@@ -85,10 +90,12 @@ export function prepareGame(payload: unknown, opts: { autoCrossword?: boolean } 
   }
   const questions = d.questions.map((q, order) => {
     let data = q.data, answer = q.answer;
-    if (d.type === "MATCHING") answer = (q.data.left as string[]).map((_, i) => i);
+    if (d.type === "MATCHING" || d.type === "MEMORY") answer = (q.data.left as string[]).map((_, i) => i);
+    if (d.type === "TRUEFALSE") data = { options: ["Дұрыс", "Бұрыс"] };
+    if (d.type === "ORDERING") { data = { items: (q.data.items as string[]).map((s) => s.trimEnd()) }; answer = (q.data.items as string[]).map((_, i) => i); }
     if (d.type === "CROSSWORD") { answer = String(q.answer).trim().toUpperCase(); data = { ...q.data, len: (answer as string).length }; }
     if (d.type === "LOGIC" || d.type === "CODING") answer = (q.answer as string[]).map((s) => s.trim());
-    return { order, prompt: q.prompt, data: data as Prisma.InputJsonValue, answer: answer as Prisma.InputJsonValue, explanation: q.explanation || null, points: d.type === "MATCHING" ? (q.data.left as string[]).length : q.points };
+    return { order, prompt: q.prompt, data: data as Prisma.InputJsonValue, answer: answer as Prisma.InputJsonValue, explanation: q.explanation || null, points: d.type === "MATCHING" || d.type === "MEMORY" ? (q.data.left as string[]).length : q.points };
   });
   if (d.type === "CROSSWORD") {
     const err = checkCrossword(questions.map((q) => ({ data: q.data as Record<string, unknown>, answer: q.answer })));

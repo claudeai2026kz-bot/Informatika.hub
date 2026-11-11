@@ -5,7 +5,15 @@ import Link from "next/link";
 import { Play, RotateCcw, Check, X, Timer, ArrowRight, Trophy, Loader2 } from "lucide-react";
 import { checkAnswer, submitGame } from "@/app/actions/games";
 import Robot from "../Robot";
+import { Climb, Ordering, Memory } from "./NewModes";
 import { useT } from "@/lib/i18n/client";
+
+const RULES: Record<string, string> = {
+  TRUEFALSE: "Әр тұжырымды оқып, «Дұрыс» немесе «Бұрыс» деп жауап бер.",
+  CLIMB: "Әр дұрыс жауап сені шыңға қарай бір биіктікке көтереді. Бір қате жауап — өрмелеу тоқтайды. Бір рет көмек алуға болады.",
+  ORDERING: "Қадамдарды немесе код жолдарын дұрыс ретке қой.",
+  MEMORY: "Карточкаларды екіден аударып, ұғым мен анықтаманың жұбын тап. Әр 3 қате 1 балл кемітеді.",
+};
 
 type Q = { id: string; prompt: string; points: number; data: Record<string, unknown> };
 type Layout = { rows: number; cols: number; words: { id: string; n: number; row: number; col: number; dir: "across" | "down"; len: number }[] } | null;
@@ -35,7 +43,8 @@ export default function GamePlayer({ gameId, type, title, questions, timeLimit, 
       <div className="card p-8 sm:p-12 text-center">
         <div className="flex justify-center"><Robot size={150} wave /></div>
         <h2 className="mt-4 text-2xl font-bold">{t("Дайынсыз ба?")}</h2>
-        <p className="mt-2 muted">{t("{n} сұрақ", { n: questions.length })}{type === "RAPID" ? ` · ${t("әр сұраққа {s} секунд", { s: timeLimit ?? 10 })}` : ""}. {t("Ұпай автоматты түрде есептеледі.")}</p>
+        <p className="mt-2 muted">{type === "MATCHING" || type === "MEMORY" ? t("{n} жұп", { n: ((questions[0]?.data.left as unknown[]) ?? (questions[0]?.data.cards as unknown[]) ?? []).length / (type === "MEMORY" ? 2 : 1) }) : t("{n} сұрақ", { n: questions.length })}{type === "RAPID" ? ` · ${t("әр сұраққа {s} секунд", { s: timeLimit ?? 10 })}` : ""}. {t("Ұпай автоматты түрде есептеледі.")}</p>
+        {RULES[type] && <p className="mt-3 mx-auto max-w-md rounded-xl bg-sky-50 px-4 py-2.5 text-sm text-sky-800">{t(RULES[type])}</p>}
         {!loggedIn && !student && <p className="mt-2 text-sm text-amber-700">{t("Нәтижеңіз сақталуы үшін жүйеге кіріңіз.")}</p>}
         <button onClick={() => setPhase("play")} className="btn-primary h-12 px-8 mt-6 text-base"><Play className="h-5 w-5" /> {t("Ойынды бастау")}</button>
       </div>
@@ -46,7 +55,10 @@ export default function GamePlayer({ gameId, type, title, questions, timeLimit, 
   return (
     <div key={round} className="relative">
       {pending && <div className="absolute inset-0 z-10 grid place-items-center rounded-xl2 bg-white/70"><Loader2 className="h-8 w-8 animate-spin text-sky-500" /></div>}
-      {(type === "QUIZ" || type === "RAPID" || type === "LOGIC" || type === "CODING") && (
+      {type === "CLIMB" && <Climb gameId={gameId} questions={questions} onDone={(a) => { setAnswers(a); finish(a); }} />}
+      {type === "ORDERING" && <Ordering gameId={gameId} questions={questions} onDone={(a) => { setAnswers(a); finish(a); }} />}
+      {type === "MEMORY" && <Memory q={questions[0]} onDone={(v) => finish({ [questions[0].id]: v })} />}
+      {(type === "QUIZ" || type === "RAPID" || type === "TRUEFALSE" || type === "LOGIC" || type === "CODING") && (
         <Stepper gameId={gameId} type={type} questions={questions} timeLimit={timeLimit ?? 10}
           onDone={(a) => { setAnswers(a); finish(a); }} />
       )}
@@ -95,7 +107,7 @@ function Stepper({ gameId, type, questions, timeLimit, onDone }: { gameId: strin
     if (i + 1 < questions.length) setI(i + 1); else onDone(a);
   }
 
-  const isChoice = type === "QUIZ" || type === "RAPID";
+  const isChoice = type === "QUIZ" || type === "RAPID" || type === "TRUEFALSE";
   return (
     <div className="card p-6 sm:p-8">
       <div className="flex items-center justify-between gap-3 text-sm">
@@ -304,13 +316,14 @@ function ResultView({ result, questions, type, onRestart }: { result: Result; qu
           </div>
         </div>
       </div>
-      {type !== "MATCHING" && (
+      {type !== "MATCHING" && type !== "MEMORY" && (
         <ul className="mt-8 space-y-2">
           {questions.map((q, k) => {
             const d = result.details.find((x) => x.id === q.id);
             const sol = result.solutions.find((s) => s.id === q.id);
             const opts = q.data.options as string[] | undefined;
-            const ans = opts && typeof sol?.answer === "number" ? opts[sol.answer] : Array.isArray(sol?.answer) ? String(sol?.answer[0]) : String(sol?.answer ?? "");
+            const its = q.data.items as { i: number; text: string }[] | undefined;
+            const ans = its ? [...its].sort((a, b) => a.i - b.i).map((x) => x.text).join(" → ") : opts && typeof sol?.answer === "number" ? opts[sol.answer] : Array.isArray(sol?.answer) ? String(sol?.answer[0]) : String(sol?.answer ?? "");
             return (
               <li key={q.id} className={`flex items-start gap-3 rounded-xl px-4 py-3 text-sm ${d?.correct ? "bg-emerald-50" : "bg-rose-50"}`}>
                 {d?.correct ? <Check className="h-5 w-5 text-emerald-500 shrink-0" /> : <X className="h-5 w-5 text-rose-500 shrink-0" />}

@@ -49,3 +49,14 @@ export async function submitGame(gameId: string, answers: Record<string, unknown
     solutions: g.questions.map((q) => ({ id: q.id, answer: q.answer, explanation: q.explanation })),
   };
 }
+
+/** «Шыңға шық» көмегі: бір қате нұсқаны көрсетеді (клиент оны жасырады). Ойында бір рет қолданылады. */
+export async function climbHint(gameId: string, questionId: string): Promise<number | null> {
+  const g = await loadGame(gameId);
+  if (g.type !== "CLIMB") return null;
+  const q = g.questions.find((x) => x.id === questionId);
+  if (!q) return null;
+  const n = ((q.data as { options?: unknown[] })?.options ?? []).length;
+  const wrong = Array.from({ length: n }, (_, i) => i).filter((i) => i !== q.answer);
+  return wrong.length ? wrong[Math.floor(Math.random() * wrong.length)] : null;
+}
