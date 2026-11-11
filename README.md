@@ -36,7 +36,7 @@ npm run dev
 
 | Функция | Не керек |
 |---|---|
-| Құпиясөзді email арқылы қалпына келтіру | `RESEND_API_KEY`, `MAIL_FROM`, `APP_URL` |
+| Құпиясөзді email арқылы қалпына келтіру | Gmail: `SMTP_USER`, `SMTP_PASS` (қолданба құпиясөзі), `APP_URL`; немесе Resend: `RESEND_API_KEY`, `MAIL_FROM` |
 | Файлдарды хостингте сақтау | Қазір `STORAGE_DIR` дискісінде. Vercel үшін `src/lib/storage.ts` модулін S3 / Supabase Storage-ке ауыстыру керек |
 | PPTX / DOCX алдын ала қарау | Әкімші файлмен бірге PDF нұсқасын жүктейді (немесе серверде LibreOffice орнату) |
 | Генеративті AI робот | Қазір сайт ішіндегі іздеумен жұмыс істейді. AI үшін серверде API кілті керек |
