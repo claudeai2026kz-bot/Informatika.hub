@@ -6,6 +6,7 @@ import SubmitButton from "@/components/ui/SubmitButton";
 import { updateSettings } from "@/app/actions/profile";
 import { logoutAction } from "@/app/actions/auth";
 import PrefsSwitcher from "@/components/PrefsSwitcher";
+import VoiceSwitch from "@/components/VoiceSwitch";
 
 import { getT } from "@/lib/i18n/server";
 export async function generateMetadata() {
@@ -35,6 +36,10 @@ export default async function SettingsPage() {
           <div className="flex-1"><div className="font-semibold">{t("Режим және тіл")}</div><div className="text-sm muted">{t("Таңдауыңыз аккаунтыңызда сақталады")}</div></div>
         </div>
         <PrefsSwitcher full />
+      </div>
+      <div className="card p-6">
+        <VoiceSwitch />
+        <div className="mt-2 pl-14 text-xs muted">{t("Таңдау бірден сақталады (осы құрылғыда)")}</div>
       </div>
       <ActionForm action={updateSettings} className="card px-6 py-2 divide-y divide-sky-100">
         <Toggle name="soundOn" label={t("Робот дыбысы")} hint={t("Робот жауап бергенде қысқа дыбыстық белгі")} on={user.soundOn} icon={<Volume2 className="h-5 w-5" />} />

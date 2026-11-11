@@ -188,3 +188,11 @@ export function preloadVoice() {
 }
 
 export function voiceOff() { try { return localStorage.getItem("ihub-voice") === "off"; } catch { return false; } }
+
+/** Робот дауысын қосады/өшіреді: таңдау осы құрылғыда сақталады, ашық тұрған робот бірден біледі. */
+export const VOICE_EVENT = "ihub-voice";
+export function setVoiceOff(off: boolean) {
+  try { localStorage.setItem("ihub-voice", off ? "off" : "on"); } catch { /* */ }
+  if (off) stopSpeaking();
+  try { window.dispatchEvent(new CustomEvent(VOICE_EVENT, { detail: { off } })); } catch { /* */ }
+}

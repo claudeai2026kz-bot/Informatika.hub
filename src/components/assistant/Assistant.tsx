@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { X, Send, ArrowRight, Mic, Volume2, VolumeX } from "lucide-react";
 import Robot from "../Robot";
-import { speak, preloadVoice } from "@/lib/speech";
+import { speak, preloadVoice, setVoiceOff, voiceOff, VOICE_EVENT } from "@/lib/speech";
 import { useT } from "@/lib/i18n/client";
 
 type Msg = { from: "bot" | "me"; text: string; items?: { title: string; href: string; meta: string }[]; links?: { href: string; label: string }[] };
@@ -62,9 +62,16 @@ export default function Assistant({ soundOn = true }: { soundOn?: boolean }) {
   function toggleVoice() {
     const v = !voice;
     setVoice(v);
-    if (!v) window.speechSynthesis?.cancel();
-    try { localStorage.setItem("ihub-voice", v ? "on" : "off"); } catch { /* */ }
+    setVoiceOff(!v);
   }
+
+  // Баптаулардан (немесе басқа беттен) дауыс ауыстырылса — бірден ескереміз
+  useEffect(() => {
+    const sync = () => setVoice(!voiceOff());
+    window.addEventListener(VOICE_EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => { window.removeEventListener(VOICE_EVENT, sync); window.removeEventListener("storage", sync); };
+  }, []);
 
   function listen() {
     if (listening) { recRef.current?.stop(); return; }

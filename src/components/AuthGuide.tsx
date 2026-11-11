@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Volume2, VolumeX } from "lucide-react";
 import Robot from "./Robot";
-import { speak, stopSpeaking, voiceOff } from "@/lib/speech";
+import { speak, stopSpeaking, voiceOff, setVoiceOff } from "@/lib/speech";
 import { useT } from "@/lib/i18n/client";
 
 /** Кіру/тіркелу бетіндегі тірі робот: шығып келеді, қол бұлғайды, сайт туралы айтады, қай жолды толтыру керегін көрсетеді. */
@@ -99,8 +99,8 @@ export default function AuthGuide({ compact = false, dark = false }: { compact?:
   function toggleMute() {
     const m = !mute;
     setMute(m);
-    try { localStorage.setItem("ihub-voice", m ? "off" : "on"); } catch { /* */ }
-    if (m) stopSpeaking(); else playIntro(0);
+    setVoiceOff(m);
+    if (!m) playIntro(0);
   }
 
   if (compact) {
