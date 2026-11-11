@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LayoutDashboard } from "lucide-react";
 import Logo from "./Logo";
 import { getCurrentUser } from "@/lib/auth";
 import PrefsSwitcher from "./PrefsSwitcher";
@@ -20,7 +21,7 @@ export default async function PublicHeader() {
           <div className="flex items-center gap-2">
             <PrefsSwitcher tone="light" />
             {user ? (
-              <Link href="/dashboard" className="btn-primary btn-sm">{t("Менің панелім")}</Link>
+              <Link href="/dashboard" className="btn-primary btn-sm" aria-label={t("Менің панелім")}><LayoutDashboard className="h-4 w-4 sm:hidden" /><span className="hidden sm:inline">{t("Менің панелім")}</span></Link>
             ) : (
               <>
                 <Link href="/login" className="btn-ghost btn-sm hidden sm:inline-flex">{t("Жүйеге кіру")}</Link>
