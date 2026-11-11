@@ -26,9 +26,26 @@ const studentSchema = z.object({
   teacherId: z.string().cuid(),
   name: z.string().trim().min(2).max(60),
   className: z.string().trim().max(20).default(""),
+  classId: z.string().cuid().optional(),
+  studentId: z.string().cuid().optional(),
 });
 
-export async function submitGame(gameId: string, answers: Record<string, unknown>, student?: { teacherId: string; name: string; className?: string }) {
+/** Сынып сілтемесі арқылы ойнаса: оқушыны сынып тізімінен табамыз (жоқ болса — тізімге қосамыз). */
+async function classLink(teacherId: string, classId?: string, studentId?: string, name?: string) {
+  if (!classId) return null;
+  const c = await db.classroom.findFirst({ where: { id: classId, teacherId }, select: { id: true, name: true } });
+  if (!c) return null;
+  let sid: string | null = null;
+  if (studentId) sid = (await db.classStudent.findFirst({ where: { id: studentId, classId: c.id }, select: { id: true } }))?.id ?? null;
+  if (!sid && name) {
+    const n = name.replace(/\s+/g, " ").trim();
+    const found = await db.classStudent.findFirst({ where: { classId: c.id, name: { equals: n, mode: "insensitive" } }, select: { id: true } });
+    sid = found?.id ?? ((await db.classStudent.count({ where: { classId: c.id } })) < 60 ? (await db.classStudent.create({ data: { classId: c.id, name: n } })).id : null);
+  }
+  return { classId: c.id, className: c.name, studentId: sid };
+}
+
+export async function submitGame(gameId: string, answers: Record<string, unknown>, student?: { teacherId: string; name: string; className?: string; classId?: string; studentId?: string }) {
   const g = await loadGame(gameId);
   const res = scoreGame(g.type, g.questions as QuestionRow[], answers ?? {});
   const user = await getCurrentUser();
@@ -37,7 +54,13 @@ export async function submitGame(gameId: string, answers: Record<string, unknown
   let sent = false;
   const st = student ? studentSchema.safeParse(student) : null;
   if (st?.success && (await db.user.findUnique({ where: { id: st.data.teacherId }, select: { id: true } }))) {
-    await db.studentResult.create({ data: { gameId: g.id, teacherId: st.data.teacherId, studentName: st.data.name, className: st.data.className, score: res.score, maxScore: res.max } });
+    const cl = await classLink(st.data.teacherId, st.data.classId, st.data.studentId, st.data.name);
+    await db.studentResult.create({
+      data: {
+        gameId: g.id, teacherId: st.data.teacherId, studentName: st.data.name, className: cl?.className ?? st.data.className, score: res.score, maxScore: res.max,
+        classId: cl?.classId ?? null, studentId: cl?.studentId ?? null,
+      },
+    });
     sent = true;
   } else if (user) {
     await db.gameResult.create({ data: { userId: user.id, gameId: g.id, score: res.score, maxScore: res.max } });

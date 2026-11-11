@@ -10,21 +10,23 @@ export async function generateMetadata() {
 }
 
 /** Мұғалім өз сілтемесі арқылы ойнаған оқушылардың нәтижесін көреді. */
-export default async function ResultsPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ResultsPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ c?: string }> }) {
   const t = await getT();
   const { id } = await params;
   const user = await requireUser(`/games/${id}/results`);
   const g = await db.game.findUnique({ where: { id }, select: { id: true, title: true } });
   if (!g) notFound();
-  const rows = await db.studentResult.findMany({ where: { gameId: id, teacherId: user.id }, orderBy: { createdAt: "desc" }, take: 500 });
+  const { c } = await searchParams;
+  const cls = c ? await db.classroom.findFirst({ where: { id: c, teacherId: user.id }, select: { id: true, name: true } }) : null;
+  const rows = await db.studentResult.findMany({ where: { gameId: id, teacherId: user.id, ...(cls ? { classId: cls.id } : {}) }, orderBy: { createdAt: "desc" }, take: 500 });
   const avg = rows.length ? rows.reduce((s, r) => s + (r.maxScore ? r.score / r.maxScore : 0), 0) / rows.length : 0;
   const fmt = new Intl.DateTimeFormat("kk-KZ", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Almaty" });
 
   return (
     <div className="max-w-4xl mx-auto">
-      <Breadcrumbs items={[{ href: "/games", label: t("Ойындар") }, { href: `/games/${g.id}`, label: g.title }, { label: t("Оқушылар нәтижесі") }]} />
+      <Breadcrumbs items={cls ? [{ href: "/classes", label: t("Менің сыныптарым") }, { href: `/classes/${cls.id}`, label: cls.name }, { label: g.title }] : [{ href: "/games", label: t("Ойындар") }, { href: `/games/${g.id}`, label: g.title }, { label: t("Оқушылар нәтижесі") }]} />
       <h1 className="mt-5 text-2xl sm:text-3xl font-extrabold">{t("Оқушылар нәтижесі")}</h1>
-      <p className="muted mt-1">{g.title}</p>
+      <p className="muted mt-1">{g.title}{cls ? ` · ${cls.name}` : ""}</p>
       <div className="mt-5 grid grid-cols-2 gap-3 max-w-md">
         <div className="card p-4"><div className="text-2xl font-extrabold">{rows.length}</div><div className="text-sm muted">{t("ойнады")}</div></div>
         <div className="card p-4"><div className="text-2xl font-extrabold">{Math.round(avg * 100)}%</div><div className="text-sm muted">{t("орташа нәтиже")}</div></div>

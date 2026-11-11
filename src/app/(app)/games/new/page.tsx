@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth";
+import { db } from "@/lib/db";
 import { loadTopicOpts } from "@/lib/topics";
 import { loadDraft } from "@/lib/game-draft";
 import GameEditor from "@/components/admin/GameEditor";
@@ -11,10 +12,11 @@ export async function generateMetadata() {
 }
 
 /** Мұғалім жаңа ойын жасайды. ?from=<ойын> болса — сол ойынның көшірмесінен бастайды. */
-export default async function NewMyGame({ searchParams }: { searchParams: Promise<{ from?: string }> }) {
+export default async function NewMyGame({ searchParams }: { searchParams: Promise<{ from?: string; class?: string }> }) {
   const t = await getT();
-  const { from } = await searchParams;
-  await requireUser(`/games/new${from ? `?from=${from}` : ""}`);
+  const { from, class: classParam } = await searchParams;
+  const user = await requireUser(`/games/new${from ? `?from=${from}` : ""}`);
+  const cls = classParam ? await db.classroom.findFirst({ where: { id: classParam, teacherId: user.id }, select: { id: true, name: true, gradeId: true } }) : null;
   let initial = null;
   if (from) {
     const d = await loadDraft(from);
@@ -23,10 +25,11 @@ export default async function NewMyGame({ searchParams }: { searchParams: Promis
   }
   return (
     <div className="max-w-4xl mx-auto">
-      <Breadcrumbs items={[{ href: "/games", label: t("Ойындар") }, { href: "/games/my", label: t("Менің ойындарым") }, { label: t("Жаңа ойын") }]} />
+      <Breadcrumbs items={cls ? [{ href: "/classes", label: t("Менің сыныптарым") }, { href: `/classes/${cls.id}`, label: cls.name }, { label: t("Жаңа ойын") }] : [{ href: "/games", label: t("Ойындар") }, { href: "/games/my", label: t("Менің ойындарым") }, { label: t("Жаңа ойын") }]} />
       <h1 className="mt-5 text-3xl font-extrabold">{t(from ? "Ойынды өз тақырыбыма бейімдеу" : "Жаңа ойын жасау")}</h1>
       <p className="mt-1 mb-6 muted">{t(from ? "Сұрақтарды өз тақырыбыңызға ауыстырыңыз. Түпнұсқа ойын өзгермейді." : "Ойын түрін таңдап, сұрақтарды жазыңыз. Сақтаған соң оқушыларға сілтемемен жібере аласыз.")}</p>
-      <GameEditor mode="teacher" copyOf={!!from} initial={initial} topics={await loadTopicOpts()} />
+      {cls && <p className="-mt-3 mb-6 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-800">{t("Сақтаған соң ойын бірден «{c}» сыныбына беріледі.", { c: cls.name })}</p>}
+      <GameEditor mode="teacher" copyOf={!!from} classId={cls?.id} grade={cls?.gradeId} initial={initial} topics={await loadTopicOpts()} />
     </div>
   );
 }

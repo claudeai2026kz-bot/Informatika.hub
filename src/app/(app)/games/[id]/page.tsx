@@ -30,6 +30,11 @@ export default async function GamePage({ params, searchParams }: { params: Promi
   const mine = !!user && g.authorId === user.id;
   const fav = user ? await db.favorite.findFirst({ where: { userId: user.id, gameId: id } }) : null;
   const sentCount = user ? await db.studentResult.count({ where: { gameId: id, teacherId: user.id } }) : 0;
+  const solo = GAME_TYPES.find((x) => x.key === g.type)?.mode === "solo";
+  const classes = user && solo && g.published && (!g.authorId || mine)
+    ? (await db.classroom.findMany({ where: { teacherId: user.id }, orderBy: [{ gradeId: "asc" }, { name: "asc" }], select: { id: true, name: true, games: { where: { gameId: id }, select: { id: true } } } }))
+        .map((c) => ({ id: c.id, name: c.name, has: c.games.length > 0 }))
+    : undefined;
   const seed = Math.floor(Math.random() * 1000);
   const asTug = as === "tug" && isChoiceType(g.type);
   const practice = as === "solo" && g.type === "LIVE";
@@ -63,7 +68,7 @@ export default async function GamePage({ params, searchParams }: { params: Promi
         </div>
         <FavoriteButton target={{ gameId: g.id }} initial={!!fav} loggedIn={!!user} />
       </header>
-      {!board && <SendToStudents gameId={g.id} title={g.title} teacherId={user?.id ?? null} results={sentCount} />}
+      {!board && <SendToStudents gameId={g.id} title={g.title} teacherId={user?.id ?? null} results={sentCount} classes={classes} />}
       {asTug ? <Tug questions={questions as never} /> : <GamePlayer
         gameId={g.id}
         type={g.type}

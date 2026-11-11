@@ -32,9 +32,9 @@ const blank = (type: string): Q => {
 };
 
 /** mode="teacher": мұғалімнің өз ойыны — жариялау/ұпай жасырын, сөзжұмбақ сөздерінің орнын сайт өзі табады. */
-export default function GameEditor({ initial, topics, mode = "admin", copyOf = false }: { initial: GameDraft | null; topics: TopicOpt[]; mode?: "admin" | "teacher"; copyOf?: boolean }) {
+export default function GameEditor({ initial, topics, mode = "admin", copyOf = false, classId, grade }: { initial: GameDraft | null; topics: TopicOpt[]; mode?: "admin" | "teacher"; copyOf?: boolean; classId?: string; grade?: number }) {
   const teacher = mode === "teacher";
-  const [g, setG] = useState<GameDraft>(initial ?? { type: "QUIZ", title: "", description: "", grade: 7, topicId: null, timeLimit: 10, published: true, questions: [blank("QUIZ")] });
+  const [g, setG] = useState<GameDraft>(initial ?? { type: "QUIZ", title: "", description: "", grade: grade ?? 7, topicId: null, timeLimit: 10, published: true, questions: [blank("QUIZ")] });
   const [msg, setMsg] = useState<{ error?: string; ok?: string }>();
   const [pending, start] = useTransition();
   const router = useRouter();
@@ -49,9 +49,9 @@ export default function GameEditor({ initial, topics, mode = "admin", copyOf = f
     start(async () => {
       const payload = { ...g, topicId: g.topicId || undefined, timeLimit: g.timeLimit || undefined };
       const editId = copyOf ? undefined : initial?.id;
-      const r = teacher ? await saveMyGame(payload, editId) : await saveGame(payload, editId);
+      const r = teacher ? await saveMyGame(payload, editId, classId) : await saveGame(payload, editId);
       setMsg(r);
-      if (r?.ok) { router.push(teacher ? `/games/${(r as { id?: string }).id}?saved=1` : "/admin/games?saved=1"); router.refresh(); }
+      if (r?.ok) { router.push(teacher ? (classId ? `/classes/${classId}?tab=games&added=1` : `/games/${(r as { id?: string }).id}?saved=1`) : "/admin/games?saved=1"); router.refresh(); }
       else window.scrollTo({ top: 0, behavior: "smooth" });
     });
   }
@@ -216,7 +216,7 @@ export default function GameEditor({ initial, topics, mode = "admin", copyOf = f
 
       <div className="flex gap-2 sticky bottom-4">
         <button type="button" onClick={submit} disabled={pending} className="btn-primary">{pending ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Ойынды сақтау</button>
-        <Link href={teacher ? (initial?.id && !copyOf ? `/games/${initial.id}` : "/games/my") : "/admin/games"} className="btn-ghost">Болдырмау</Link>
+        <Link href={teacher ? (classId ? `/classes/${classId}?tab=games` : initial?.id && !copyOf ? `/games/${initial.id}` : "/games/my") : "/admin/games"} className="btn-ghost">Болдырмау</Link>
       </div>
     </div>
   );

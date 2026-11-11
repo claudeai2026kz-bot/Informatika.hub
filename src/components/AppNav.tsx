@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Bell, Heart, Home, LayoutGrid, ClipboardCheck, Gamepad2, User, Settings, LogOut, Shield, ChevronDown } from "lucide-react";
+import { Bell, Heart, Home, LayoutGrid, ClipboardCheck, Gamepad2, School, User, Settings, LogOut, Shield, ChevronDown } from "lucide-react";
 import Logo from "./Logo";
 import Robot from "./Robot";
 import { logoutAction } from "@/app/actions/auth";
@@ -16,6 +16,7 @@ const LINKS = [
   { href: "/materials", label: "Материалдар", icon: LayoutGrid },
   { href: "/assessments", label: "БЖБ / ТЖБ", icon: ClipboardCheck },
   { href: "/games", label: "Ойындар", icon: Gamepad2 },
+  { href: "/classes", label: "Менің сыныптарым", icon: School },
   { href: "/favorites", label: "Таңдаулылар", icon: Heart },
 ];
 
@@ -72,6 +73,7 @@ export default function AppNav({ user, unread }: { user: NavUser; unread: number
                     {open && (
                       <div role="menu" className="absolute right-0 mt-2 w-56 card p-1.5 animate-fadeUp text-ink">
                         <MenuLink href="/profile" icon={User}>{t("Профиль")}</MenuLink>
+                        <span className="lg:hidden"><MenuLink href="/classes" icon={School}>{t("Менің сыныптарым")}</MenuLink></span>
                         <span className="lg:hidden"><MenuLink href="/favorites" icon={Heart}>{t("Таңдаулылар")}</MenuLink></span>
                         <MenuLink href="/settings" icon={Settings}>{t("Баптаулар")}</MenuLink>
                         {user.role === "ADMIN" && <MenuLink href="/admin" icon={Shield}>{t("Әкімші панелі")}</MenuLink>}

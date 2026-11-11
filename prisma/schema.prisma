@@ -45,6 +45,7 @@ model User {
   studentResults StudentResult[]
   authoredGames Game[] @relation("AuthoredGames")
   liveSessions  LiveSession[]
+  classrooms    Classroom[]
   resetTokens   PasswordResetToken[]
 }
 
@@ -249,6 +250,7 @@ model Game {
   studentResults StudentResult[]
   liveSessions   LiveSession[]
   duels          Duel[]
+  classGames     ClassGame[]
 
   @@index([type, gradeId])
 }
@@ -379,11 +381,57 @@ model StudentResult {
   teacher     User     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
   studentName String
   className   String   @default("")
+  /// «Менің сыныптарым»: оқушы сынып сілтемесі арқылы ойнаса
+  classId     String?
+  classroom   Classroom?    @relation(fields: [classId], references: [id], onDelete: SetNull)
+  studentId   String?
+  student     ClassStudent? @relation(fields: [studentId], references: [id], onDelete: SetNull)
   score       Int
   maxScore    Int
   createdAt   DateTime @default(now())
 
   @@index([teacherId, gameId])
+  @@index([classId])
+}
+
+// ---------- Менің сыныптарым ----------
+
+/// Мұғалімнің сыныбы (мысалы, 7 «А»): оқушылар тізімі, берілген ойындар, бағалар журналы.
+model Classroom {
+  id        String          @id @default(cuid())
+  teacherId String
+  teacher   User            @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  name      String
+  gradeId   Int
+  createdAt DateTime        @default(now())
+  students  ClassStudent[]
+  games     ClassGame[]
+  results   StudentResult[]
+
+  @@index([teacherId])
+}
+
+model ClassStudent {
+  id        String          @id @default(cuid())
+  classId   String
+  classroom Classroom       @relation(fields: [classId], references: [id], onDelete: Cascade)
+  name      String
+  createdAt DateTime        @default(now())
+  results   StudentResult[]
+
+  @@unique([classId, name])
+}
+
+/// Сыныпқа берілген ойын
+model ClassGame {
+  id        String    @id @default(cuid())
+  classId   String
+  classroom Classroom @relation(fields: [classId], references: [id], onDelete: Cascade)
+  gameId    String
+  game      Game      @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+
+  @@unique([classId, gameId])
 }
 
 /// Тірі ойын (Сынып жарысы, Командалық қашу бөлмесі): мұғалім тақтада жүргізеді, оқушылар кодпен телефоннан кіреді.

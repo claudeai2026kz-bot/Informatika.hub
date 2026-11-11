@@ -7,7 +7,7 @@ import { prepareGame } from "@/lib/game-save";
 export type MyGameState = { error?: string; ok?: string; id?: string } | undefined;
 
 /** Мұғалім өз ойынын жасайды не өзгертеді. Ойын тек өзіне және сілтеме алған оқушыларына көрінеді. */
-export async function saveMyGame(payload: unknown, id?: string): Promise<MyGameState> {
+export async function saveMyGame(payload: unknown, id?: string, classId?: string): Promise<MyGameState> {
   const user = await getCurrentUser();
   if (!user) return { error: "Жүйеге кіріңіз" };
   const prep = prepareGame(payload, { autoCrossword: true });
@@ -27,6 +27,11 @@ export async function saveMyGame(payload: unknown, id?: string): Promise<MyGameS
   const count = await db.game.count({ where: { authorId: user.id } });
   if (count >= 200) return { error: "Ойындар саны шегіне жетті (200)" };
   const g = await db.game.create({ data: { ...prep.base, published: true, authorId: user.id, questions: { create: prep.questions } } });
+  // «Менің сыныптарым» ішінен жасалса — ойын бірден сол сыныпқа беріледі
+  if (classId && (await db.classroom.findFirst({ where: { id: classId, teacherId: user.id }, select: { id: true } }))) {
+    await db.classGame.create({ data: { classId, gameId: g.id } });
+    revalidatePath(`/classes/${classId}`);
+  }
   revalidatePath("/games/my");
   return { ok: "Ойын сақталды", id: g.id };
 }

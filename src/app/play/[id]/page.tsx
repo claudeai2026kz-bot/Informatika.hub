@@ -14,10 +14,15 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 }
 
 /** Оқушыға арналған бет: тіркелусіз, тек атын жазып ойнайды. Нәтиже сілтемедегі мұғалімге барады. */
-export default async function PlayPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ t?: string }> }) {
+export default async function PlayPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ t?: string; c?: string }> }) {
   const t = await getT();
   const { id } = await params;
-  const { t: teacherId } = await searchParams;
+  const { t: teacherParam, c: classParam } = await searchParams;
+  // ?c=<сынып> — «Менің сыныптарым» сілтемесі: мұғалім сыныптан анықталады, оқушы атын тізімнен таңдайды
+  const cls = classParam && /^c[a-z0-9]{20,30}$/.test(classParam)
+    ? await db.classroom.findUnique({ where: { id: classParam }, select: { id: true, name: true, teacherId: true, students: { select: { id: true, name: true }, orderBy: { name: "asc" } } } })
+    : null;
+  const teacherId = cls?.teacherId ?? teacherParam;
   const g = await db.game.findFirst({ where: { id, published: true }, include: { questions: { orderBy: { order: "asc" } }, topic: true } });
   if (!g) notFound();
   const teacher = teacherId ? await db.user.findUnique({ where: { id: teacherId }, select: { id: true, name: true } }) : null;
@@ -36,13 +41,14 @@ export default async function PlayPage({ params, searchParams }: { params: Promi
           <div className="flex-1">
             <h1 className="text-2xl sm:text-3xl font-extrabold">{g.title}</h1>
             <p className="muted text-sm mt-1">{gt && t(gt.name)} · {t("{g}-сынып", { g: g.gradeId })}{g.topic ? ` · ${g.topic.title}` : ""}</p>
-            {teacher && <p className="mt-2 text-sm text-ink-soft">{t("Мұғалім: {n}", { n: teacher.name })}</p>}
+            {teacher && <p className="mt-2 text-sm text-ink-soft">{t("Мұғалім: {n}", { n: teacher.name })}{cls ? ` · ${cls.name}` : ""}</p>}
           </div>
         </header>
         <StudentPlay
           gameId={g.id} type={g.type} title={g.title} questions={questions as never} timeLimit={g.timeLimit}
           layout={g.type === "CROSSWORD" ? crosswordLayout(g.questions) : null}
           teacherId={teacher?.id ?? null} loggedIn={!!viewer}
+          classroom={cls && teacher ? { id: cls.id, name: cls.name, students: cls.students } : null}
         />
       </div>
     </div>

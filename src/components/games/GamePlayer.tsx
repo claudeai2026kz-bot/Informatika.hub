@@ -38,7 +38,7 @@ type Result = Awaited<ReturnType<typeof submitGame>>;
 export default function GamePlayer({ gameId, type, title, questions, timeLimit, layout, loggedIn, student, practice }: {
   gameId: string; type: string; title: string; questions: Q[]; timeLimit: number | null; layout: Layout; loggedIn: boolean;
   /** Оқушы мұғалімнің сілтемесімен ойнаса — нәтиже мұғалімге жіберіледі */
-  student?: { teacherId: string; name: string; className?: string };
+  student?: { teacherId: string; name: string; className?: string; classId?: string; studentId?: string };
   /** Сынып жарысының сұрақтарын жеке жаттығу ретінде ойнау */
   practice?: boolean;
 }) {

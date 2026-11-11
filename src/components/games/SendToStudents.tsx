@@ -1,11 +1,40 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
+import { addGameToClass } from "@/app/actions/classes";
 import Link from "next/link";
-import { Send, Copy, Check, Users, MessageCircle } from "lucide-react";
+import { Send, Copy, Check, Users, MessageCircle, School } from "lucide-react";
 import { useT } from "@/lib/i18n/client";
 
 /** Мұғалімге: ойынды оқушыларға жіберетін сілтеме (тіркелусіз ойнайды) және нәтижелер. */
-export default function SendToStudents({ gameId, title, teacherId, results }: { gameId: string; title: string; teacherId: string | null; results: number }) {
+type Cls = { id: string; name: string; has: boolean };
+
+/** Ойынды мұғалімнің сыныбына беру — нәтижелер сол сыныптың журналына түседі. */
+function AddToClass({ gameId, classes }: { gameId: string; classes: Cls[] }) {
+  const t = useT();
+  const [sel, setSel] = useState(classes.find((c) => !c.has)?.id ?? "");
+  const [done, setDone] = useState<string[]>(classes.filter((c) => c.has).map((c) => c.id));
+  const [pending, start] = useTransition();
+  if (!classes.length)
+    return <Link href="/classes" className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-700 hover:underline"><School className="h-4 w-4" /> {t("Сынып құрып, журнал жүргізу")}</Link>;
+  return (
+    <div className="flex flex-wrap items-center gap-2 text-sm">
+      <School className="h-4 w-4 text-emerald-700" />
+      <select className="input h-9 w-auto py-0 text-sm" value={sel} onChange={(e) => setSel(e.target.value)} aria-label={t("Сынып")}>
+        {classes.map((c) => <option key={c.id} value={c.id}>{c.name}{done.includes(c.id) ? " ✓" : ""}</option>)}
+      </select>
+      {done.includes(sel) ? (
+        <Link href={`/classes/${sel}?tab=games`} className="btn-ghost btn-sm text-emerald-700"><Check className="h-4 w-4" /> {t("Сыныпта бар — ашу")}</Link>
+      ) : (
+        <button type="button" className="btn-soft btn-sm" disabled={pending || !sel}
+          onClick={() => start(async () => { const r = await addGameToClass(sel, gameId); if (r?.ok) setDone((d) => [...d, sel]); })}>
+          {t("Сыныбыма беру")}
+        </button>
+      )}
+    </div>
+  );
+}
+
+export default function SendToStudents({ gameId, title, teacherId, results, classes }: { gameId: string; title: string; teacherId: string | null; results: number; classes?: Cls[] }) {
   const t = useT();
   const [link, setLink] = useState("");
   const [copied, setCopied] = useState(false);
@@ -39,9 +68,12 @@ export default function SendToStudents({ gameId, title, teacherId, results }: { 
         <button type="button" onClick={copy} className="btn-primary btn-sm">{copied ? <><Check className="h-4 w-4" /> {t("Көшірілді")}</> : <><Copy className="h-4 w-4" /> {t("Көшіру")}</>}</button>
         <a href={wa} target="_blank" rel="noopener noreferrer" className="btn-soft btn-sm"><MessageCircle className="h-4 w-4" /> WhatsApp</a>
       </div>
-      <Link href={`/games/${gameId}/results`} className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-sky-600 hover:underline">
-        <Users className="h-4 w-4" /> {t("Оқушылар нәтижесі ({n})", { n: results })}
-      </Link>
+      <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2">
+        <Link href={`/games/${gameId}/results`} className="inline-flex items-center gap-2 text-sm font-semibold text-sky-600 hover:underline">
+          <Users className="h-4 w-4" /> {t("Оқушылар нәтижесі ({n})", { n: results })}
+        </Link>
+        {classes && <AddToClass gameId={gameId} classes={classes} />}
+      </div>
     </div>
   );
 }
