@@ -27,7 +27,7 @@ export default async function Landing() {
   const [materials, assessments, games, users] = await Promise.all([
     db.material.count({ where: { published: true } }),
     db.assessment.count({ where: { published: true } }),
-    db.game.count({ where: { published: true } }),
+    db.game.count({ where: { published: true, authorId: null } }),
     db.user.count(),
   ]);
 

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Plus, Trash2, ArrowUp, ArrowDown, Loader2 } from "lucide-react";
 import { saveGame } from "@/app/actions/admin";
+import { saveMyGame } from "@/app/actions/my-games";
 import { GAME_TYPES, GRADES } from "@/lib/labels";
 import { FormAlert } from "../ui/Field";
 import type { TopicOpt } from "./CurriculumSelect";
@@ -22,7 +23,9 @@ const blank = (type: string): Q => {
   }
 };
 
-export default function GameEditor({ initial, topics }: { initial: GameDraft | null; topics: TopicOpt[] }) {
+/** mode="teacher": мұғалімнің өз ойыны — жариялау/ұпай жасырын, сөзжұмбақ сөздерінің орнын сайт өзі табады. */
+export default function GameEditor({ initial, topics, mode = "admin", copyOf = false }: { initial: GameDraft | null; topics: TopicOpt[]; mode?: "admin" | "teacher"; copyOf?: boolean }) {
+  const teacher = mode === "teacher";
   const [g, setG] = useState<GameDraft>(initial ?? { type: "QUIZ", title: "", description: "", grade: 7, topicId: null, timeLimit: 10, published: true, questions: [blank("QUIZ")] });
   const [msg, setMsg] = useState<{ error?: string; ok?: string }>();
   const [pending, start] = useTransition();
@@ -36,9 +39,11 @@ export default function GameEditor({ initial, topics }: { initial: GameDraft | n
   function submit() {
     setMsg(undefined);
     start(async () => {
-      const r = await saveGame({ ...g, topicId: g.topicId || undefined, timeLimit: g.timeLimit || undefined }, initial?.id);
+      const payload = { ...g, topicId: g.topicId || undefined, timeLimit: g.timeLimit || undefined };
+      const editId = copyOf ? undefined : initial?.id;
+      const r = teacher ? await saveMyGame(payload, editId) : await saveGame(payload, editId);
       setMsg(r);
-      if (r?.ok) { router.push("/admin/games?saved=1"); router.refresh(); }
+      if (r?.ok) { router.push(teacher ? `/games/${(r as { id?: string }).id}?saved=1` : "/admin/games?saved=1"); router.refresh(); }
       else window.scrollTo({ top: 0, behavior: "smooth" });
     });
   }
@@ -51,10 +56,10 @@ export default function GameEditor({ initial, topics }: { initial: GameDraft | n
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className="label" htmlFor="type">Ойын түрі</label>
-            <select id="type" className="input" value={g.type} disabled={!!initial} onChange={(e) => set({ type: e.target.value, questions: [blank(e.target.value)] })}>
+            <select id="type" className="input" value={g.type} disabled={!!initial && !copyOf} onChange={(e) => set({ type: e.target.value, questions: [blank(e.target.value)] })}>
               {GAME_TYPES.map((t) => <option key={t.key} value={t.key}>{t.name}</option>)}
             </select>
-            {initial && <p className="mt-1 text-xs muted">Бар ойынның түрін өзгертуге болмайды.</p>}
+            {initial && !copyOf && <p className="mt-1 text-xs muted">Бар ойынның түрін өзгертуге болмайды.</p>}
           </div>
           <div><label className="label" htmlFor="title">Атауы *</label><input id="title" className="input" value={g.title} onChange={(e) => set({ title: e.target.value })} /></div>
         </div>
@@ -64,10 +69,16 @@ export default function GameEditor({ initial, topics }: { initial: GameDraft | n
           <div><label className="label" htmlFor="topic">Тақырып</label><select id="topic" className="input" value={g.topicId ?? 0} onChange={(e) => set({ topicId: +e.target.value || null })}><option value={0}>Тақырыпсыз</option>{topicList.map((t) => <option key={t.id} value={t.id}>{t.title}</option>)}</select></div>
           {g.type === "RAPID" && <div><label className="label" htmlFor="tl">Бір сұраққа уақыт (сек)</label><input id="tl" type="number" min={3} max={120} className="input" value={g.timeLimit ?? 10} onChange={(e) => set({ timeLimit: +e.target.value })} /></div>}
         </div>
-        <label className="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" className="h-5 w-5 accent-sky-500" checked={g.published} onChange={(e) => set({ published: e.target.checked })} /> Жариялау</label>
+        {!teacher && <label className="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" className="h-5 w-5 accent-sky-500" checked={g.published} onChange={(e) => set({ published: e.target.checked })} /> Жариялау</label>}
       </section>
 
-      {g.type === "CROSSWORD" && (
+      {teacher && (
+        <p className="rounded-xl bg-emerald-50 p-4 text-sm text-emerald-800">
+          {g.type === "MATCHING" ? `Жұптар саны: ${(g.questions[0]?.data.left as string[] | undefined)?.length ?? 0}` : `Сұрақтар саны: ${g.questions.length}`} · әрқайсысы 1 балл.
+          {g.type === "CROSSWORD" ? " Тек сөз бен сұрақты жазыңыз, сөздердің торда қиылысатын орнын сайт өзі табады." : ""}
+        </p>
+      )}
+      {g.type === "CROSSWORD" && !teacher && (
         <p className="rounded-xl bg-sky-50 p-4 text-sm text-sky-800">Әр сөз үшін бірінші әрпінің орнын (жол мен баған, 0-ден бастап) және бағытын көрсетіңіз. Қиылысатын әріптер бірдей болуы керек, сақтағанда бұл тексеріледі.</p>
       )}
 
@@ -110,11 +121,14 @@ export default function GameEditor({ initial, topics }: { initial: GameDraft | n
                   <button type="button" className="btn-ghost btn-sm !px-2" disabled={(q.data.left as string[]).length <= 2} onClick={() => setD(i, { left: (q.data.left as string[]).filter((_, j) => j !== k), right: (q.data.right as string[]).filter((_, j) => j !== k) })} aria-label="Жұпты жою"><Trash2 className="h-4 w-4" /></button>
                 </div>
               ))}
-              {(q.data.left as string[]).length < 8 && <button type="button" className="btn-soft btn-sm" onClick={() => setD(i, { left: [...(q.data.left as string[]), ""], right: [...(q.data.right as string[]), ""] })}><Plus className="h-4 w-4" /> Жұп қосу</button>}
+              {(q.data.left as string[]).length < 12 && <button type="button" className="btn-soft btn-sm" onClick={() => setD(i, { left: [...(q.data.left as string[]), ""], right: [...(q.data.right as string[]), ""] })}><Plus className="h-4 w-4" /> Жұп қосу</button>}
             </div>
           )}
 
-          {g.type === "CROSSWORD" && (
+          {g.type === "CROSSWORD" && teacher && (
+            <div><label className="label">Жауап (бір сөз)</label><input className="input uppercase" value={String(q.answer)} onChange={(e) => setQ(i, { answer: e.target.value.replace(/\s/g, "") })} /></div>
+          )}
+          {g.type === "CROSSWORD" && !teacher && (
             <div className="grid gap-3 sm:grid-cols-4">
               <div className="sm:col-span-2"><label className="label">Жауап (бір сөз)</label><input className="input uppercase" value={String(q.answer)} onChange={(e) => setQ(i, { answer: e.target.value.replace(/\s/g, "") })} /></div>
               <div><label className="label">Жол / баған</label><div className="flex gap-1"><input type="number" min={0} max={30} className="input" value={Number(q.data.row)} onChange={(e) => setD(i, { row: +e.target.value })} aria-label="Жол" /><input type="number" min={0} max={30} className="input" value={Number(q.data.col)} onChange={(e) => setD(i, { col: +e.target.value })} aria-label="Баған" /></div></div>
@@ -134,9 +148,9 @@ export default function GameEditor({ initial, topics }: { initial: GameDraft | n
           )}
 
           {g.type !== "MATCHING" && (
-            <div className="grid gap-3 sm:grid-cols-[1fr_120px]">
+            <div className={`grid gap-3 ${teacher ? "" : "sm:grid-cols-[1fr_120px]"}`}>
               <div><label className="label">Түсіндірме (міндетті емес)</label><input className="input" value={q.explanation ?? ""} onChange={(e) => setQ(i, { explanation: e.target.value })} /></div>
-              <div><label className="label">Ұпай</label><input type="number" min={1} max={100} className="input" value={q.points} onChange={(e) => setQ(i, { points: +e.target.value || 1 })} /></div>
+              {!teacher && <div><label className="label">Ұпай</label><input type="number" min={1} max={100} className="input" value={q.points} onChange={(e) => setQ(i, { points: +e.target.value || 1 })} /></div>}
             </div>
           )}
         </section>
@@ -146,7 +160,7 @@ export default function GameEditor({ initial, topics }: { initial: GameDraft | n
 
       <div className="flex gap-2 sticky bottom-4">
         <button type="button" onClick={submit} disabled={pending} className="btn-primary">{pending ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Ойынды сақтау</button>
-        <Link href="/admin/games" className="btn-ghost">Болдырмау</Link>
+        <Link href={teacher ? (initial?.id && !copyOf ? `/games/${initial.id}` : "/games/my") : "/admin/games"} className="btn-ghost">Болдырмау</Link>
       </div>
     </div>
   );

@@ -39,12 +39,12 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const pub = { published: true };
   const [assessments, games, stats] = await Promise.all([
     db.assessment.findMany({ where: pub, orderBy: { createdAt: "desc" }, take: 4, include: { quarter: true } }),
-    db.game.findMany({ where: pub, orderBy: { plays: "desc" }, take: 4, include: { _count: { select: { questions: true } } } }),
+    db.game.findMany({ where: { ...pub, authorId: null }, orderBy: { plays: "desc" }, take: 4, include: { _count: { select: { questions: true } } } }),
     Promise.all([
       db.material.count({ where: pub }),
       db.user.count(),
       db.material.aggregate({ _sum: { downloads: true } }),
-      db.game.count({ where: pub }),
+      db.game.count({ where: { ...pub, authorId: null } }),
     ]),
   ]);
   const first = user.name.split(" ")[0];

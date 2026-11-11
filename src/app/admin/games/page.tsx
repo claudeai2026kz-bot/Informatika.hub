@@ -13,7 +13,7 @@ export const metadata = { title: "Ойындар" };
 export default async function GamesAdmin({ searchParams }: { searchParams: Promise<{ saved?: string }> }) {
   await requireAdmin();
   const { saved } = await searchParams;
-  const games = await db.game.findMany({ orderBy: { createdAt: "desc" }, include: { _count: { select: { questions: true, results: true } } } });
+  const games = await db.game.findMany({ where: { authorId: null }, orderBy: { createdAt: "desc" }, include: { _count: { select: { questions: true, results: true } } } });
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3"><h1 className="text-3xl font-extrabold">Ойындар</h1><Link href="/admin/games/new" className="btn-primary"><Plus className="h-4 w-4" /> Жаңа ойын</Link></div>

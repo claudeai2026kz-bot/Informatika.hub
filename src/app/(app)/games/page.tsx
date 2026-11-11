@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { GameType, Prisma } from "@prisma/client";
-import { Play } from "lucide-react";
+import { Play, Plus } from "lucide-react";
 import { GAME_ICONS } from "@/components/games/icons";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
@@ -22,7 +22,7 @@ export default async function GamesPage({ searchParams }: { searchParams: Promis
   const topic = Number(sp.topic) || undefined;
   const q = (sp.q ?? "").trim().slice(0, 100);
   const where: Prisma.GameWhereInput = {
-    published: true, ...(type && { type }), ...(grade && { gradeId: grade }), ...(topic && { topicId: topic }),
+    published: true, authorId: null, ...(type && { type }), ...(grade && { gradeId: grade }), ...(topic && { topicId: topic }),
     ...(q && { OR: [{ title: { contains: q, mode: "insensitive" } }, { description: { contains: q, mode: "insensitive" } }] }),
   };
   const [games, topics, favs] = await Promise.all([
@@ -35,7 +35,13 @@ export default async function GamesPage({ searchParams }: { searchParams: Promis
   return (
     <div>
       <h1 className="text-3xl font-extrabold">{t("Интерактивті ойындар")}</h1>
-      <p className="mt-1 muted">{t("Сабақта оқушылармен бірге ойнаңыз: ұпай автоматты есептеледі.")}</p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <p className="mt-1 muted">{t("Сабақта оқушылармен бірге ойнаңыз: ұпай автоматты есептеледі.")}</p>
+        <div className="flex gap-2">
+          <Link href="/games/my" className="btn-ghost btn-sm">{t("Менің ойындарым")}</Link>
+          <Link href="/games/new" className="btn-primary btn-sm"><Plus className="h-4 w-4" /> {t("Өз ойынымды жасау")}</Link>
+        </div>
+      </div>
       <div className="mt-6 grid grid-cols-3 sm:grid-cols-6 gap-2">
         {GAME_TYPES.map((gt) => {
           const I = GAME_ICONS[gt.key];

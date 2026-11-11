@@ -52,7 +52,7 @@ export async function POST(req: Request) {
   } else if (p.section === "games") {
     what = "ойын";
     const rows = await db.game.findMany({
-      where: { published: true, ...(p.grade && { gradeId: p.grade }), ...textOr(["title", "description"]) },
+      where: { published: true, authorId: null, ...(p.grade && { gradeId: p.grade }), ...textOr(["title", "description"]) },
       take: 6, orderBy: { createdAt: "desc" },
     });
     items = rows.map((g) => ({ title: g.title, href: `/games/${g.id}`, meta: t("{g}-сынып", { g: g.gradeId }) }));

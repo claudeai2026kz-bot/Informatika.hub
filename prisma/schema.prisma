@@ -43,6 +43,7 @@ model User {
   notifications Notification[]
   gameResults   GameResult[]
   studentResults StudentResult[]
+  authoredGames Game[] @relation("AuthoredGames")
   resetTokens   PasswordResetToken[]
 }
 
@@ -220,6 +221,9 @@ model Game {
   topic       Topic?         @relation(fields: [topicId], references: [id], onDelete: SetNull)
   timeLimit   Int? // секунд (RAPID үшін бір сұраққа)
   published   Boolean        @default(false)
+  /// null — сайттың ресми ойыны; әйтпесе ойынды жасаған мұғалім (тек өзі және сілтеме арқылы оқушылары көреді)
+  authorId    String?
+  author      User?          @relation("AuthoredGames", fields: [authorId], references: [id], onDelete: Cascade)
   plays       Int            @default(0)
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt

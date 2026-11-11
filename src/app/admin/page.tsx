@@ -12,7 +12,7 @@ export default async function AdminHome() {
     db.material.count({ where: { published: false } }),
     db.material.aggregate({ _sum: { downloads: true, views: true } }),
     db.assessment.count(),
-    db.game.count(),
+    db.game.count({ where: { authorId: null } }),
     db.comment.count(),
     db.activityLog.findMany({ orderBy: { createdAt: "desc" }, take: 12 }),
     db.material.findMany({ orderBy: { downloads: "desc" }, take: 5, select: { id: true, title: true, downloads: true, views: true } }),
