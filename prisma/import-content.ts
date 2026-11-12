@@ -9,7 +9,7 @@ import { randomBytes } from "crypto";
  * Бір файл екі рет қосылмайды (тақырып + түр + файл атауы бойынша тексеріледі).
  */
 type Entry = { grade: number; quarter: number; topic: string; type: string; file?: string; url?: string; title?: string; replaces?: string };
-type AEntry = { assessment: "BZHB" | "TZHB"; grade: number; quarter: number; title: string; description?: string; file: string; preview?: string; answersFile?: string; answers?: string; criteria?: string; descriptors?: string };
+type AEntry = { assessment: "BZHB" | "TZHB"; grade: number; quarter: number; title: string; description?: string; file: string; preview?: string; answersFile?: string; answers?: string; criteria?: string; descriptors?: string; variant?: string };
 
 async function storeFile(rel: string) {
   const buf = await readFile(path.resolve("content", rel));
@@ -27,7 +27,7 @@ async function importAssessment(db: PrismaClient, e: AEntry) {
   const ans = e.answersFile ? await storeFile(e.answersFile) : null;
   await db.assessment.create({
     data: {
-      kind: e.assessment, title: e.title, description: e.description ?? "", gradeId: e.grade, quarterId: quarter.id,
+      kind: e.assessment, title: e.title, description: e.description ?? "", gradeId: e.grade, quarterId: quarter.id, variant: e.variant ?? "1-нұсқа",
       filePath: f.path, fileName: f.name, fileMime: f.mime, fileSize: f.size, previewPath: pv?.path,
       answersPath: ans?.path, answers: e.answers, criteria: e.criteria, descriptors: e.descriptors, published: true,
     },
