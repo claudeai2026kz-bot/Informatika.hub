@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Деректер детективі · 7-сынып</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=PT+Sans:wght@400;700&family=PT+Mono&display=swap">
+<style>
+:root{
+  --night:#111827; --paper:#F7F3EA; --paper2:#EDE6D6; --ink:#1B1F2A; --ink-soft:#5A5F6E;
+  --tape:#F7C948; --tape-ink:#1B1F2A; --stamp:#C92A2A; --ok:#1E7A4F; --blue:#3B5BDB; --line:#D8CFBD;
+  --mint:#63C99A; --sun:#F7C948; --coral:#F08C8C;
+  --display:'Oswald','Arial Narrow',Arial,sans-serif;
+  --body:'PT Sans','Trebuchet MS',Arial,sans-serif;
+  --mono:'PT Mono','Courier New',monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 70% -10%,#2A3654 0,transparent 55%),var(--night);background-color:var(--night);color:var(--paper);font-family:var(--body);font-size:17px;line-height:1.45;min-height:100vh}
+.wrap{max-width:880px;margin:0 auto;padding-inline:16px;padding-block:18px 40px;display:flex;flex-direction:column;gap:14px}
+.tape{background:repeating-linear-gradient(-45deg,var(--tape) 0 22px,var(--tape-ink) 22px 30px);border-radius:10px;padding:6px}
+.tape .in{background:var(--tape);color:var(--tape-ink);border-radius:6px;padding:10px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{margin:0;font-family:var(--display);font-weight:700;font-size:clamp(22px,4vw,32px);letter-spacing:1.5px;text-transform:uppercase;line-height:1.05}
+.brand small{display:block;font-family:var(--body);font-size:14px;letter-spacing:0;text-transform:none;font-weight:700}
+.spacer{flex:1}
+.back{color:var(--tape-ink);font-weight:700;text-decoration:underline;font-size:15px}
+.badge-score{font-family:var(--mono);background:var(--tape-ink);color:var(--tape);border-radius:8px;padding:6px 12px;font-variant-numeric:tabular-nums}
+.cases{display:flex;gap:8px;flex-wrap:wrap}
+.cs{flex:1 1 150px;border:2px solid #3A4560;border-radius:10px;padding:8px 12px;font-family:var(--mono);font-size:14px;color:#AEB6CA}
+.cs.now{border-color:var(--tape);color:var(--tape)}
+.cs.done{background:#22304A;color:#7FD8A8;border-color:#2E4A3F}
+.file{background:var(--paper);color:var(--ink);border-radius:6px 22px 6px 6px;padding:clamp(16px,4vw,28px);box-shadow:0 22px 50px rgba(0,0,0,.45);display:flex;flex-direction:column;gap:16px;position:relative;min-width:0}
+.chief{display:flex;gap:12px;align-items:center}
+.chief svg{flex:none;width:66px;height:78px}
+.memo{margin:0;background:#fff;border-left:5px solid var(--tape);padding:10px 14px;font-weight:700;border-radius:0 12px 12px 0;min-width:0}
+.kicker{margin:0;font-family:var(--mono);font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--stamp)}
+h2{margin:0;font-family:var(--display);font-weight:700;font-size:clamp(22px,3.6vw,30px);letter-spacing:.5px;text-wrap:balance}
+h3{margin:0;font-family:var(--display);font-size:20px;letter-spacing:.4px}
+.how{margin:0;background:#fff;border:2px solid var(--line);border-radius:12px;padding:12px 14px}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.counter{font-family:var(--mono);color:var(--ink-soft);font-variant-numeric:tabular-nums}
+button{font:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:4px solid var(--blue);outline-offset:2px}
+.btn{border:0;border-radius:10px;padding:13px 22px;font-family:var(--display);font-weight:700;font-size:18px;letter-spacing:1px;text-transform:uppercase;background:var(--ink);color:var(--tape)}
+.btn:hover{background:#000}
+.btn.ghost{background:transparent;color:var(--ink);border:3px solid var(--ink)}
+.fb{margin:0;min-height:24px;font-weight:700}
+.fb.good{color:var(--ok)} .fb.bad{color:var(--stamp)}
+input[type=text]{font:inherit;font-weight:700;font-size:18px;padding:13px 15px;border-radius:10px;border:3px solid var(--line);width:100%;max-width:420px;background:#fff;color:var(--ink)}
+.intro{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.intro li{background:var(--paper2);border-radius:10px;padding:12px 14px;font-weight:700}
+.intro b{display:block;font-family:var(--display);letter-spacing:.5px}
+.intro em{display:block;font-style:normal;font-family:var(--mono);font-size:13px;color:var(--stamp);margin-top:4px}
+.evidence{align-self:center;font-family:var(--mono);font-size:clamp(28px,6vw,42px);background:#fff;border:3px dashed var(--ink);border-radius:12px;padding:14px 26px;transform:rotate(-2deg);text-align:center;overflow-wrap:anywhere;max-width:100%}
+.evidence small{display:block;font-family:var(--body);font-size:13px;color:var(--ink-soft);font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.baskets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.basket{border:3px solid var(--ink);background:var(--paper2);color:var(--ink);border-radius:12px 12px 22px 22px;padding:14px 8px 10px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:4px}
+.basket:disabled{cursor:default;opacity:.6}
+.basket i{font-style:normal;font-family:var(--mono);font-size:22px}
+.basket span.n{font-family:var(--mono);font-size:13px;color:var(--ink-soft)}
+.streak{font-family:var(--mono);background:var(--ink);color:var(--tape);padding:4px 10px;border-radius:8px}
+.mem{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.mc{aspect-ratio:1/1;max-width:100%;border:0;border-radius:12px;background:var(--ink);color:var(--tape);font-family:var(--display);font-size:28px;position:relative}
+.mc.open,.mc.got{background:#fff;color:var(--ink);border:3px solid var(--ink)}
+.mc .v{font-family:var(--mono);font-size:clamp(14px,3vw,20px);overflow-wrap:anywhere;padding:4px}
+.mc .tg{position:absolute;top:6px;left:0;right:0;font-family:var(--body);font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--ink-soft)}
+.mc.got{background:#D3F0DF;border-color:var(--ok);cursor:default}
+.mc.no{background:#F8D7D7;border-color:var(--stamp)}
+.scene{overflow-x:auto}
+.xs{display:grid;grid-template-columns:34px repeat(5,minmax(96px,1fr));min-width:560px;border:1px solid var(--line);background:#fff;font-size:15px}
+.xs > div{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:8px;min-height:40px;display:flex;align-items:center;white-space:nowrap;overflow:hidden}
+.xs .hd{background:#ECEFF4;font-family:var(--mono);justify-content:center;color:var(--ink-soft)}
+.xs .r{justify-content:flex-end;font-family:var(--mono)}
+.xs .b{font-weight:700}
+.xs .sus{outline:3px dashed var(--stamp);outline-offset:-4px;background:#FFF4F4}
+.xs .now{outline:4px solid var(--blue);outline-offset:-4px;background:#E7ECFC}
+.xs .fixed{background:#D3F0DF}
+.q{display:flex;flex-direction:column;gap:8px}
+.opts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.opt{border:3px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;padding:12px;font-weight:700;text-align:left}
+.opt:hover{border-color:var(--ink)}
+.slots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.sl{width:46px;height:54px;border:3px solid var(--ink);border-radius:8px;background:#fff;color:var(--ink);font-family:var(--display);font-size:28px;display:grid;place-items:center;padding:0}
+.sl.ok{background:#D3F0DF;border-color:var(--ok)} .sl.bad{background:#F8D7D7;border-color:var(--stamp)}
+.tiles{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.lt{width:46px;height:50px;border:0;border-radius:8px;background:var(--tape);color:var(--tape-ink);font-family:var(--display);font-size:26px;box-shadow:0 4px 0 #B8901A}
+.lt:disabled{opacity:.25;cursor:default}
+.clue{font-family:var(--display);font-size:clamp(19px,3vw,24px);letter-spacing:.3px;text-align:center;text-wrap:balance;margin:0}
+.idc{align-self:center;width:100%;max-width:560px;border-radius:16px;overflow:hidden;background:#fff;color:var(--ink);box-shadow:0 18px 40px rgba(0,0,0,.25);border:2px solid var(--ink)}
+.idc .tp{background:repeating-linear-gradient(-45deg,var(--tape) 0 16px,var(--tape-ink) 16px 22px);height:16px}
+.idc .hdr{background:var(--ink);color:var(--tape);padding:12px 16px;font-family:var(--display);font-size:22px;letter-spacing:2px;text-transform:uppercase;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.idc .bd{display:grid;grid-template-columns:110px minmax(0,1fr);gap:14px;padding:16px;align-items:start}
+.idc .ph{width:110px;height:130px;border-radius:10px;background:var(--paper2);display:grid;place-items:center;border:2px solid var(--ink)}
+.idc .ph svg{width:80px;height:94px}
+.idc dl{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 10px;font-size:15px}
+.idc dt{font-family:var(--mono);color:var(--ink-soft);font-size:13px;text-transform:uppercase}
+.idc dd{margin:0;font-weight:700;overflow-wrap:anywhere}
+.big{font-family:var(--display);font-size:clamp(26px,5vw,36px);margin:0;line-height:1.1}
+.skills{display:flex;flex-direction:column;gap:10px;padding:0 16px 16px}
+.skill .head{display:flex;justify-content:space-between;gap:8px;font-weight:700;flex-wrap:wrap}
+.tag{font-family:var(--mono);font-size:12px;padding:2px 8px;border-radius:6px}
+.tag.ok{background:#D3F0DF;color:var(--ok)} .tag.mid{background:#FFF0C2;color:#8A6100} .tag.lo{background:#F8D7D7;color:var(--stamp)}
+.bar{height:10px;border-radius:6px;background:var(--paper2);overflow:hidden;margin-top:4px}
+.bar i{display:block;height:100%}
+.tip{margin:4px 0 0;color:var(--ink-soft);font-size:14px}
+.desc{margin:0;padding:0 16px 16px 36px}
+.desc li{margin:4px 0}
+.desc li.ok::marker{content:"✓  ";color:var(--ok)}
+.desc li.no::marker{content:"✗  ";color:var(--stamp)}
+.sec{padding:0 16px;margin:6px 0}
+.note{margin:0;background:#FFF3BF;border-radius:10px;padding:12px 14px;font-weight:700;color:var(--ink)}
+.pop{animation:pop .3s ease}
+@keyframes pop{from{transform:translateY(8px);opacity:.5}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:640px){
+  .intro,.opts{grid-template-columns:1fr}
+  .baskets{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .mem{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .idc .bd{grid-template-columns:1fr}
+  .sl,.lt{width:40px}
+  .chief svg{width:52px;height:62px}
+}
+@media print{body{background:#fff}.tape,.cases,.row,.note,.chief{display:none!important}.file{box-shadow:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="tape"><div class="in">
+    <p class="brand">Деректер детективі<small>Информатика · 7-сынып · 2-тоқсан · Мәліметтер пішімі (7.3.3.1)</small></p>
+    <span class="spacer"></span>
+    <a class="back" id="back" href="/">← Сабаққа оралу</a>
+    <span class="badge-score" id="sc">0 / 10 балл</span>
+  </div></div>
+  <nav class="cases" aria-label="Істер">
+    <span class="cs" data-i="1">Іс №1 · Айғақтар</span>
+    <span class="cs" data-i="2">Іс №2 · Жұптар</span>
+    <span class="cs" data-i="3">Іс №3 · Жауап алу</span>
+    <span class="cs" data-i="4">Іс №4 · Құпия сөз</span>
+  </nav>
+  <main class="file" id="card" aria-live="polite"></main>
+</div>
+
+<script>
+// Сабақ бетінен ашылса, «Сабаққа оралу» сол бетке қайтарады.
+try { if (document.referrer && new URL(document.referrer).origin === location.origin) document.getElementById('back').href = document.referrer; } catch (e) {}
+
+const DET = `<svg viewBox="0 0 220 260" aria-hidden="true"><line x1="110" y1="30" x2="110" y2="46" stroke="#1B1F2A" stroke-width="6"/><path d="M44 40 Q110 -6 176 40 Z" fill="#6B4F2A" stroke="#1B1F2A" stroke-width="5"/><rect x="26" y="36" width="168" height="12" rx="6" fill="#6B4F2A" stroke="#1B1F2A" stroke-width="5"/><rect x="40" y="52" width="140" height="100" rx="32" fill="#F7F3EA" stroke="#1B1F2A" stroke-width="6"/><rect x="58" y="70" width="104" height="58" rx="22" fill="#1B1F2A"/><ellipse cx="88" cy="98" rx="11" ry="13" fill="#F7C948"/><circle cx="132" cy="98" r="17" fill="none" stroke="#F7C948" stroke-width="5"/><circle cx="132" cy="98" r="6" fill="#F7C948"/><path d="M98 116 Q110 124 122 116" stroke="#F7C948" stroke-width="5" fill="none" stroke-linecap="round"/><rect x="62" y="160" width="96" height="76" rx="22" fill="#6B4F2A" stroke="#1B1F2A" stroke-width="6"/><path d="M110 160 L96 196 L110 236 L124 196 Z" fill="#F7F3EA" stroke="#1B1F2A" stroke-width="4"/><path d="M158 182 Q190 168 196 138" stroke="#1B1F2A" stroke-width="7" fill="none" stroke-linecap="round"/><circle cx="198" cy="126" r="16" fill="#cfe3ff" stroke="#1B1F2A" stroke-width="5"/><line x1="188" y1="138" x2="176" y2="152" stroke="#1B1F2A" stroke-width="7" stroke-linecap="round"/><path d="M62 182 Q32 190 30 220" stroke="#1B1F2A" stroke-width="7" fill="none" stroke-linecap="round"/><rect x="76" y="234" width="20" height="20" rx="8" fill="#1B1F2A"/><rect x="124" y="234" width="20" height="20" rx="8" fill="#1B1F2A"/></svg>`;
+const chief = t => `<div class="chief">${DET}<p class="memo">${t}</p></div>`;
+const $ = (s, r = document) => r.querySelector(s);
+const card = $('#card');
+const esc = s => s.replace(/[<>&"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+// Балл жарты балмен есептеледі: ішінде «жарты балл» бірлігімен сақтаймыз (h = 2 → 1 балл).
+const MAXH = [8, 4, 4, 4]; // Іс №1 – 4 балл, №2 – 2, №3 – 2, №4 – 2. Барлығы 10 балл.
+const S = { name: '', h: 0, lv: [0, 0, 0, 0], miss: [0, 0, 0, 0] };
+const fmt = h => String(h / 2).replace('.', ',');
+const upd = () => $('#sc').textContent = `${fmt(S.h)} / 10 балл`;
+const add = (l, h = 1) => { S.h += h; S.lv[l] += h; upd(); };
+function step(n) { document.querySelectorAll('.cs').forEach(e => { const i = +e.dataset.i; e.classList.toggle('now', i === n); e.classList.toggle('done', i < n); }); }
+function show(h) { card.innerHTML = h; card.classList.remove('pop'); void card.offsetWidth; card.classList.add('pop'); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
+/* ---------- басталуы ---------- */
+function start() {
+  step(0);
+  show(`${chief('Детектив, агенттікке шұғыл хабар келді: Excel кестелеріндегі деректер шатасып кетіпті. Сан мәтін болып, күн сан болып жүр! Тәртіп орнатуға көмектес.')}
+    <p class="kicker">Сабақты бекіту ойыны · 10 балл · 10–12 минут</p>
+    <h2>Деректер детективі атағын ал!</h2>
+    <p class="how"><b>Қалай ойнаймыз?</b> 4 іс бар. Әр істе тапсырманы орында — детектив бастық әр жауаптан кейін дұрыс па, қате ме, <b>неге</b> екенін түсіндіреді. Әр дұрыс жауап — <b>0,5 балл</b>. Соңында деңгейің мен детектив куәлігің шығады.</p>
+    <ul class="intro">
+      <li><b>Іс №1 · Айғақтар</b>Әр мәнді өз типінің себетіне сал: мәтін, сан, күн/уақыт, формула.<em>8 айғақ · 4 балл</em></li>
+      <li><b>Іс №2 · Жұптар</b>Карточкаларды ашып, мәнді оның экрандағы көрінісімен жұпта.<em>6 жұп · 2 балл</em></li>
+      <li><b>Іс №3 · Жауап алу</b>Кестедегі «күдікті» ұяшықтың себебін тауып, түзету тәсілін таңда.<em>4 ұяшық · 2 балл</em></li>
+      <li><b>Іс №4 · Құпия сөз</b>Анықтамаға сай терминді әріптерден құрастыр.<em>4 сөз · 2 балл</em></li>
+    </ul>
+    <label for="nm" style="font-weight:700">Аты-жөнің (нәтиже парағына жазылады)</label>
+    <input type="text" id="nm" maxlength="40" placeholder="Мысалы: Мадина Серікқызы" autocomplete="name">
+    <p class="fb bad" id="er"></p>
+    <div class="row"><button class="btn" id="go">Тергеуді бастау</button></div>`);
+  const go = () => { const v = $('#nm').value.trim(); if (v.length < 2) { $('#er').textContent = 'Нәтиже парағына жазу үшін атыңды енгіз.'; $('#nm').focus(); return; } S.name = v; case1(); };
+  $('#go').onclick = go; $('#nm').onkeydown = e => { if (e.key === 'Enter') go(); };
+}
+
+/* ---------- Іс №1: айғақтарды сұрыптау (8 × 0,5 балл) ---------- */
+const EV = [
+  ['Түркістан', 'Мәтін', 'әріптерден тұрады, онымен есептеуге болмайды.'],
+  ['3,5', 'Сан', 'ондық бөлшек — есептеуге болады.'],
+  ['01.09.2026', 'Күн / уақыт', 'күнтізбелік күн.'],
+  ['=B2*C2', 'Формула', '«=» белгісінен басталады.'],
+  ['75%', 'Сан', 'пайыз — сан типінің пішімі (ішінде 0,75 сақталады).'],
+  ['18:45', 'Күн / уақыт', 'сағат пен минут — уақыт.'],
+  ['87071112233', 'Мәтін', 'телефон нөмірімен есептемейміз, сондықтан оны мәтін ретінде сақтаймыз.'],
+  ['2/3', 'Сан', 'жай бөлшек — сан типінің пішімі.'],
+];
+const BASK = [['Аа', 'Мәтін'], ['123', 'Сан'], ['31', 'Күн / уақыт'], ['fx', 'Формула']];
+function case1() {
+  step(1);
+  const order = shuffle(EV); let k = 0, streak = 0; const counts = { 'Мәтін': 0, 'Сан': 0, 'Күн / уақыт': 0, 'Формула': 0 };
+  const draw = (msg = '', good) => {
+    const over = k >= order.length, ev = order[Math.min(k, order.length - 1)];
+    show(`${chief(k === 0 ? 'Іс №1. Үстелде 8 айғақ жатыр. Әрқайсысын дұрыс себетке сал: мәтін, сан, күн/уақыт немесе формула. Әр дұрыс жауап — 0,5 балл.' : over ? 'Барлық айғақ орнында. Келесі іске көшеміз!' : 'Келесі айғақ!')}
+      <div class="row"><p class="kicker">Іс №1 · Айғақтар</p><span class="spacer"></span>${streak >= 2 ? `<span class="streak">Серия ×${streak}</span>` : ''}<span class="counter">${Math.min(k + 1, 8)} / 8</span></div>
+      ${over ? '' : `<div class="evidence"><small>Айғақ №${k + 1}</small>${esc(ev[0])}</div>`}
+      <div class="baskets">${BASK.map(([ic, n]) => `<button class="basket" data-n="${n}" ${over ? 'disabled' : ''}><i>${ic}</i>${n}<span class="n">${counts[n]} айғақ</span></button>`).join('')}</div>
+      <p class="fb ${good === undefined ? '' : good ? 'good' : 'bad'}">${msg}</p>
+      ${over ? '<div class="row"><span class="spacer"></span><button class="btn" id="nx">Іс №2 →</button></div>' : ''}`);
+    if (over) { $('#nx').onclick = case2; $('#nx').focus(); return; }
+    card.querySelectorAll('.basket').forEach(b => b.onclick = () => {
+      const ok = b.dataset.n === ev[1];
+      counts[ev[1]]++;
+      if (ok) { add(0); streak++; } else { S.miss[0]++; streak = 0; }
+      k++;
+      draw((ok ? `Дұрыс! +0,5 балл. «${ev[0]}» — ` : `Қате. «${ev[0]}» — ${ev[1].toLowerCase()}: `) + ev[2], ok);
+    });
+  };
+  draw();
+}
+
+/* ---------- Іс №2: жады ойыны (6 жұп, ең көбі 2 балл) ---------- */
+const PAIRS = [['0,5', '50%'], ['0,75', '3/4'], ['46303', '08.10.2026'], ['1500', '1 500,00 ₸'], ['150000000', '1,5E+08'], ['0,07', '7%']];
+function case2() {
+  step(2);
+  const cards = shuffle(PAIRS.flatMap((p, i) => [{ i, v: p[0], t: 'шын мәні' }, { i, v: p[1], t: 'көрінісі' }]));
+  let open = [], got = 0, wrong = 0, busy = false;
+  show(`${chief('Іс №2. Мәндер екіге бөлініп кетті: шын мәні бір карточкада, экрандағы көрінісі басқа карточкада. Екі карточканы ашып, жұбын тап! 4 қате ашуға дейін — толық 2 балл.')}
+    <div class="row"><p class="kicker">Іс №2 · Жұптар</p><span class="spacer"></span><span class="counter" id="ct">0 / 6 жұп · қате ашу: 0</span></div>
+    <div class="mem">${cards.map((c, n) => `<button class="mc" data-n="${n}" aria-label="Жабық карточка">?</button>`).join('')}</div>
+    <p class="fb" id="fb">Есіңде болсын: пішім мәнді өзгертпейді, тек оның көрінісін өзгертеді.</p>
+    <div class="row"><span class="spacer"></span><button class="btn" id="nx" hidden>Іс №3 →</button></div>`);
+  const btns = [...card.querySelectorAll('.mc')];
+  const face = (b, c) => { b.classList.add('open'); b.innerHTML = `<span class="tg">${c.t}</span><span class="v">${c.v}</span>`; b.setAttribute('aria-label', `${c.t}: ${c.v}`); };
+  const hide = b => { b.classList.remove('open', 'no'); b.textContent = '?'; b.setAttribute('aria-label', 'Жабық карточка'); };
+  btns.forEach(b => b.onclick = () => {
+    const c = cards[+b.dataset.n];
+    if (busy || b.classList.contains('open') || b.classList.contains('got')) return;
+    face(b, c); open.push([b, c]);
+    if (open.length < 2) return;
+    const [[b1, c1], [b2, c2]] = open; open = [];
+    if (c1.i === c2.i && c1.t !== c2.t) {
+      [b1, b2].forEach(x => { x.classList.remove('open'); x.classList.add('got'); x.disabled = true; });
+      got++; $('#fb').className = 'fb good'; $('#fb').textContent = `Жұп табылды: ${c1.t === 'шын мәні' ? c1.v : c2.v} → ${c1.t === 'көрінісі' ? c1.v : c2.v}`;
+    } else {
+      wrong++; busy = true; [b1, b2].forEach(x => x.classList.add('no'));
+      $('#fb').className = 'fb bad'; $('#fb').textContent = 'Бұлар жұп емес. Орнын есіңе сақта!';
+      setTimeout(() => { hide(b1); hide(b2); busy = false; }, 1000);
+    }
+    $('#ct').textContent = `${got} / 6 жұп · қате ашу: ${wrong}`;
+    if (got === 6) {
+      // 0–4 қате ашу → 2 балл; 5–8 → 1,5; 9–12 → 1; одан көп → 0,5.
+      const h = wrong <= 4 ? 4 : wrong <= 8 ? 3 : wrong <= 12 ? 2 : 1;
+      add(1, h); S.miss[1] = Math.max(0, wrong - 4);
+      $('#fb').className = 'fb good'; $('#fb').textContent = `Іс жабылды! ${wrong} қате ашу — ${fmt(h)} балл.`;
+      const nx = $('#nx'); nx.hidden = false; nx.focus(); nx.onclick = case3;
+    }
+  });
+}
+
+/* ---------- Іс №3: күдікті ұяшықтар (4 × 0,5 балл) ---------- */
+const SUS = [
+  { col: 'B', head: 'Телефон', bad: '8,70E+10', good: '87019998877',
+    q1: ['Нөмір сан ретінде енгізілген, тым ұзын', 'Нөмір қате терілген', 'Баған тар'], fix: ['Мәтіндік пішім', 'Пайыздық пішім', 'Күн пішімі'],
+    why: 'Ұзын сан экспоненциалдық түрде көрінеді. Телефонмен есептемейміз, сондықтан Мәтіндік пішім керек.' },
+  { col: 'C', head: 'Туған күні', bad: '41650', good: '11.01.2014',
+    q1: ['Бұл — күннің реттік нөмірі', 'Бұл — телефон коды', 'Бұл — ақша сомасы'], fix: ['Күн пішімі', 'Сандық пішім', 'Мәтіндік пішім'],
+    why: 'Excel күндерді 01.01.1900-ден бастап санайды: 41650-күн = 11.01.2014. Күн пішімі оны күн түрінде көрсетеді.' },
+  { col: 'D', head: 'Жарна', bad: '#####', good: '2 000,00 ₸',
+    q1: ['Сан бағанға сыймай тұр', 'Формула қате жазылған', 'Файл бұзылған'], fix: ['Бағанды кеңейтіп, Ақшалай пішім беру', 'Ұяшықты жою', 'Бөлшек пішім'],
+    why: '##### — «баған тар» деген белгі. Бағанды кеңейтсең, сан көрінеді; ақшаға Ақшалай пішім лайық.' },
+  { col: 'E', head: 'Қатысу', bad: '0,85', good: '85%',
+    q1: ['Үлес ондық бөлшекпен жазылған', 'Бұл — тауардың бағасы', 'Бұл — уақыт'], fix: ['Пайыздық пішім', 'Күн пішімі', 'Экспоненциалдық пішім'],
+    why: 'Пайыздық пішімде 0,85 → 85%. Мәні өзгермейді, тек көрінісі өзгереді.' },
+];
+function case3() {
+  step(3);
+  let k = 0, stage = 1, firstOk = false;
+  const fixed = new Set();
+  const sheet = () => {
+    let h = `<div class="hd"></div>${['A', 'B', 'C', 'D', 'E'].map(x => `<div class="hd">${x}</div>`).join('')}`;
+    h += `<div class="hd">1</div><div class="b">Оқушы</div>${SUS.map(s => `<div class="b">${s.head}</div>`).join('')}`;
+    h += `<div class="hd">2</div><div>Мадина</div>${SUS.map((s, i) => `<div class="r ${fixed.has(i) ? 'fixed' : i === k ? 'now' : 'sus'}">${fixed.has(i) ? s.good : s.bad}</div>`).join('')}`;
+    return `<div class="scene"><div class="xs">${h}</div></div>`;
+  };
+  const draw = (msg = '', good) => {
+    const over = k >= SUS.length, s = SUS[Math.min(k, SUS.length - 1)];
+    const opts = stage === 1 ? s.q1 : s.fix, right = opts[0];
+    show(`${chief(k === 0 && stage === 1 ? 'Іс №3. «Сынып жорығы» тізімінде 4 күдікті ұяшық бар. Әрқайсысынан жауап ал: алдымен себебін анықта, сосын түзету тәсілін таңда. Екеуі де дұрыс болса — 0,5 балл.' : over ? 'Барлық күдікті ұяшық ақталды! Кесте енді таза.' : stage === 1 ? `Күдікті: ${s.col}2 ұяшығы. Неге бұлай көрінеді?` : 'Себебі анықталды. Енді қалай түзетеміз?')}
+      <div class="row"><p class="kicker">Іс №3 · Жауап алу</p><span class="spacer"></span><span class="counter">${Math.min(k + 1, 4)} / 4 күдікті</span></div>
+      ${sheet()}
+      ${over ? '<div class="row"><span class="spacer"></span><button class="btn" id="nx">Іс №4 →</button></div>' : `<div class="q"><h3>${stage === 1 ? `1-сұрақ: ${s.col}2 ұяшығында неге «${s.bad}» тұр?` : `2-сұрақ: ${s.col}2 ұяшығын қалай түзетеміз?`}</h3>
+        <div class="opts">${shuffle(opts).map(o => `<button class="opt">${o}</button>`).join('')}</div></div>`}
+      <p class="fb ${good === undefined ? '' : good ? 'good' : 'bad'}">${msg}</p>`);
+    if (over) { $('#nx').onclick = () => case4(0); $('#nx').focus(); return; }
+    card.querySelectorAll('.opt').forEach(b => b.onclick = () => {
+      const ok = b.textContent === right;
+      if (!ok) S.miss[2]++;
+      if (stage === 1) { firstOk = ok; stage = 2; draw(ok ? 'Дұрыс себеп!' : `Себебі басқа: «${right}».`, ok); }
+      else {
+        if (ok && firstOk) add(2);
+        fixed.add(k); const why = s.why; k++; stage = 1;
+        draw((ok ? (firstOk ? 'Іс ашылды! +0,5 балл. ' : 'Түзету дұрыс, бірақ себебі қате болды. ') : `Түзету тәсілі: «${right}». `) + why, ok && firstOk);
+      }
+    });
+  };
+  draw();
+}
+
+/* ---------- Іс №4: құпия сөз (4 × 0,5 балл) ---------- */
+const WORDS = [
+  ['ПІШІМ', 'Ұяшықтағы мәннің экранда көрсетілу түрі', 'ЕАО'],
+  ['ФОРМУЛА', 'Әрқашан «=» белгісінен басталады', 'ЕСК'],
+  ['МӘТІН', 'Есептеуге қатыспайтын әріптер мен сөздер', 'АСҰ'],
+  ['БӨЛШЕК', '3/4 түрінде көрсететін сан пішімі', 'ІАР'],
+];
+function case4(k) {
+  step(4);
+  if (k >= WORDS.length) return finish();
+  const [word, clue, decoy] = WORDS[k];
+  const letters = shuffle([...word, ...decoy].map((ch, i) => ({ ch, i })));
+  const placed = [];
+  const draw = (msg = '', good, done = false) => {
+    show(`${chief(k === 0 ? 'Соңғы іс! Сейфті ашу үшін анықтамаға сай терминді әріптерден құрастыр. Артық әріптер де бар — абай бол! Әр сөз — 0,5 балл.' : 'Келесі сейф!')}
+      <div class="row"><p class="kicker">Іс №4 · Құпия сөз</p><span class="spacer"></span><span class="counter">${k + 1} / 4 сейф</span></div>
+      <p class="clue">${clue}</p>
+      <div class="slots">${[...word].map((_, n) => `<button class="sl ${done ? (good ? 'ok' : 'bad') : ''}" data-n="${n}" aria-label="${n + 1}-әріп">${placed[n] ? placed[n].ch : ''}</button>`).join('')}</div>
+      <div class="tiles">${letters.map((l, n) => `<button class="lt" data-n="${n}" ${placed.includes(l) || done ? 'disabled' : ''}>${l.ch}</button>`).join('')}</div>
+      <p class="fb ${good === undefined ? '' : good ? 'good' : 'bad'}">${msg || 'Әріпті бас — ол бос орынға түседі. Қайтару үшін орындағы әріпті бас.'}</p>
+      ${done ? `<div class="row"><span class="spacer"></span><button class="btn" id="nx">${k === WORDS.length - 1 ? 'Нәтижені көру' : 'Келесі сейф →'}</button></div>` : ''}`);
+    if (done) { $('#nx').onclick = () => case4(k + 1); $('#nx').focus(); return; }
+    card.querySelectorAll('.lt').forEach(b => b.onclick = () => {
+      placed.push(letters[+b.dataset.n]);
+      if (placed.length === word.length) {
+        const guess = placed.map(p => p.ch).join('');
+        if (guess === word) { add(3); draw(`Сейф ашылды! +0,5 балл. Жауабы: ${word}.`, true, true); }
+        else { S.miss[3]++; draw(`Сейф ашылмады. Дұрыс жауап: ${word}.`, false, true); }
+      } else draw();
+    });
+    card.querySelectorAll('.sl').forEach(b => b.onclick = () => { const n = +b.dataset.n; if (placed[n]) { placed.splice(n, 1); draw(); } });
+  };
+  draw();
+}
+
+/* ---------- нәтиже: деңгей, дағдылар, дескрипторлар ---------- */
+const SKILLS = [
+  { name: 'Деректер типін жіктеу', what: 'мәтін, сан, күн/уақыт, формула',
+    tip: 'Слайдтағы деректер типтерін қайталап, әр типке өзіңнен 2 мысал жаз.' },
+  { name: 'Мән мен пішімнің айырмасы', what: 'пайыздық, бөлшек, ақшалай, экспоненциалдық',
+    tip: 'Excel-де бір санға (мысалы, 0,5) әртүрлі пішімдер беріп, көрінісі қалай өзгеретінін бақыла.' },
+  { name: 'Пішімдеу қатесін түзету', what: '#####, экспоненциалдық сан, күннің реттік нөмірі',
+    tip: 'Жұмыс парағындағы «қатесі бар кестені» Excel-де қайта ашып, Ctrl + 1 арқылы түзет.' },
+  { name: 'Терминдерді білу', what: 'пішім, формула, мәтін, бөлшек',
+    tip: 'Сабақтағы терминдер сөздігін қайталап, әр терминнің анықтамасын дәптерге жаз.' },
+];
+const DESCRIPTORS = [
+  'Деректерді типтеріне қарай жіктейді (мәтін, сан, күн/уақыт, формула)',
+  'Ұяшықтағы мәнді оның пішімделген көрінісімен сәйкестендіреді',
+  'Деректердің дұрыс көрінбеу себебін анықтап, сәйкес пішімді таңдайды',
+  'Деректер пішіміне қатысты терминдерді біледі',
+];
+function finish() {
+  step(5);
+  const states = S.lv.map((v, k) => { const p = v / MAXH[k]; return { p, tag: p >= .85 ? 'ok' : p >= .5 ? 'mid' : 'lo' }; });
+  const pts = S.h / 2;
+  const L = pts >= 8.5 ? { n: 'Жоғары деңгей', r: 'Бас детектив', s: 3, m: 'Тамаша! Сен деректер типі мен пішімін еркін ажыратасың. Куәлігің дайын.' }
+          : pts >= 6 ? { n: 'Орта деңгей', r: 'Детектив', s: 2, m: 'Жақсы тергедің! Төмендегі сары/қызыл дағдыларды қайталасаң, бас детектив боласың.' }
+          : { n: 'Бастапқы деңгей', r: 'Детектив-стажёр', s: 1, m: 'Алғашқы тергеу аяқталды! Төмендегі кеңестерді орындап, ойынды қайта ойна.' };
+  const d = new Date(), p = n => String(n).padStart(2, '0');
+  const date = `${p(d.getDate())}.${p(d.getMonth() + 1)}.${d.getFullYear()}`;
+  const tagText = { ok: 'Меңгерді', mid: 'Жартылай меңгерді', lo: 'Қайталау керек' };
+  const colors = { ok: 'var(--mint)', mid: 'var(--sun)', lo: 'var(--coral)' };
+  const weak = SKILLS.filter((_, k) => states[k].tag !== 'ok');
+  show(`${chief(L.m)}
+    <div class="idc">
+      <div class="tp"></div>
+      <div class="hdr"><span>Детектив куәлігі</span><span>${date}</span></div>
+      <div class="bd">
+        <div class="ph">${DET}</div>
+        <div>
+          <p class="big">${fmt(S.h)} / 10 балл</p>
+          <p style="margin:2px 0 8px;font-weight:700">${L.n} · ${'★'.repeat(L.s)}${'☆'.repeat(3 - L.s)}</p>
+          <dl>
+            <dt>Аты-жөні</dt><dd>${esc(S.name)}</dd>
+            <dt>Атағы</dt><dd>${L.r}</dd>
+            <dt>Тақырып</dt><dd>Мәліметтер пішімі · 7.3.3.1</dd>
+          </dl>
+        </div>
+      </div>
+      <h3 class="sec">Дағдылар бойынша</h3>
+      <div class="skills">${SKILLS.map((s, k) => `<div class="skill">
+        <div class="head"><span>Іс №${k + 1}. ${s.name}</span><span class="tag ${states[k].tag}">${tagText[states[k].tag]}</span></div>
+        <div class="bar"><i style="width:${Math.round(states[k].p * 100)}%;background:${colors[states[k].tag]}"></i></div>
+        <p class="tip">${fmt(S.lv[k])} / ${fmt(MAXH[k])} балл · ${s.what}</p>
+      </div>`).join('')}</div>
+      <h3 class="sec">Дескрипторлар (оқу мақсаты 7.3.3.1)</h3>
+      <ul class="desc">${DESCRIPTORS.map((t, k) => `<li class="${states[k].tag === 'lo' ? 'no' : 'ok'}">${t}</li>`).join('')}</ul>
+      ${weak.length ? `<h3 class="sec">Не қайталау керек?</h3><ul class="desc">${weak.map(s => `<li>${s.tip}</li>`).join('')}</ul>` : '<p class="tip sec" style="padding-bottom:16px">Барлық дағдыны меңгердің. Жарайсың!</p>'}
+    </div>
+    <p class="note">Осы куәліктің скриншотын жасап, мұғаліміңе жібер (немесе Google Classroom-дағы тапсырмаға тірке).</p>
+    <div class="row"><button class="btn" id="again">Қайта ойнау</button><button class="btn ghost" id="print">Басып шығару</button></div>`);
+  $('#again').onclick = () => { Object.assign(S, { h: 0, lv: [0, 0, 0, 0], miss: [0, 0, 0, 0] }); upd(); case1(); };
+  $('#print').onclick = () => window.print();
+}
+
+upd();
+start();
+</script>
+</body>
+</html>
