@@ -87,7 +87,7 @@ export const GAMES: G[] = [
     ],
   },
   {
-    type: "CODING", grade: 6, quarter: 3, topic: "Арифметикалық амалдардың жазылу ережелері", title: "Python: не шығады?",
+    type: "CODING", grade: 6, quarter: 3, topic: "Арифметикалық өрнектердің жазылу ережелері", title: "Python: не шығады?",
     description: "Кодты оқып, экранға не шығатынын жазыңыз.",
     questions: [
       { prompt: "Бұл программа экранға не шығарады?", code: "print(2 + 3 * 4)", answer: "14", explanation: "Алдымен көбейту: 3·4 = 12, сосын 2 + 12 = 14." },

@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import { CURRICULUM, REMOVED, SECTIONS } from "./curriculum";
+import { CURRICULUM, REMOVED, RENAMED, SECTIONS } from "./curriculum";
 import { importContent } from "./import-content";
 import { importGames } from "./games";
 
@@ -26,6 +26,14 @@ async function main() {
     await db.grade.upsert({ where: { id: g }, update: {}, create: { id: g, title: `${g}-сынып` } });
     for (let q = 1; q <= 4; q++)
       await db.quarter.upsert({ where: { gradeId_number: { gradeId: g, number: q } }, update: {}, create: { gradeId: g, number: q } });
+  }
+
+  // Атауы өзгерген тақырыптар: материалдары сақталып, жаңа атауға ауысады.
+  for (const r of RENAMED) {
+    const q = await db.quarter.findUnique({ where: { gradeId_number: { gradeId: r.grade, number: r.quarter } } });
+    if (!q) continue;
+    const from = await db.topic.findFirst({ where: { quarterId: q.id, title: r.from } });
+    if (from && !(await db.topic.findFirst({ where: { quarterId: q.id, title: r.to } }))) await db.topic.update({ where: { id: from.id }, data: { title: r.to } });
   }
 
   // Тақырыптар: бар болса өзгертілмейді, жоқтары қосылады.
