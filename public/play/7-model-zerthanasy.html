@@ -1,0 +1,508 @@
+<!doctype html><html lang="kk"><head><meta charset="utf-8"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Модель зертханасы</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Exo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: a lab bench — control knobs (parameters) feed a live spreadsheet and a live chart; sticky readout bar on top, sheet tabs at the bottom. */
+:root{
+  --bg:#F1F5F4; --paper:#FFFFFF; --ink:#13221F; --soft:#52655F; --line:#D2DEDA; --head:#E5EEEB;
+  --accent:#0F8C7A; --accent-ink:#FFFFFF; --violet:#5B4FD6; --amber:#C98A00; --rose:#D2466E;
+  --goal-bg:#C9F0DA; --goal-fg:#0C5537; --param:#FFF2CC; --param-ink:#5C4500; --fx:#3348D6;
+  --ok-bg:#D2F2E4; --ok-fg:#0D5B40; --no-bg:#FFD9E2; --no-fg:#93163A;
+  --dot:rgba(15,140,122,.10); --shadow:0 10px 28px rgba(19,34,31,.10);
+  --f-display:'Exo 2','Arial Black',sans-serif; --f-body:'Nunito','Segoe UI',Arial,sans-serif; --f-mono:'JetBrains Mono',Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0D1614; --paper:#14211E; --ink:#E3EEEB; --soft:#9AB1AA; --line:#25372F; --head:#1A2A26;
+  --accent:#35C9B0; --accent-ink:#06130F; --violet:#9C93FF; --amber:#F2C14E; --rose:#FF7A9E;
+  --goal-bg:#17503A; --goal-fg:#CBF5DF; --param:#4A3C10; --param-ink:#FFE9A8; --fx:#93A4FF;
+  --ok-bg:#164A37; --ok-fg:#C8F5E1; --no-bg:#5E1C31; --no-fg:#FFD3DF;
+  --dot:rgba(53,201,176,.08); --shadow:0 10px 28px rgba(0,0,0,.45); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D1614; --paper:#14211E; --ink:#E3EEEB; --soft:#9AB1AA; --line:#25372F; --head:#1A2A26;
+  --accent:#35C9B0; --accent-ink:#06130F; --violet:#9C93FF; --amber:#F2C14E; --rose:#FF7A9E;
+  --goal-bg:#17503A; --goal-fg:#CBF5DF; --param:#4A3C10; --param-ink:#FFE9A8; --fx:#93A4FF;
+  --ok-bg:#164A37; --ok-fg:#C8F5E1; --no-bg:#5E1C31; --no-fg:#FFD3DF;
+  --dot:rgba(53,201,176,.08); --shadow:0 10px 28px rgba(0,0,0,.45); color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;
+  background-image:radial-gradient(var(--dot) 1.5px,transparent 1.6px);background-size:22px 22px;
+  padding-bottom:calc(78px + env(safe-area-inset-bottom,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+.wrap{max-width:900px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.1}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--paper);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:10px;padding-block:9px}
+.flask{width:26px;height:26px;border-radius:8px;background:var(--accent);display:grid;place-items:center;color:var(--accent-ink);font-family:var(--f-mono);font-weight:700;font-size:13px}
+.brand{font-family:var(--f-display);font-weight:800;font-size:16px}
+.readout{margin-left:auto;font-family:var(--f-mono);font-size:12px;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.readout b{color:var(--accent)}
+
+section{padding-block:34px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.sec-head{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+.sec-head h2{font-size:clamp(26px,6.6vw,38px);font-weight:800}
+.lead{color:var(--soft);max-width:62ch}
+
+.hero{padding-block:26px 14px}
+.pill{display:inline-flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.pill span{font-family:var(--f-mono);font-size:12px;font-weight:700;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:5px 10px}
+.hero h1{font-size:clamp(32px,8.8vw,60px);font-weight:800;letter-spacing:-.01em}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero .lead{font-size:18px;margin-top:12px}
+.loop{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:20px}
+.loop div{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.loop .k{font-family:var(--f-mono);font-size:11px;font-weight:700;color:var(--accent)}
+.loop b{display:block;font-family:var(--f-display);font-size:16px}
+.loop small{display:block;color:var(--soft);font-size:13px;line-height:1.35;margin-top:2px}
+@media (max-width:600px){.loop{grid-template-columns:1fr 1fr}}
+
+.card{background:var(--paper);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+.bench{display:grid;grid-template-columns:1fr}
+.panel{padding:14px;display:flex;flex-direction:column;gap:14px;border-bottom:1px solid var(--line)}
+.lbl{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--soft);display:block;margin-bottom:6px}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:var(--paper);border-radius:999px;padding:7px 13px;font-size:14px;font-weight:700}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.knobs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media (max-width:640px){.knobs{grid-template-columns:1fr}}
+.knob{background:var(--param);color:var(--param-ink);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.knob .t{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-weight:800;font-size:14px}
+.knob .t span{font-family:var(--f-mono);font-size:12px;opacity:.8}
+.knob .v{font-family:var(--f-mono);font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+.knob input[type=range]{width:100%;accent-color:var(--accent)}
+.result{display:flex;gap:14px;align-items:center;padding:14px;background:var(--head);border-bottom:1px solid var(--line)}
+.result .big{font-family:var(--f-display);font-weight:800;font-size:40px;color:var(--accent);line-height:1;min-width:64px;text-align:center}
+.result p{font-size:16px}
+.result p b{font-family:var(--f-display)}
+.chartbox{padding:10px 8px 4px}
+.chartbox svg{width:100%;height:auto;display:block}
+.legend{display:flex;flex-wrap:wrap;gap:12px;padding:0 14px 12px;font-size:13px;color:var(--soft)}
+.legend i{display:inline-block;width:16px;height:4px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.tools{display:flex;flex-wrap:wrap;gap:8px;padding:12px 14px;border-top:1px solid var(--line)}
+.btn{border:0;background:var(--accent);color:var(--accent-ink);font-weight:800;border-radius:12px;padding:10px 16px;font-size:14px}
+.btn.ghost{background:var(--head);color:var(--ink);border:1px solid var(--line)}
+.btn[aria-pressed="true"]{background:var(--violet);color:#fff}
+.sheetwrap{max-height:430px;overflow:auto;border-top:1px solid var(--line)}
+.sheet{width:100%;border-collapse:collapse;min-width:420px;font-variant-numeric:tabular-nums}
+.sheet th,.sheet td{border:1px solid var(--line);padding:7px 10px;font-size:14px}
+.sheet thead th{position:sticky;top:0;background:var(--head);font-family:var(--f-mono);font-size:12px;color:var(--soft);z-index:1}
+.sheet td.rn{background:var(--head);font-family:var(--f-mono);font-size:12px;color:var(--soft);text-align:center;width:36px}
+.sheet td.n{text-align:center;font-family:var(--f-mono)}
+.sheet td.v{text-align:right;font-family:var(--f-mono);font-weight:700}
+.sheet td.f{color:var(--fx);font-weight:700}
+.sheet td.goal{background:var(--goal-bg);color:var(--goal-fg)}
+.sheet td.p{background:var(--param);color:var(--param-ink)}
+.sheet tr.hd td{font-weight:800;font-family:var(--f-body)}
+.rule{font-family:var(--f-mono);font-size:12px;color:var(--soft);padding:10px 14px}
+
+/* game */
+.game{padding:16px;display:flex;flex-direction:column;gap:14px}
+.gtop{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.lvl{font-family:var(--f-mono);font-weight:700;font-size:13px;color:var(--soft)}
+.stars{font-family:var(--f-mono);font-weight:700;color:var(--amber)}
+.case{background:var(--head);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.case .tag{align-self:flex-start;font-family:var(--f-mono);font-size:12px;font-weight:700;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:3px 10px}
+.case p{font-size:17px;font-weight:700}
+.case code{font-family:var(--f-mono);font-size:14px;background:var(--paper);padding:2px 6px;border-radius:6px;color:var(--fx)}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media (max-width:480px){.opts{grid-template-columns:1fr}}
+.opt{border:1.5px solid var(--line);background:var(--paper);border-radius:12px;padding:12px;text-align:left;font-weight:700;font-size:15px}
+.opt.mono{font-family:var(--f-mono)}
+.opt.ok{background:var(--ok-bg);color:var(--ok-fg);border-color:transparent}
+.opt.no{background:var(--no-bg);color:var(--no-fg);border-color:transparent}
+.fb{font-size:15px;min-height:1.5em}
+.end{text-align:center;padding:26px 16px;display:flex;flex-direction:column;gap:12px;align-items:center}
+.end .big{font-family:var(--f-display);font-weight:800;font-size:46px;color:var(--accent)}
+
+/* notes */
+.road{display:grid;gap:10px}
+.st{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.st .k{font-family:var(--f-display);font-weight:800;font-size:18px;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--accent);color:var(--accent-ink)}
+.st p{color:var(--soft);font-size:14px}
+.st .obj{font-family:var(--f-mono);font-size:12px;font-weight:700;border:1px solid var(--line);border-radius:8px;padding:3px 8px;white-space:nowrap}
+@media (max-width:480px){.st{grid-template-columns:44px 1fr}.st .obj{grid-column:2;justify-self:start}}
+.fbox{margin-top:16px;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.fbox code{font-family:var(--f-mono);color:var(--fx);font-weight:700}
+.terms{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:16px}
+.terms div{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.terms small{display:block;color:var(--soft);font-family:var(--f-mono);font-size:12px}
+footer{padding-block:24px 8px;color:var(--soft);font-size:13px;text-align:center;font-family:var(--f-mono)}
+
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:9;background:var(--paper);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.tabs .wrap{display:flex;gap:4px;overflow-x:auto;padding-block:8px;scrollbar-width:none}
+.tabs a{flex:1 0 auto;text-decoration:none;color:var(--soft);font-weight:800;font-size:13px;padding:9px 12px;border-radius:10px;text-align:center;white-space:nowrap;border:1px solid transparent}
+.tabs a.on{color:var(--ink);background:var(--head);border-color:var(--line)}
+.tabs a b{font-family:var(--f-mono);font-size:11px;color:var(--accent);margin-right:5px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}html{scroll-behavior:auto}}
+/* 10 балдық бағалау блогы */
+.as{padding:16px;display:flex;flex-direction:column;gap:12px;
+  --as-okb:var(--ok-bg,var(--g-bg));--as-okf:var(--ok-fg,var(--g-fg));--as-nob:var(--no-bg,var(--r-bg));--as-nof:var(--no-fg,var(--r-fg));
+  --as-mib:var(--warn-bg,var(--y-bg,var(--param)));--as-mif:var(--warn-fg,var(--y-fg,var(--param-ink)))}
+.as h3{font-size:18px}
+.as-how{background:var(--head);border-radius:12px;padding:12px 14px}
+.as-lbl{font-weight:800}
+.as-in{font:inherit;font-weight:700;font-size:17px;padding:12px 14px;border-radius:12px;border:2px solid var(--line);width:100%;max-width:420px;background:var(--paper);color:var(--ink)}
+.as-btn{border:0;background:var(--accent);color:var(--accent-ink);font-weight:800;border-radius:12px;padding:12px 18px;font-size:15px}
+.as-btn.as-ghost{background:var(--head);color:var(--ink);border:1px solid var(--line)}
+.as-row{display:flex;gap:8px;flex-wrap:wrap}
+.as-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.as-tag{font-family:var(--f-mono);font-size:12px;font-weight:700;background:var(--head);border:1px solid var(--line);border-radius:999px;padding:3px 10px}
+.as-n{font-family:var(--f-mono);font-size:13px;font-weight:700;color:var(--soft)}
+.as-bar{height:8px;border-radius:6px;background:var(--head);overflow:hidden}
+.as-bar i{display:block;height:100%;background:var(--accent)}
+.as-bar i.as-ok{background:var(--as-okf)} .as-bar i.as-mid{background:var(--as-mif)} .as-bar i.as-lo{background:var(--as-nof)}
+.as-q{font-family:var(--f-body);font-weight:800;font-size:18px;line-height:1.35}
+.as-q code{font-family:var(--f-mono);font-size:15px;background:var(--head);padding:2px 6px;border-radius:6px}
+.as-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media (max-width:520px){.as-opts{grid-template-columns:1fr}}
+.as-opt{border:1.5px solid var(--line);background:var(--paper);color:var(--ink);border-radius:12px;padding:12px;text-align:left;font-weight:700;font-size:15px;display:flex;gap:10px;align-items:center}
+.as-opt svg{width:40px;height:28px;flex:none}
+.as-opt.as-mono{font-family:var(--f-mono)}
+.as-opt:disabled{cursor:default}
+.as-opt.as-ok{background:var(--as-okb);color:var(--as-okf);border-color:transparent}
+.as-opt.as-no{background:var(--as-nob);color:var(--as-nof);border-color:transparent}
+.as-fb{min-height:1.5em;font-size:15px}
+.as-fb.as-bad{color:var(--as-nof);font-weight:700}
+.as-kick{font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.as-name{font-family:var(--f-display);font-size:24px;font-weight:800}
+.as-lvl{border-radius:14px;padding:14px;text-align:center}
+.as-lvl.as-ok{background:var(--as-okb);color:var(--as-okf)} .as-lvl.as-mid{background:var(--as-mib);color:var(--as-mif)} .as-lvl.as-lo{background:var(--as-nob);color:var(--as-nof)}
+.as-big{font-family:var(--f-display);font-weight:800;font-size:40px;line-height:1.1}
+.as-stars{font-size:28px;letter-spacing:4px}
+.as-stars span{opacity:.25}
+.as-head{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-weight:800}
+.as-t{font-family:var(--f-mono);font-size:12px;padding:2px 8px;border-radius:6px}
+.as-t.as-ok{background:var(--as-okb);color:var(--as-okf)} .as-t.as-mid{background:var(--as-mib);color:var(--as-mif)} .as-t.as-lo{background:var(--as-nob);color:var(--as-nof)}
+.as-tip{color:var(--soft);font-size:14px;margin-top:4px}
+.as-skill{display:flex;flex-direction:column;gap:4px}
+.as-desc{margin:0;padding-left:22px}
+.as-desc li{margin:4px 0}
+.as-desc li.ok::marker{content:"✓  ";color:var(--as-okf)}
+.as-desc li.no::marker{content:"✗  ";color:var(--as-nof)}
+.as-note{background:var(--head);border-radius:12px;padding:12px 14px;font-weight:700}
+.back{font-family:var(--f-mono);font-size:12px;font-weight:700;color:var(--accent);text-decoration:underline;white-space:nowrap;margin-left:8px}
+@media print{body.as-printing *{visibility:hidden}body.as-printing #check,body.as-printing #check *{visibility:visible}body.as-printing #check{position:absolute;left:0;top:0;width:100%}body.as-printing .as-row,body.as-printing .as-note{display:none}}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <span class="flask" aria-hidden="true">fx</span>
+    <span class="brand">Модель зертханасы</span>
+    <span class="readout" id="readout"></span>
+    <a class="back" id="back" href="/">← Сабаққа оралу</a>
+  </div>
+</header>
+
+<main>
+<section class="hero" id="home">
+  <div class="wrap">
+    <div class="pill"><span>7-сынып · Информатика</span><span>7.3.3.1</span><span>7.2.2.2</span><span>7.2.2.4</span><span>7.2.2.3</span></div>
+    <h1>Бір санды өзгерт — <em>болашақты</em> көр</h1>
+    <p class="lead">Электронды кесте — кішкентай зертхана. Төменде процестің моделін басқарасың: параметрді жылжытсаң, кесте, түс және график бірден өзгереді.</p>
+    <div class="loop">
+      <div><span class="k">1 · ПАРАМЕТР</span><b>Бастапқы мән</b><small>2 000 ₸, 5 см, 0 л</small></div>
+      <div><span class="k">2 · ФОРМУЛА</span><b>=B2+$F$3</b><small>алдыңғы + өзгеріс</small></div>
+      <div><span class="k">3 · НӘТИЖЕ</span><b>Кесте мен график</b><small>түс пен сызық</small></div>
+      <div><span class="k">4 · ЭКСПЕРИМЕНТ</span><b>«Егер ... болса?»</b><small>параметрді өзгерт</small></div>
+    </div>
+  </div>
+</section>
+
+<section id="lab">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">1-парақ · Зертхана</span>
+      <h2>Процестің моделі</h2>
+      <p class="lead">Процесті таңда да, сары параметр ұяшықтарын жылжыт. «Тәжірибені сақта» батырмасы нұсқаларды бір графикте салыстыруға мүмкіндік береді.</p>
+    </div>
+    <div class="card bench">
+      <div class="panel">
+        <div><span class="lbl">Процесс</span>
+          <div class="row" id="procRow">
+            <button class="chip" data-p="save" aria-pressed="true">Жинақ қорабы</button>
+            <button class="chip" data-p="plant" aria-pressed="false">Өсімдік өсуі</button>
+            <button class="chip" data-p="tank" aria-pressed="false">Бактың толуы</button>
+          </div>
+        </div>
+        <div><span class="lbl">Параметрлер (F2:F4)</span><div class="knobs" id="knobs"></div></div>
+      </div>
+      <div class="result" aria-live="polite"><span class="big" id="resN">9</span><p id="resTxt"></p></div>
+      <div class="chartbox"><svg id="chart" viewBox="0 0 640 340" role="img" aria-label="Модель графигі"></svg></div>
+      <div class="legend" id="legend"></div>
+      <div class="tools">
+        <button class="btn" id="saveExp">Тәжірибені сақта</button>
+        <button class="btn ghost" id="clearExp">Тазарту</button>
+        <button class="btn ghost" id="showF" aria-pressed="false">Формулаларды көрсету</button>
+      </div>
+      <p class="rule" id="ruleTxt"></p>
+      <div class="sheetwrap"><table class="sheet"><thead><tr><th></th><th>A</th><th>B</th><th>C</th><th>E</th><th>F</th></tr></thead><tbody id="sheet"></tbody></table></div>
+    </div>
+  </div>
+</section>
+
+<section id="check">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">2-парақ · Бағалау · 10 балл</span>
+      <h2>Модель детективі</h2>
+      <p class="lead">10 жағдай: параметрді анықта, формуланы таңда, деректер типін біл, қатенің себебін тап. Әр дұрыс жауап — 1 балл. Соңында нәтиже парағы шығады — оны мұғаліміңе жібер.</p>
+    </div>
+    <div class="card" id="checkBox"></div>
+  </div>
+</section>
+
+<section id="notes">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">3-парақ · Есте сақта</span>
+      <h2>Модельдеу жол картасы</h2>
+    </div>
+    <div class="road">
+      <div class="st"><span class="k">1</span><div><b>Деректер мен типтер</b><p>Параметрлерді бөлек ұяшыққа енгіз. Ақша — сан, ақшалай пішім.</p></div><span class="obj">7.3.3.1</span></div>
+      <div class="st"><span class="k">2</span><div><b>Формулалар</b><p>B2 = <b>=F2</b>, B3 = <b>=B2+$F$3</b>, A3 = <b>=A2+1</b>, сосын толтыру маркерімен созу.</p></div><span class="obj">модель</span></div>
+      <div class="st"><span class="k">3</span><div><b>Пішімдеу</b><p>Тақырыпты біріктір, қаріп, құйма, жиек, туралау, баған ені.</p></div><span class="obj">7.2.2.2</span></div>
+      <div class="st"><span class="k">4</span><div><b>Шартты пішімдеу</b><p>Ұяшықтарды бөлектеу ережелері → Үлкен → <b>=$F$4</b> → жасыл.</p></div><span class="obj">7.2.2.4</span></div>
+      <div class="st"><span class="k">5</span><div><b>Диаграмма</b><p>A1:B… → Кірістіру → Нүктелік (сызықтармен), тақырып, ось атаулары.</p></div><span class="obj">7.2.2.3</span></div>
+      <div class="st"><span class="k">6</span><div><b>Эксперимент</b><p>Параметрді өзгерт: модель бәрін өзі қайта есептейді.</p></div><span class="obj">зерттеу</span></div>
+    </div>
+    <div class="fbox">
+      <b>Неге $F$3?</b>
+      <p><code>=B2+F3</code> көшірілгенде <code>=B3+F4</code> болып кетеді — қате. <code>=B2+$F$3</code> көшірілгенде <code>=B3+$F$3</code> болады — дұрыс. $ белгісін F4 пернесі қояды.</p>
+    </div>
+    <div class="terms">
+      <div><b>Модель</b><small>модель · model</small></div>
+      <div><b>Процесс</b><small>процесс · process</small></div>
+      <div><b>Параметр</b><small>параметр · parameter</small></div>
+      <div><b>Абсолютті сілтеме</b><small>абсолютная ссылка · absolute reference</small></div>
+      <div><b>Эксперимент</b><small>эксперимент · experiment</small></div>
+      <div><b>Толтыру маркері</b><small>маркер заполнения · fill handle</small></div>
+    </div>
+  </div>
+</section>
+<footer class="wrap">Информатика · 7-сынып · Процестерді электронды кестелерде модельдеу</footer>
+</main>
+
+<nav class="tabs" aria-label="Парақтар">
+  <div class="wrap">
+    <a href="#home" class="on"><b>A1</b>Басты</a>
+    <a href="#lab"><b>B2</b>Зертхана</a>
+    <a href="#check"><b>C3</b>Бағалау</a>
+    <a href="#notes"><b>D4</b>Конспект</a>
+  </div>
+</nav>
+
+<script>
+(function(){
+// Сабақ бетінен ашылса, «Сабаққа оралу» сол бетке қайтарады.
+try { if (document.referrer && new URL(document.referrer).origin === location.origin) document.getElementById('back').href = document.referrer; } catch (e) {}
+const $=s=>document.querySelector(s);
+const NS='http://www.w3.org/2000/svg';
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const nf=(v,d)=>{const s=(Math.round(v*Math.pow(10,d))/Math.pow(10,d)).toFixed(d).replace('.',',');const [i,f]=s.split(',');return i.replace(/\B(?=(\d{3})+(?!\d))/g,' ')+(f?','+f:'')};
+
+const P={
+ save:{name:'Жинақ қорабы',step:'Апта',val:'Жинақ, ₸',unit:' ₸',dec:0,max:30,
+   ks:[{k:'start',n:'Бастапқы сома',u:'₸',min:0,max:10000,st:500,v:2000},{k:'rate',n:'Апталық жарна',u:'₸',min:500,max:5000,st:100,v:1500},{k:'goal',n:'Мақсат',u:'₸',min:5000,max:40000,st:1000,v:15000}],
+   say:(n,v)=>`<b>${n}-аптада</b> жинақ ${nf(v,0)} ₸ болып, мақсаттан асады.`},
+ plant:{name:'Өсімдік өсуі',step:'Күн',val:'Бойы, см',unit:' см',dec:1,max:60,
+   ks:[{k:'start',n:'Бастапқы бойы',u:'см',min:0,max:20,st:0.5,v:5},{k:'rate',n:'Тәуліктік өсім',u:'см',min:0.1,max:3,st:0.1,v:0.8},{k:'goal',n:'Мақсат',u:'см',min:10,max:60,st:1,v:30}],
+   say:(n,v)=>`<b>${n}-күні</b> бойы ${nf(v,1)} см болып, мақсаттан асады.`},
+ tank:{name:'Бактың толуы',step:'Минут',val:'Көлем, л',unit:' л',dec:0,max:60,
+   ks:[{k:'start',n:'Бастапқы көлем',u:'л',min:0,max:50,st:5,v:0},{k:'rate',n:'Ағын',u:'л/мин',min:1,max:40,st:1,v:12},{k:'goal',n:'Бак көлемі',u:'л',min:20,max:300,st:10,v:100}],
+   say:(n,v)=>`<b>${n}-минутта</b> бакта ${nf(v,0)} л болып, бак көлемінен асады.`},
+};
+let S={p:'save',vals:{},showF:false,exps:[]};
+Object.keys(P).forEach(k=>{S.vals[k]={};P[k].ks.forEach(x=>S.vals[k][x.k]=x.v)});
+
+function series(){const m=P[S.p],v=S.vals[S.p];const out=[];let hit=-1;
+  for(let n=0;n<=m.max;n++){const y=Math.round((v.start+v.rate*n)*100)/100;out.push(y);if(hit<0&&y>v.goal)hit=n;if(hit>=0&&n>=hit+2)break}
+  return {ys:out,hit}}
+
+function knobs(){const m=P[S.p],box=$('#knobs');box.innerHTML='';
+  m.ks.forEach((x,i)=>{const id='k-'+S.p+'-'+x.k;const d=document.createElement('div');d.className='knob';
+    d.innerHTML=`<div class="t">${x.n}<span>F${i+2}</span></div><div class="v" id="${id}-v">${nf(S.vals[S.p][x.k],x.st<1?1:0)} ${x.u}</div><input id="${id}" type="range" min="${x.min}" max="${x.max}" step="${x.st}" value="${S.vals[S.p][x.k]}" aria-label="${x.n}">`;
+    d.querySelector('input').oninput=e=>{S.vals[S.p][x.k]=parseFloat(e.target.value);$('#'+id+'-v').textContent=nf(S.vals[S.p][x.k],x.st<1?1:0)+' '+x.u;render()};
+    box.appendChild(d)})}
+
+function el(t,a,p,txt){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(txt!=null)e.textContent=txt;p.appendChild(e);return e}
+function drawChart(ys,hit){const svg=$('#chart');svg.innerHTML='';const m=P[S.p],v=S.vals[S.p];
+  const W=640,H=340,L=64,R=W-16,T=20,B=H-42;
+  const all=[...ys,v.goal,...S.exps.filter(e=>e.p===S.p).flatMap(e=>e.ys)];const maxY=Math.max(...all)*1.08||1;
+  const maxX=Math.max(ys.length-1,...S.exps.filter(e=>e.p===S.p).map(e=>e.ys.length-1),1);
+  const sx=n=>L+(R-L)*n/maxX, sy=y=>B-(B-T)*y/maxY;
+  const fam='font-family:JetBrains Mono,monospace';
+  const steps=5;for(let i=0;i<=steps;i++){const yv=maxY*i/steps;const y=sy(yv);el('line',{x1:L,y1:y,x2:R,y2:y,stroke:'var(--line)','stroke-width':1.2},svg);el('text',{x:L-8,y:y+4,'text-anchor':'end',style:fam+';font-size:11px',fill:'var(--soft)'},svg,nf(yv,yv<10?1:0))}
+  const xt=Math.max(1,Math.ceil(maxX/8));for(let n=0;n<=maxX;n+=xt)el('text',{x:sx(n),y:B+18,'text-anchor':'middle',style:fam+';font-size:11px',fill:'var(--soft)'},svg,n);
+  el('text',{x:(L+R)/2,y:H-6,'text-anchor':'middle',style:'font-family:Nunito,sans-serif;font-size:12px;font-weight:800',fill:'var(--soft)'},svg,m.step);
+  el('line',{x1:L,y1:T,x2:L,y2:B,stroke:'var(--soft)','stroke-width':2},svg);el('line',{x1:L,y1:B,x2:R,y2:B,stroke:'var(--soft)','stroke-width':2},svg);
+  el('line',{x1:L,y1:sy(v.goal),x2:R,y2:sy(v.goal),stroke:'var(--amber)','stroke-width':3,'stroke-dasharray':'10 7'},svg);
+  const cols=['var(--violet)','var(--rose)','var(--soft)'];
+  S.exps.filter(e=>e.p===S.p).forEach((e,i)=>{el('polyline',{points:e.ys.map((y,n)=>sx(n)+','+sy(y)).join(' '),fill:'none',stroke:cols[i%3],'stroke-width':3,'stroke-dasharray':'2 6','stroke-linecap':'round',opacity:.9},svg)});
+  el('polyline',{points:ys.map((y,n)=>sx(n)+','+sy(y)).join(' '),fill:'none',stroke:'var(--accent)','stroke-width':4,'stroke-linejoin':'round'},svg);
+  ys.forEach((y,n)=>{if(ys.length<=32||n===hit)el('circle',{cx:sx(n),cy:sy(y),r:n===hit?8:3.5,fill:n===hit?'var(--goal-fg)':'var(--accent)',stroke:'var(--paper)','stroke-width':n===hit?3:1},svg)});
+  if(hit>=0){el('text',{x:Math.min(sx(hit)+10,R-90),y:sy(ys[hit])+22,style:'font-family:Nunito,sans-serif;font-size:13px;font-weight:800',fill:'var(--ink)'},svg,'мақсаттан асты')}
+  let lg=`<span><i style="background:var(--accent)"></i>${m.val} (қазір)</span><span><i style="background:var(--amber)"></i>Мақсат ${nf(v.goal,m.dec)}${m.unit}</span>`;
+  S.exps.filter(e=>e.p===S.p).forEach((e,i)=>lg+=`<span><i style="background:${cols[i%3]}"></i>${e.label}</span>`);$('#legend').innerHTML=lg}
+
+function drawSheet(ys,hit){const m=P[S.p],v=S.vals[S.p],tb=$('#sheet');const f=S.showF;
+  const prm=m.ks.map(x=>[x.n+', '+x.u,nf(v[x.k],m.dec===1||x.st<1?1:0)]);
+  let h=`<tr class="hd"><td class="rn">1</td><td class="n">${m.step}</td><td>${m.val}</td><td></td><td class="p">Параметр</td><td class="p">Мәні</td></tr>`;
+  ys.forEach((y,n)=>{const r=n+2;const A=f?(n===0?'0':`=A${r-1}+1`):n;const Bv=f?(n===0?'=F2':`=B${r-1}+$F$3`):nf(y,m.dec);
+    const g=!f&&y>v.goal?' goal':'';const pp=prm[n]||['',''];const pc=prm[n]?' p':'';
+    h+=`<tr><td class="rn">${r}</td><td class="n${f&&n>0?' f':''}">${A}</td><td class="v${f?' f':''}${g}">${Bv}</td><td></td><td class="${pc.trim()}">${pp[0]}</td><td class="v${pc}">${pp[1]}</td></tr>`});
+  tb.innerHTML=h;
+  $('#ruleTxt').textContent=`Шартты пішімдеу: B2:B${ys.length+1} → Үлкен → =$F$4 → жасыл толтыру`;}
+
+function render(){const {ys,hit}=series();const m=P[S.p];
+  if(hit>=0){$('#resN').textContent=hit;$('#resTxt').innerHTML=m.say(hit,ys[hit])}else{$('#resN').textContent='—';$('#resTxt').innerHTML=`${m.max} қадамда мақсатқа жетпейді. Өзгерісті үлкейтіп көр!`}
+  drawChart(ys,hit);drawSheet(ys,hit);
+  $('#readout').innerHTML=`${m.name}: <b>${hit>=0?hit+' '+m.step.toLowerCase():'жетпейді'}</b>`;}
+
+document.querySelectorAll('#procRow .chip').forEach(b=>b.onclick=()=>{S.p=b.dataset.p;document.querySelectorAll('#procRow .chip').forEach(x=>x.setAttribute('aria-pressed',x===b));knobs();render()});
+$('#saveExp').onclick=()=>{const {ys}=series();const m=P[S.p],v=S.vals[S.p];const mine=S.exps.filter(e=>e.p===S.p);if(mine.length>=3)S.exps.splice(S.exps.indexOf(mine[0]),1);
+  S.exps.push({p:S.p,ys,label:`Тәжірибе: өзгеріс ${nf(v.rate,m.dec===1?1:0)}`});render()};
+$('#clearExp').onclick=()=>{S.exps=S.exps.filter(e=>e.p!==S.p);render()};
+$('#showF').onclick=e=>{S.showF=!S.showF;e.target.setAttribute('aria-pressed',S.showF);e.target.textContent=S.showF?'Мәндерді көрсету':'Формулаларды көрсету';render()};
+knobs();render();
+
+/* ---------- 10 балдық бағалау: аты → 10 сұрақ → нәтиже парағы ---------- */
+function assessment(box, C) {
+  const $b = s => box.querySelector(s);
+  const esc = s => s.replace(/[<>&"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
+  let S;
+  const reset = () => { S = { name: S ? S.name : '', i: 0, score: 0, sk: C.skills.map(() => 0), done: false }; };
+  const max = C.skills.map((_, k) => C.items.filter(x => x.s === k).length);
+  reset();
+  const top = () => box.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  function start() {
+    box.innerHTML = `<div class="as">
+      <p class="as-how"><b>Қалай орындаймыз?</b> ${C.items.length} сұрақ, әр дұрыс жауап — <b>1 балл</b>, барлығы <b>10 балл</b>. Жауапты таңдасаң, дұрыс па, қате ме, <b>неге</b> екені бірден түсіндіріледі. Соңында деңгейің, дескрипторлар және нәтиже парағы шығады.</p>
+      <label class="as-lbl" for="as-nm">Аты-жөнің (нәтиже парағына жазылады)</label>
+      <input class="as-in" type="text" id="as-nm" maxlength="40" placeholder="Мысалы: Айгерім Серікқызы" autocomplete="name" value="${esc(S.name)}">
+      <p class="as-fb as-bad" id="as-er"></p>
+      <div><button class="as-btn" id="as-go">Бағалауды бастау</button></div></div>`;
+    const go = () => { const v = $b('#as-nm').value.trim(); if (v.length < 2) { $b('#as-er').textContent = 'Нәтиже парағына жазу үшін атыңды енгіз.'; $b('#as-nm').focus(); return; } S.name = v; ask(); };
+    $b('#as-go').onclick = go; $b('#as-nm').onkeydown = e => { if (e.key === 'Enter') go(); };
+  }
+  function ask() {
+    if (S.i >= C.items.length) return result();
+    const it = C.items[S.i]; let done = false;
+    box.innerHTML = `<div class="as">
+      <div class="as-top"><span class="as-tag">${it.tag}</span><span class="as-n">${S.i + 1} / ${C.items.length} · ${S.score} балл</span></div>
+      <div class="as-bar"><i style="width:${S.i / C.items.length * 100}%"></i></div>
+      <h3 class="as-q">${it.q}</h3>
+      ${it.pre || ''}
+      <div class="as-opts">${it.o.map((o, k) => `<button class="as-opt${it.mono ? ' as-mono' : ''}" data-k="${k}">${o}</button>`).join('')}</div>
+      <p class="as-fb" id="as-fb" aria-live="polite"></p>
+      <div><button class="as-btn" id="as-nx" hidden>${S.i === C.items.length - 1 ? 'Нәтижені көру' : 'Келесі сұрақ →'}</button></div></div>`;
+    box.querySelectorAll('.as-opt').forEach(b => b.onclick = () => {
+      if (done) return; done = true;
+      const ok = +b.dataset.k === it.a;
+      box.querySelectorAll('.as-opt').forEach(x => x.disabled = true);
+      box.querySelectorAll('.as-opt')[it.a].classList.add('as-ok');
+      if (ok) { S.score++; S.sk[it.s]++; } else b.classList.add('as-no');
+      $b('#as-fb').innerHTML = (ok ? '<b>Дұрыс! +1 балл.</b> ' : '<b>Қате.</b> ') + it.w;
+      $b('.as-n').textContent = `${S.i + 1} / ${C.items.length} · ${S.score} балл`;
+      const nx = $b('#as-nx'); nx.hidden = false; nx.focus({ preventScroll: true });
+      nx.onclick = () => { S.i++; ask(); top(); };
+    });
+  }
+  function result() {
+    const sc = S.score;
+    const L = sc >= 9 ? { n: 'Жоғары деңгей', s: 3, m: 'Тамаша! Тақырыпты толық меңгердің.' }
+            : sc >= 6 ? { n: 'Орта деңгей', s: 2, m: 'Жақсы нәтиже! Төмендегі сары/қызыл дағдыларды қайталасаң, жоғары деңгейге жетесің.' }
+            : { n: 'Бастапқы деңгей', s: 1, m: 'Бастама жақсы! Төмендегі кеңестерді орындап, конспектіні қарап, қайта орында.' };
+    const st = S.sk.map((v, k) => { const q = max[k] ? v / max[k] : 0; return { q, tag: q >= .8 ? 'ok' : q >= .5 ? 'mid' : 'lo' }; });
+    const tagText = { ok: 'Меңгерді', mid: 'Жартылай меңгерді', lo: 'Қайталау керек' };
+    const d = new Date(), p = n => String(n).padStart(2, '0');
+    const weak = C.skills.filter((_, k) => st[k].tag !== 'ok');
+    box.innerHTML = `<div class="as as-res">
+      <p class="as-kick">Нәтиже парағы · ${p(d.getDate())}.${p(d.getMonth() + 1)}.${d.getFullYear()}</p>
+      <p class="as-name">${esc(S.name)}</p>
+      <div class="as-lvl as-${L.s === 3 ? 'ok' : L.s === 2 ? 'mid' : 'lo'}">
+        <p class="as-big">${sc} / 10 балл</p>
+        <p class="as-stars">${'★'.repeat(L.s)}<span>${'★'.repeat(3 - L.s)}</span></p>
+        <p><b>${L.n}</b> · ${C.title} · ${C.obj}</p>
+      </div>
+      <p>${L.m}</p>
+      <h3>Дағдылар бойынша</h3>
+      ${C.skills.map((s, k) => `<div class="as-skill"><div class="as-head"><span>${k + 1}. ${s.name}</span><span class="as-t as-${st[k].tag}">${tagText[st[k].tag]}</span></div>
+        <div class="as-bar"><i class="as-${st[k].tag}" style="width:${Math.round(st[k].q * 100)}%"></i></div>
+        <p class="as-tip">${S.sk[k]} / ${max[k]} балл · ${s.what}</p></div>`).join('')}
+      <h3>Дескрипторлар (оқу мақсаты ${C.obj})</h3>
+      <ul class="as-desc">${C.skills.map((s, k) => `<li class="${st[k].tag === 'lo' ? 'no' : 'ok'}">${s.desc}</li>`).join('')}</ul>
+      ${weak.length ? `<h3>Не қайталау керек?</h3><ul class="as-desc">${weak.map(s => `<li>${s.tip}</li>`).join('')}</ul>` : ''}
+      <p class="as-note">Осы нәтиже парағының скриншотын жасап, мұғаліміңе жібер (немесе Google Classroom-дағы тапсырмаға тірке).</p>
+      <div class="as-row"><button class="as-btn" id="as-again">Қайта орындау</button><button class="as-btn as-ghost" id="as-print">Басып шығару</button></div></div>`;
+    $b('#as-again').onclick = () => { reset(); ask(); top(); };
+    $b('#as-print').onclick = () => { document.body.classList.add('as-printing'); window.print(); setTimeout(() => document.body.classList.remove('as-printing'), 500); };
+  }
+  start();
+}
+
+/* ---------- бағалау (10 балл) ---------- */
+assessment(document.getElementById('checkBox'), {
+  title: 'Процестерді модельдеу', obj: '7.3.3.1 · 7.2.2.2 · 7.2.2.4 · 7.2.2.3',
+  skills: [
+    { name: 'Модельдің формулалары', what: 'параметр, =B2+$F$3, көшіру, есептеу',
+      desc: 'Модельдің формулаларын абсолютті сілтемемен құрады және нәтижесін есептейді',
+      tip: 'Зертханада «Формулаларды көрсету» батырмасын басып, B бағанындағы формулаларды дәптерге көшір. $F$3 неге өзгермейтінін түсіндіріп жаз.' },
+    { name: 'Деректер мен пішімдеу', what: 'деректер типі, баған ені, шартты пішімдеу =$F$4',
+      desc: 'Деректер типін анықтап, модель кестесін пішімдейді және шартты пішімдеуді қолданады',
+      tip: 'Конспектідегі 1, 3, 4-қадамдарды Excel-де орында: параметрлерді сан ретінде енгіз, ақшалай пішім бер, шартты пішімдеуге =$F$4 сілтемесін қой.' },
+    { name: 'Модельді талдау және түзету', what: 'қатені табу, нүктелік диаграмма, «Егер ... болса?» тәжірибесі',
+      desc: 'Модельдегі қатені тауып түзетеді, параметрді өзгертіп нәтижені талдайды',
+      tip: 'Зертханада параметрді өзгертіп, «Тәжірибені сақта» батырмасымен екі нұсқаны салыстыр. Нәтиже неге өзгергенін бір сөйлеммен жаз.' },
+  ],
+  items: [
+    { s: 0, tag: 'Параметр', q: 'Жинақ моделінде қай ұяшықтар <b>параметрлер</b> болып табылады?',
+      o: ['Бастапқы сома, жарна және мақсат (F2:F4)', 'Апта нөмірлері (A бағаны)', 'Есептелген жинақ (B бағаны)', 'Тақырып жолы (1-жол)'], a: 0,
+      w: 'Параметр — модельге өзіміз беретін бастапқы мәндер. Қалғанын формулалар солардан есептейді.' },
+    { s: 0, tag: 'Формула', q: 'Бастапқы сома F2-де, апталық жарна F3-те. <code>B3</code> ұяшығына қандай формула жазамыз?',
+      o: ['=B2+F3', '=B2+$F$3', '=$B$2+F3', '=B3+$F$3'], a: 1, mono: true,
+      w: 'Алдыңғы апта (B2) + жарна. Жарнаға $ қоямыз, көшіргенде өзгермеуі үшін.' },
+    { s: 0, tag: 'Көшіру', q: '<code>=B2+$F$3</code> формуласын B4-ке көшірсек, не шығады?',
+      o: ['=B3+$F$4', '=B3+$F$3', '=B2+$F$3', '=B4+$F$3'], a: 1, mono: true,
+      w: 'Салыстырмалы B2 → B3 болып жылжиды, абсолютті $F$3 өзгермейді.' },
+    { s: 0, tag: 'Есепте', q: 'Өсімдіктің бойы 5 см, күніне 0,8 см өседі. 10-күні бойы қанша болады?',
+      o: ['8 см', '13 см', '12,2 см', '10,8 см'], a: 1, w: '5 + 0,8 × 10 = 13 см. Зертханада «Өсімдік өсуі» процесімен тексеріп көр!' },
+    { s: 1, tag: 'Деректер типі', q: 'F3 ұяшығына апталық жарнаны қалай енгізген дұрыс?',
+      o: ['«1500 тг» деп жазу', '1500 енгізіп, ақшалай пішім беру', '«бір мың бес жүз» деп жазу', '1 500 ₸ деп мәтінмен жазу'], a: 1,
+      w: 'Ақша — сан. Тек санды енгіземіз, ₸ белгісін пішім қояды. Мәтінмен формула есептей алмайды.' },
+    { s: 1, tag: 'Пішімдеу', q: 'C бағанында мәндердің орнына #### көрінеді. Не істейміз?',
+      o: ['Бағанды кеңейтеміз', 'Формуланы өшіреміз', 'Санды мәтінге айналдырамыз', 'Файлды жабамыз'], a: 0,
+      w: '#### — мән бағанға сыймай тұр деген белгі. Бағанды кеңейтсек, мән көрінеді.' },
+    { s: 1, tag: 'Шартты пішімдеу', q: 'Мақсатты 15 000-нан 20 000-ға өзгерттік, бірақ жасыл түс сол күйі қалды. Неге?',
+      o: ['Ережеге 15000 саны жазылған', 'Формула қате', 'Диаграмма жоқ', 'Баған тар'], a: 0,
+      w: 'Ережеге санды емес, =$F$4 сілтемесін берсек, мақсат өзгергенде түс те өзі ауысады.' },
+    { s: 2, tag: 'Қатені тап', q: 'Бак моделінде көлем: 0, 12, 112, 112, 112… Неге 2-минуттан бастап мән өзгермей қалды?',
+      o: ['Формулада $ белгісі жоқ', 'Баған тар', 'Диаграмма түрі қате', 'Шартты пішімдеу жоқ'], a: 0,
+      w: '=B2+F3 көшірілгенде F4 (бак көлемі 100) қосылып, сосын бос F5, F6 қосылады. Дұрысы: =B2+$F$3.' },
+    { s: 2, tag: 'Диаграмма', q: '«График» құрғанда «Апта» бағаны да екінші сызық болып шықты. Қалай түзетеміз?',
+      o: ['Дөңгелек диаграмма аламыз', 'Нүктелік диаграмма (сызықтармен) аламыз', 'Кестені өшіреміз', 'Легенданы үлкейтеміз'], a: 1,
+      w: 'Нүктелік диаграммада бірінші баған (Апта) өзі X осі болады.' },
+    { s: 2, tag: 'Эксперимент', q: 'Апталық жарнаны (F3) 1 500-ден 2 000-ға өзгерттік. Модельде не болады?',
+      o: ['B бағанындағы барлық мәндер өзі қайта есептеледі', 'Тек F3 өзгереді, қалғаны сол күйі қалады', 'Барлық формуланы қайта жазу керек', 'Кесте өшіп қалады'], a: 0,
+      w: 'Формулалар F3-ке сілтейді, сондықтан параметр өзгергенде бүкіл модель (кесте, түс, график) өзі жаңарады. Бұл — «Егер ... болса?» тәжірибесі.' },
+  ],
+});
+
+
+/* ---------- tabs ---------- */
+const tabs=[...document.querySelectorAll('.tabs a')];
+tabs.forEach(a=>a.onclick=e=>{e.preventDefault();const t=document.querySelector(a.getAttribute('href'));t&&t.scrollIntoView({block:'start'})});
+if('IntersectionObserver' in window){const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)tabs.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id))}),{rootMargin:'-45% 0px -50% 0px'});['home','lab','check','notes'].forEach(id=>io.observe(document.getElementById(id)))}
+const h=location.hash.slice(1);if(['lab','check','notes'].includes(h))setTimeout(()=>document.getElementById(h).scrollIntoView(),50);
+})();
+</script>
+
+</body></html>

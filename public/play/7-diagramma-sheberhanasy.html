@@ -1,0 +1,563 @@
+<!doctype html><html lang="kk"><head><meta charset="utf-8"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Диаграмма шеберханасы</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;800&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: graph-paper notebook — one live chart at the heart of every section, sticky "axis" header, sheet tabs at the bottom. */
+:root{
+  --bg:#EEF3FB; --paper:#FFFFFF; --ink:#172033; --soft:#56627D; --line:#D3DCEB; --head:#E6EDF8;
+  --accent:#2F5BEA; --accent-ink:#FFFFFF;
+  --c1:#2F5BEA; --c2:#EE8420; --c3:#DE4778; --c4:#169B72; --c5:#D9A714;
+  --ok-bg:#D2F2E4; --ok-fg:#0D5B40; --no-bg:#FFD9E2; --no-fg:#93163A; --warn-bg:#FFF0C7; --warn-fg:#6B4E00;
+  --grid:rgba(47,91,234,.09); --shadow:0 10px 28px rgba(23,32,51,.10);
+  --f-display:'Rubik','Arial Black',sans-serif; --f-body:'Nunito','Segoe UI',Arial,sans-serif; --f-mono:'JetBrains Mono',Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E1424; --paper:#161E33; --ink:#E7ECF7; --soft:#9DA9C5; --line:#28324F; --head:#1D2742;
+  --accent:#7C9BFF; --accent-ink:#0B1020;
+  --c1:#7C9BFF; --c2:#FFA552; --c3:#FF729C; --c4:#3CCB98; --c5:#F7D154;
+  --ok-bg:#164A37; --ok-fg:#C8F5E1; --no-bg:#5E1C31; --no-fg:#FFD3DF; --warn-bg:#4E3E0E; --warn-fg:#FFEDB5;
+  --grid:rgba(124,155,255,.07); --shadow:0 10px 28px rgba(0,0,0,.45); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1424; --paper:#161E33; --ink:#E7ECF7; --soft:#9DA9C5; --line:#28324F; --head:#1D2742;
+  --accent:#7C9BFF; --accent-ink:#0B1020;
+  --c1:#7C9BFF; --c2:#FFA552; --c3:#FF729C; --c4:#3CCB98; --c5:#F7D154;
+  --ok-bg:#164A37; --ok-fg:#C8F5E1; --no-bg:#5E1C31; --no-fg:#FFD3DF; --warn-bg:#4E3E0E; --warn-fg:#FFEDB5;
+  --grid:rgba(124,155,255,.07); --shadow:0 10px 28px rgba(0,0,0,.45); color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;padding-bottom:calc(78px + env(safe-area-inset-bottom,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+.wrap{max-width:880px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.12}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--c2);outline-offset:2px}
+
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--paper);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:10px;padding-block:10px}
+.logo{display:flex;align-items:end;gap:3px;height:22px}
+.logo i{width:6px;border-radius:2px 2px 0 0;display:block}
+.brand{font-family:var(--f-display);font-weight:800;font-size:15px}
+.info{margin-left:auto;font-family:var(--f-mono);font-size:12px;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+
+section{padding-block:34px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.sec-head{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+.sec-head h2{font-size:clamp(26px,6.5vw,36px);font-weight:800}
+.lead{color:var(--soft);max-width:60ch}
+
+.hero{padding-block:26px 18px}
+.chipline{display:inline-flex;gap:8px;align-items:center;font-family:var(--f-mono);font-size:12px;font-weight:700;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:6px 12px;margin-bottom:14px}
+.hero h1{font-size:clamp(32px,8.6vw,58px);font-weight:800;letter-spacing:-.02em}
+.hero h1 em{font-style:normal;color:var(--c2)}
+.hero .lead{font-size:18px;margin-top:12px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+.morph{margin-top:20px}
+.morph-top{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.tag{font-family:var(--f-mono);font-size:13px;font-weight:700;background:var(--head);padding:6px 10px;border-radius:8px}
+.mini-tabs{display:flex;gap:6px}
+.mini-tabs button{border:1.5px solid var(--line);background:var(--paper);border-radius:999px;padding:5px 11px;font-size:13px;font-weight:800}
+.mini-tabs button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chartbox{padding:8px 8px 4px}
+.chartbox svg{width:100%;height:auto;display:block}
+.cap{padding:0 14px 14px;color:var(--soft);font-size:14px}
+
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+.three div{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.three b{font-family:var(--f-display);display:block;font-size:15px}
+.three small{display:block;color:var(--soft);font-size:13px;line-height:1.35;margin-top:3px}
+.three .k{font-family:var(--f-mono);font-size:11px;font-weight:700}
+@media (max-width:540px){.three{grid-template-columns:1fr}}
+
+/* workshop */
+.ws{display:grid;grid-template-columns:1fr;gap:0}
+.panel{padding:14px;display:flex;flex-direction:column;gap:14px;border-bottom:1px solid var(--line)}
+.lbl{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--soft);display:block;margin-bottom:6px}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:var(--paper);border-radius:999px;padding:7px 13px;font-size:14px;font-weight:700}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.types{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.types button{border:1.5px solid var(--line);background:var(--paper);border-radius:12px;padding:8px 4px;font-size:12px;font-weight:800;display:flex;flex-direction:column;align-items:center;gap:4px}
+.types button svg{width:34px;height:24px}
+.types button[aria-pressed="true"]{border-color:var(--accent);background:var(--head);box-shadow:inset 0 0 0 1px var(--accent)}
+.tog{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--line);border-radius:10px;padding:6px 10px;font-size:14px;font-weight:700;background:var(--paper)}
+.tog[aria-pressed="true"]{border-color:var(--c4);background:var(--ok-bg);color:var(--ok-fg)}
+.tog i{font-style:normal;font-family:var(--f-mono);font-size:12px}
+.dt{overflow-x:auto}
+.dtable{width:100%;border-collapse:collapse;min-width:280px}
+.dtable th,.dtable td{border:1px solid var(--line);padding:0}
+.dtable th{background:var(--head);font-family:var(--f-mono);font-size:12px;color:var(--soft);padding:5px 8px;font-weight:700}
+.dtable td.rn{background:var(--head);font-family:var(--f-mono);font-size:12px;color:var(--soft);text-align:center;width:34px}
+.dtable td.nm{padding:8px 10px;font-weight:700}
+.dtable input{width:100%;border:0;background:transparent;color:var(--ink);font:700 16px var(--f-mono);font-variant-numeric:tabular-nums;padding:9px 10px;text-align:right}
+.dtable tr.sel td:not(.rn){background:color-mix(in srgb,var(--c1) 12%,transparent)}
+.advice{margin:0 14px 14px;padding:12px 14px;border-radius:12px;font-size:15px;display:flex;gap:10px;align-items:flex-start}
+.advice b{font-family:var(--f-display)}
+.advice.ok{background:var(--ok-bg);color:var(--ok-fg)}
+.advice.warn{background:var(--warn-bg);color:var(--warn-fg)}
+.advice.no{background:var(--no-bg);color:var(--no-fg)}
+.tapinfo{font-family:var(--f-mono);font-size:13px;color:var(--soft);padding:0 14px 12px}
+.tapinfo b{color:var(--ink)}
+svg [data-el]{cursor:pointer}
+
+/* game */
+.game{padding:16px;display:flex;flex-direction:column;gap:14px}
+.gtop{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.lvl{font-family:var(--f-mono);font-weight:700;font-size:13px;color:var(--soft)}
+.stars{font-family:var(--f-mono);font-weight:700;color:var(--c5)}
+.scene{display:flex;gap:14px;align-items:center;background:var(--head);border-radius:14px;padding:14px}
+.scene .emo{font-family:var(--f-display);font-weight:800;font-size:28px;width:54px;height:54px;border-radius:14px;display:grid;place-items:center;background:var(--paper);color:var(--accent);flex:none}
+.scene p{font-size:17px;font-weight:700}
+.opts{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+@media (max-width:560px){.opts{grid-template-columns:repeat(3,1fr)}}
+.opt{border:1.5px solid var(--line);background:var(--paper);border-radius:12px;padding:10px 6px;font-weight:800;font-size:13px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.opt svg{width:44px;height:30px}
+.opt.ok{background:var(--ok-bg);color:var(--ok-fg);border-color:transparent}
+.opt.no{background:var(--no-bg);color:var(--no-fg);border-color:transparent}
+.fb{font-size:15px;min-height:1.5em}
+.btn{border:0;background:var(--accent);color:var(--accent-ink);font-weight:800;border-radius:12px;padding:12px 18px;font-size:15px}
+.btn.ghost{background:var(--head);color:var(--ink)}
+.end{text-align:center;padding:26px 16px;display:flex;flex-direction:column;gap:12px;align-items:center}
+.end .big{font-family:var(--f-display);font-weight:800;font-size:46px;color:var(--accent)}
+
+/* quiz */
+.q{padding:16px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.q:first-child{border-top:0}
+.q h3{font-family:var(--f-body);font-weight:800;font-size:17px}
+.q .n{font-family:var(--f-mono);color:var(--accent);font-size:13px;font-weight:700}
+.qopts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media (max-width:480px){.qopts{grid-template-columns:1fr}}
+.qopts button{border:1.5px solid var(--line);background:var(--paper);border-radius:12px;padding:11px 12px;text-align:left;font-weight:700;font-size:15px}
+.qopts button.ok{background:var(--ok-bg);color:var(--ok-fg);border-color:transparent}
+.qopts button.no{background:var(--no-bg);color:var(--no-fg);border-color:transparent}
+.q .fb{font-size:14px;color:var(--soft)}
+.score{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 16px;background:var(--head);border-top:1px solid var(--line);font-weight:800}
+
+/* notes */
+.steps{display:grid;gap:10px}
+.step{display:grid;grid-template-columns:42px 1fr;gap:12px;align-items:start;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.step .k{font-family:var(--f-display);font-weight:800;font-size:18px;width:42px;height:42px;border-radius:10px;display:grid;place-items:center;color:#fff}
+.step p{color:var(--soft);font-size:15px}
+.path{font-family:var(--f-mono);font-size:13px;background:var(--head);padding:2px 6px;border-radius:6px;color:var(--ink)}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin-top:16px}
+.tcard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;grid-template-columns:56px 1fr;gap:12px;align-items:center}
+.tcard svg{width:56px;height:40px}
+.tcard b{display:block}
+.tcard small{color:var(--soft);font-size:14px}
+.terms{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:16px}
+.terms div{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.terms small{display:block;color:var(--soft);font-family:var(--f-mono);font-size:12px}
+footer{padding-block:24px 8px;color:var(--soft);font-size:13px;text-align:center;font-family:var(--f-mono)}
+
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:9;background:var(--paper);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.tabs .wrap{display:flex;gap:4px;overflow-x:auto;padding-block:8px;scrollbar-width:none}
+.tabs a{flex:1 0 auto;text-decoration:none;color:var(--soft);font-weight:800;font-size:13px;padding:9px 12px;border-radius:10px;text-align:center;white-space:nowrap;border:1px solid transparent}
+.tabs a.on{color:var(--ink);background:var(--head);border-color:var(--line)}
+.tabs a i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px;vertical-align:1px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}html{scroll-behavior:auto}}
+svg .anim{transition:all .5s ease}
+/* 10 балдық бағалау блогы */
+.as{padding:16px;display:flex;flex-direction:column;gap:12px;
+  --as-okb:var(--ok-bg,var(--g-bg));--as-okf:var(--ok-fg,var(--g-fg));--as-nob:var(--no-bg,var(--r-bg));--as-nof:var(--no-fg,var(--r-fg));
+  --as-mib:var(--warn-bg,var(--y-bg,var(--param)));--as-mif:var(--warn-fg,var(--y-fg,var(--param-ink)))}
+.as h3{font-size:18px}
+.as-how{background:var(--head);border-radius:12px;padding:12px 14px}
+.as-lbl{font-weight:800}
+.as-in{font:inherit;font-weight:700;font-size:17px;padding:12px 14px;border-radius:12px;border:2px solid var(--line);width:100%;max-width:420px;background:var(--paper);color:var(--ink)}
+.as-btn{border:0;background:var(--accent);color:var(--accent-ink);font-weight:800;border-radius:12px;padding:12px 18px;font-size:15px}
+.as-btn.as-ghost{background:var(--head);color:var(--ink);border:1px solid var(--line)}
+.as-row{display:flex;gap:8px;flex-wrap:wrap}
+.as-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.as-tag{font-family:var(--f-mono);font-size:12px;font-weight:700;background:var(--head);border:1px solid var(--line);border-radius:999px;padding:3px 10px}
+.as-n{font-family:var(--f-mono);font-size:13px;font-weight:700;color:var(--soft)}
+.as-bar{height:8px;border-radius:6px;background:var(--head);overflow:hidden}
+.as-bar i{display:block;height:100%;background:var(--accent)}
+.as-bar i.as-ok{background:var(--as-okf)} .as-bar i.as-mid{background:var(--as-mif)} .as-bar i.as-lo{background:var(--as-nof)}
+.as-q{font-family:var(--f-body);font-weight:800;font-size:18px;line-height:1.35}
+.as-q code{font-family:var(--f-mono);font-size:15px;background:var(--head);padding:2px 6px;border-radius:6px}
+.as-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media (max-width:520px){.as-opts{grid-template-columns:1fr}}
+.as-opt{border:1.5px solid var(--line);background:var(--paper);color:var(--ink);border-radius:12px;padding:12px;text-align:left;font-weight:700;font-size:15px;display:flex;gap:10px;align-items:center}
+.as-opt svg{width:40px;height:28px;flex:none}
+.as-opt.as-mono{font-family:var(--f-mono)}
+.as-opt:disabled{cursor:default}
+.as-opt.as-ok{background:var(--as-okb);color:var(--as-okf);border-color:transparent}
+.as-opt.as-no{background:var(--as-nob);color:var(--as-nof);border-color:transparent}
+.as-fb{min-height:1.5em;font-size:15px}
+.as-fb.as-bad{color:var(--as-nof);font-weight:700}
+.as-kick{font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.as-name{font-family:var(--f-display);font-size:24px;font-weight:800}
+.as-lvl{border-radius:14px;padding:14px;text-align:center}
+.as-lvl.as-ok{background:var(--as-okb);color:var(--as-okf)} .as-lvl.as-mid{background:var(--as-mib);color:var(--as-mif)} .as-lvl.as-lo{background:var(--as-nob);color:var(--as-nof)}
+.as-big{font-family:var(--f-display);font-weight:800;font-size:40px;line-height:1.1}
+.as-stars{font-size:28px;letter-spacing:4px}
+.as-stars span{opacity:.25}
+.as-head{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-weight:800}
+.as-t{font-family:var(--f-mono);font-size:12px;padding:2px 8px;border-radius:6px}
+.as-t.as-ok{background:var(--as-okb);color:var(--as-okf)} .as-t.as-mid{background:var(--as-mib);color:var(--as-mif)} .as-t.as-lo{background:var(--as-nob);color:var(--as-nof)}
+.as-tip{color:var(--soft);font-size:14px;margin-top:4px}
+.as-skill{display:flex;flex-direction:column;gap:4px}
+.as-desc{margin:0;padding-left:22px}
+.as-desc li{margin:4px 0}
+.as-desc li.ok::marker{content:"✓  ";color:var(--as-okf)}
+.as-desc li.no::marker{content:"✗  ";color:var(--as-nof)}
+.as-note{background:var(--head);border-radius:12px;padding:12px 14px;font-weight:700}
+.back{font-family:var(--f-mono);font-size:12px;font-weight:700;color:var(--accent);text-decoration:underline;white-space:nowrap;margin-left:8px}
+@media print{body.as-printing *{visibility:hidden}body.as-printing #check,body.as-printing #check *{visibility:visible}body.as-printing #check{position:absolute;left:0;top:0;width:100%}body.as-printing .as-row,body.as-printing .as-note{display:none}}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <span class="logo" aria-hidden="true"><i style="height:10px;background:var(--c1)"></i><i style="height:22px;background:var(--c2)"></i><i style="height:15px;background:var(--c3)"></i><i style="height:19px;background:var(--c4)"></i></span>
+    <span class="brand">Диаграмма шеберханасы</span>
+    <span class="info" id="info">7.2.2.3</span>
+    <a class="back" id="back" href="/">← Сабаққа оралу</a>
+  </div>
+</header>
+
+<main>
+<section class="hero" id="home">
+  <div class="wrap">
+    <span class="chipline">7-сынып · Информатика · 7.2.2.3</span>
+    <h1>Кестедегі сандар <em>суретке</em> айналады</h1>
+    <p class="lead">Бір кесте — үш түрлі диаграмма. Мұнда өз диаграммаңды құрасың, сосын 10 балдық бағалаудан өтесің.</p>
+    <div class="card morph">
+      <div class="morph-top">
+        <span class="tag" id="morphTag">Гистограмма · салыстыру</span>
+        <div class="mini-tabs" id="morphTabs">
+          <button data-t="column" aria-pressed="true">Бағана</button>
+          <button data-t="line" aria-pressed="false">Сызық</button>
+          <button data-t="pie" aria-pressed="false">Дөңгелек</button>
+        </div>
+      </div>
+      <div class="chartbox"><svg id="morph" viewBox="0 0 600 360" role="img" aria-label="Кітап оқу жарысы диаграммасы"></svg></div>
+      <p class="cap" id="morphCap">Бір деректер: 7А — 42, 7Ә — 58, 7Б — 35, 7В — 50 кітап. Қай түрі түсінікті?</p>
+    </div>
+    <div class="three">
+      <div><span class="k" style="color:var(--c1)">ГИСТОГРАММА</span><b>Салыстырамыз</b><small>Қай сынып көп? Қай тауар қымбат?</small></div>
+      <div><span class="k" style="color:var(--c4)">ГРАФИК</span><b>Өзгерісті көреміз</b><small>Температура, бағалар, бой — уақыт бойынша</small></div>
+      <div><span class="k" style="color:var(--c3)">ДӨҢГЕЛЕК</span><b>Үлесті табамыз</b><small>Бүтіннің бөліктері, барлығы 100%</small></div>
+    </div>
+  </div>
+</section>
+
+<section id="studio">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">1-парақ · Шеберхана</span>
+      <h2>Өз диаграммаңды құр</h2>
+      <p class="lead">Кестені таңда, сандарды өзгерт, диаграмма түрі мен элементтерін қос. Диаграмманың кез келген бөлігін бас — оның атауы шығады.</p>
+    </div>
+    <div class="card ws">
+      <div class="panel">
+        <div><span class="lbl">Деректер</span>
+          <div class="row" id="dsRow">
+            <button class="chip" data-ds="books" aria-pressed="true">Кітап оқу жарысы</button>
+            <button class="chip" data-ds="temp" aria-pressed="false">Апталық температура</button>
+            <button class="chip" data-ds="free" aria-pressed="false">Бос уақыт, %</button>
+          </div>
+        </div>
+        <div><span class="lbl">Диаграмма түрі</span>
+          <div class="types" id="typeRow"></div>
+        </div>
+        <div><span class="lbl">Элементтер («+» батырмасы)</span>
+          <div class="row" id="elRow"></div>
+        </div>
+      </div>
+      <div class="chartbox"><svg id="studioChart" viewBox="0 0 600 380" role="img" aria-label="Шеберхана диаграммасы"></svg></div>
+      <p class="tapinfo" id="tapInfo">Диаграмманың бір бөлігін бас…</p>
+      <div class="advice ok" id="advice"></div>
+      <div class="panel" style="border-top:1px solid var(--line);border-bottom:0">
+        <span class="lbl">Кесте (сандарды өзгертуге болады)</span>
+        <div class="dt"><table class="dtable"><thead><tr><th></th><th>A</th><th>B</th></tr></thead><tbody id="dBody"></tbody></table></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="check">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">2-парақ · Бағалау · 10 балл</span>
+      <h2>Өзіңді тексер</h2>
+      <p class="lead">«Қай диаграмма?» ойыны мен тест бірге: 10 сұрақ, әр дұрыс жауап — 1 балл. Соңында нәтиже парағы шығады — оны мұғаліміңе жібер.</p>
+    </div>
+    <div class="card" id="checkBox"></div>
+  </div>
+</section>
+
+<section id="notes">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">3-парақ · Есте сақта</span>
+      <h2>Қысқаша конспект</h2>
+    </div>
+    <div class="steps">
+      <div class="step"><span class="k" style="background:var(--c1)">1</span><div><b>Деректерді бөлекте</b><p>Тақырыптарымен бірге: <span class="path">A1:B5</span>. Тақырып жолы болмаса, легендада «1-қатар» шығады.</p></div></div>
+      <div class="step"><span class="k" style="background:var(--c2)">2</span><div><b>Диаграмманы кірістір</b><p><span class="path">Кірістіру → Диаграммалар</span> → түрін таңда.</p></div></div>
+      <div class="step"><span class="k" style="background:var(--c4)">3</span><div><b>Баптау</b><p>«+» батырмасы: тақырып, ось атаулары, деректер белгілері, легенда. Түрін ауыстыру: <span class="path">Диаграмма түрін өзгерту</span>.</p></div></div>
+    </div>
+    <div class="tgrid" id="tgrid"></div>
+    <div class="terms">
+      <div><b>Диаграмма</b><small>диаграмма · chart</small></div>
+      <div><b>Гистограмма</b><small>гистограмма · column chart</small></div>
+      <div><b>График</b><small>график · line chart</small></div>
+      <div><b>Дөңгелек диаграмма</b><small>круговая диаграмма · pie chart</small></div>
+      <div><b>Легенда</b><small>легенда · legend</small></div>
+      <div><b>Ось</b><small>ось · axis</small></div>
+      <div><b>Орысша Excel</b><small>Вставка → Диаграммы</small></div>
+      <div><b>Google Кестелер</b><small>Кірістіру → Диаграмма</small></div>
+    </div>
+  </div>
+</section>
+<footer class="wrap">Информатика · 7-сынып · Кестелік мәліметтердің графикалық ұсынылуы</footer>
+</main>
+
+<nav class="tabs" aria-label="Парақтар">
+  <div class="wrap">
+    <a href="#home" class="on"><i style="background:var(--c1)"></i>Басты</a>
+    <a href="#studio"><i style="background:var(--c2)"></i>Шеберхана</a>
+    <a href="#check"><i style="background:var(--c3)"></i>Бағалау</a>
+    <a href="#notes"><i style="background:var(--c5)"></i>Конспект</a>
+  </div>
+</nav>
+
+<script>
+(function(){
+// Сабақ бетінен ашылса, «Сабаққа оралу» сол бетке қайтарады.
+try { if (document.referrer && new URL(document.referrer).origin === location.origin) document.getElementById('back').href = document.referrer; } catch (e) {}
+const $=s=>document.querySelector(s);
+const NS='http://www.w3.org/2000/svg';
+const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const PAL=['var(--c1)','var(--c2)','var(--c3)','var(--c4)','var(--c5)','var(--accent)','var(--soft)'];
+const EL={title:'Диаграмма тақырыбы',y:'Тік ось (Y) — мәндер',x:'Көлденең ось (X) — санаттар',series:'Деректер қатары',dl:'Деректер белгісі',legend:'Легенда',grid:'Тор сызығы',axt:'Ось атауы',slice:'Сектор (деректер нүктесі)'};
+
+function niceMax(m){if(m<=0)return 10;const p=Math.pow(10,Math.floor(Math.log10(m)));const n=m/p;const s=n<=1?1:n<=2?2:n<=5?5:10;let step=s*p/ (s===1?5:s===2?4:5);step=Math.max(step,1);return{max:Math.ceil(m/step)*step,step}}
+function el(tag,attrs,parent,text){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(text!=null)e.textContent=text;parent&&parent.appendChild(e);return e}
+
+function draw(svg,cfg){
+  const W=600,H=+svg.getAttribute('viewBox').split(' ')[3];
+  svg.innerHTML='';
+  const o=Object.assign({title:true,dl:true,legend:true,grid:true,axt:true},cfg.opts||{});
+  const {labels,values,type}=cfg;
+  const fam="font-family:Nunito,Arial,sans-serif";
+  const top=o.title?54:22, legendH=o.legend?34:0, bottom=H-40-legendH;
+  if(o.title){const g=el('g',{'data-el':'title'},svg);el('text',{x:W/2,y:32,'text-anchor':'middle',style:fam+';font-weight:800;font-size:20px',fill:'var(--ink)'},g,cfg.title)}
+  if(type==='pie'){
+    const tot=values.reduce((a,b)=>a+Math.max(0,b),0)||1;const cx=W/2,cy=(top+bottom+30)/2,r=Math.min(130,(bottom+30-top)/2);let a=-Math.PI/2;
+    values.forEach((v,i)=>{const frac=Math.max(0,v)/tot;const b=a+frac*2*Math.PI;const large=frac>.5?1:0;
+      const x1=cx+r*Math.cos(a),y1=cy+r*Math.sin(a),x2=cx+r*Math.cos(b),y2=cy+r*Math.sin(b);
+      const g=el('g',{'data-el':'slice','data-name':labels[i]+': '+v+(cfg.unit||'')},svg);
+      if(frac>=.999)el('circle',{cx,cy,r,fill:PAL[i%PAL.length],stroke:'var(--paper)','stroke-width':3},g);
+      else el('path',{d:`M${cx} ${cy} L${x1} ${y1} A${r} ${r} 0 ${large} 1 ${x2} ${y2} Z`,fill:PAL[i%PAL.length],stroke:'var(--paper)','stroke-width':3},g);
+      if(o.dl&&frac>0.04){const m=(a+b)/2;const g2=el('g',{'data-el':'dl'},svg);el('text',{x:cx+r*.64*Math.cos(m),y:cy+r*.64*Math.sin(m)+6,'text-anchor':'middle',style:fam+';font-weight:800;font-size:16px',fill:'#14192A'},g2,Math.round(frac*100)+'%')}
+      a=b});
+  } else {
+    const max=Math.max(...values,0),nm=niceMax(max);const horiz=type==='bar';
+    const L=horiz?96:(o.axt?78:56),R=W-24;const ph=bottom-top;const pw=R-L;
+    if(o.grid||true){for(let v=0;v<=nm.max+1e-9;v+=nm.step){
+      if(horiz){const x=L+pw*v/nm.max;if(o.grid&&v>0)el('line',{x1:x,y1:top,x2:x,y2:bottom,stroke:'var(--line)','stroke-width':1.5,'data-el':'grid'},svg);el('text',{x,y:bottom+20,'text-anchor':'middle',style:fam+';font-size:13px',fill:'var(--soft)','data-el':'x'},svg,fmt(v))}
+      else{const y=bottom-ph*v/nm.max;if(o.grid&&v>0)el('line',{x1:L,y1:y,x2:R,y2:y,stroke:'var(--line)','stroke-width':1.5,'data-el':'grid'},svg);el('text',{x:L-8,y:y+5,'text-anchor':'end',style:fam+';font-size:13px',fill:'var(--soft)','data-el':'y'},svg,fmt(v))}}}
+    el('line',{x1:L,y1:top,x2:L,y2:bottom,stroke:'var(--soft)','stroke-width':2,'data-el':horiz?'x':'y'},svg);
+    el('line',{x1:L,y1:bottom,x2:R,y2:bottom,stroke:'var(--soft)','stroke-width':2,'data-el':horiz?'y':'x'},svg);
+    const n=values.length,slot=(horiz?ph:pw)/n;
+    if(type==='line'){const pts=values.map((v,i)=>[L+slot*(i+.5),bottom-ph*Math.max(0,v)/nm.max]);
+      const g=el('g',{'data-el':'series'},svg);
+      el('path',{d:'M'+pts.map(p=>p.join(' ')).join(' L')+` L${pts[n-1][0]} ${bottom} L${pts[0][0]} ${bottom} Z`,fill:'var(--c4)',opacity:.12},g);
+      el('polyline',{points:pts.map(p=>p.join(',')).join(' '),fill:'none',stroke:'var(--c4)','stroke-width':4,'stroke-linejoin':'round','stroke-linecap':'round'},g);
+      pts.forEach((p,i)=>{el('circle',{cx:p[0],cy:p[1],r:6,fill:'var(--c4)',stroke:'var(--paper)','stroke-width':2},g);
+        if(o.dl){const g2=el('g',{'data-el':'dl'},svg);el('text',{x:p[0],y:p[1]-12,'text-anchor':'middle',style:fam+';font-weight:800;font-size:14px',fill:'var(--ink)'},g2,fmt(values[i]))}});
+    } else values.forEach((v,i)=>{const g=el('g',{'data-el':'series'},svg);
+      if(horiz){const bh=slot*.6,y=top+slot*i+(slot-bh)/2,w=pw*Math.max(0,v)/nm.max;el('rect',{x:L,y,width:w,height:bh,rx:4,fill:'var(--c2)'},g);
+        if(o.dl){const g2=el('g',{'data-el':'dl'},svg);el('text',{x:L+w+6,y:y+bh/2+5,style:fam+';font-weight:800;font-size:14px',fill:'var(--ink)'},g2,fmt(v))}}
+      else{const bw=slot*.58,x=L+slot*i+(slot-bw)/2,h=ph*Math.max(0,v)/nm.max;el('rect',{x,y:bottom-h,width:bw,height:h,rx:4,fill:'var(--c1)'},g);
+        if(o.dl){const g2=el('g',{'data-el':'dl'},svg);el('text',{x:x+bw/2,y:bottom-h-8,'text-anchor':'middle',style:fam+';font-weight:800;font-size:14px',fill:'var(--ink)'},g2,fmt(v))}}});
+    labels.forEach((lab,i)=>{if(horiz)el('text',{x:L-8,y:top+slot*(i+.5)+5,'text-anchor':'end',style:fam+';font-size:14px;font-weight:700',fill:'var(--ink)','data-el':'y'},svg,lab);
+      else el('text',{x:L+slot*(i+.5),y:bottom+22,'text-anchor':'middle',style:fam+';font-size:14px;font-weight:700',fill:'var(--ink)','data-el':'x'},svg,lab)});
+    if(o.axt&&cfg.axis){if(horiz)el('text',{x:(L+R)/2,y:bottom+38,'text-anchor':'middle',style:fam+';font-size:13px;font-weight:800',fill:'var(--soft)','data-el':'axt'},svg,cfg.axis);
+      else{const t=el('text',{x:18,y:(top+bottom)/2,'text-anchor':'middle',transform:`rotate(-90 18 ${(top+bottom)/2})`,style:fam+';font-size:13px;font-weight:800',fill:'var(--soft)','data-el':'axt'},svg,cfg.axis)}}
+  }
+  if(o.legend){const g=el('g',{'data-el':'legend'},svg);const items=type==='pie'?labels:[cfg.series||'Мәндер'];
+    let x=0;const y=H-16;const parts=items.map((t,i)=>({t,i,w:24+t.length*7.6}));const tw=parts.reduce((a,p)=>a+p.w+12,0);x=(W-tw)/2;
+    parts.forEach(p=>{el('rect',{x,y:y-11,width:13,height:13,rx:3,fill:type==='pie'?PAL[p.i%PAL.length]:(type==='line'?'var(--c4)':type==='bar'?'var(--c2)':'var(--c1)')},g);el('text',{x:x+19,y,style:fam+';font-size:13px;font-weight:700',fill:'var(--ink)'},g,p.t);x+=p.w+12})}
+}
+function fmt(v){return Number.isInteger(v)?String(v):String(Math.round(v*10)/10).replace('.',',')}
+
+/* ---------- hero morph ---------- */
+const books={labels:['7А','7Ә','7Б','7В'],values:[42,58,35,50],title:'Кітап оқу жарысы',axis:'Кітап саны',series:'Кітап саны'};
+const MT={column:['Гистограмма · салыстыру','Бағаналардың биіктігін салыстыр: 7Ә — көшбасшы.'],line:['График · өзгеріс','Сызық сыныптар арасындағы өзгерісті көрсетеді. Бірақ бұл деректерге гистограмма түсініктірек.'],pie:['Дөңгелек · үлес','Әр сыныптың жалпы кітап санындағы үлесі (%).']};
+let mi=0;const mOrder=['column','line','pie'];let mTimer;
+function morph(t){mi=mOrder.indexOf(t);draw($('#morph'),Object.assign({type:t,opts:{legend:t==='pie',axt:t!=='pie'}},books));
+  $('#morphTag').textContent=MT[t][0];$('#morphCap').textContent=MT[t][1];
+  document.querySelectorAll('#morphTabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===t));}
+document.querySelectorAll('#morphTabs button').forEach(b=>b.onclick=()=>{morph(b.dataset.t);restart()});
+function restart(){if(reduce)return;clearInterval(mTimer);mTimer=setInterval(()=>morph(mOrder[(mi+1)%3]),3200)}
+morph('column');restart();
+
+/* ---------- studio ---------- */
+const DS={
+ books:{labels:['7А','7Ә','7Б','7В'],values:[42,58,35,50],title:'Кітап оқу жарысы',axis:'Кітап саны',series:'Кітап саны',head:'Кітап',best:'column',unit:''},
+ temp:{labels:['Дс','Сс','Ср','Бс','Жм','Сн','Жк'],values:[12,15,18,14,20,23,21],title:'Апталық ауа температурасы',axis:'°C',series:'Температура, °C',head:'°C',best:'line',unit:'°'},
+ free:{labels:['Спорт','Ойын','Кітап','Үй жұмысы','Басқа'],values:[30,25,20,15,10],title:'Оқушылардың бос уақыты',axis:'%',series:'Үлесі, %',head:'%',best:'pie',unit:'%'},
+};
+const TYPES=[['column','Гистограмма'],['line','График'],['pie','Дөңгелек'],['bar','Жолақты']];
+const ICON={
+ column:'<svg viewBox="0 0 34 24"><rect x="2" y="12" width="7" height="12" rx="1" fill="var(--c1)"/><rect x="13" y="3" width="7" height="21" rx="1" fill="var(--c1)"/><rect x="24" y="8" width="7" height="16" rx="1" fill="var(--c1)"/></svg>',
+ line:'<svg viewBox="0 0 34 24"><polyline points="2,20 11,12 20,15 32,3" fill="none" stroke="var(--c4)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+ pie:'<svg viewBox="0 0 34 24"><circle cx="17" cy="12" r="11" fill="var(--c5)"/><path d="M17 12 L17 1 A11 11 0 0 1 27.5 15.4 Z" fill="var(--c3)"/></svg>',
+ bar:'<svg viewBox="0 0 34 24"><rect x="2" y="2" width="28" height="5" rx="1" fill="var(--c2)"/><rect x="2" y="10" width="18" height="5" rx="1" fill="var(--c2)"/><rect x="2" y="18" width="23" height="5" rx="1" fill="var(--c2)"/></svg>',
+ dot:'<svg viewBox="0 0 34 24"><circle cx="5" cy="19" r="2.6" fill="var(--c3)"/><circle cx="11" cy="15" r="2.6" fill="var(--c3)"/><circle cx="17" cy="13" r="2.6" fill="var(--c3)"/><circle cx="23" cy="8" r="2.6" fill="var(--c3)"/><circle cx="29" cy="4" r="2.6" fill="var(--c3)"/></svg>',
+};
+const ELS=[['title','Тақырып'],['dl','Деректер белгілері'],['legend','Легенда'],['grid','Тор сызықтары'],['axt','Ось атауы']];
+let S={ds:'books',type:'column',opts:{title:true,dl:true,legend:true,grid:true,axt:true},vals:{}};
+Object.keys(DS).forEach(k=>S.vals[k]=[...DS[k].values]);
+const tr=$('#typeRow');TYPES.forEach(([t,n])=>{const b=document.createElement('button');b.dataset.t=t;b.setAttribute('aria-pressed',t===S.type);b.innerHTML=ICON[t]+n;b.onclick=()=>{S.type=t;tr.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));renderStudio()};tr.appendChild(b)});
+const er=$('#elRow');ELS.forEach(([k,n])=>{const b=document.createElement('button');b.className='tog';b.setAttribute('aria-pressed','true');b.innerHTML='<i>＋</i>'+n;b.onclick=()=>{S.opts[k]=!S.opts[k];b.setAttribute('aria-pressed',S.opts[k]);b.querySelector('i').textContent=S.opts[k]?'＋':'－';renderStudio()};er.appendChild(b)});
+document.querySelectorAll('#dsRow .chip').forEach(b=>b.onclick=()=>{S.ds=b.dataset.ds;document.querySelectorAll('#dsRow .chip').forEach(x=>x.setAttribute('aria-pressed',x===b));buildTable();renderStudio()});
+function buildTable(){const d=DS[S.ds],tb=$('#dBody');tb.innerHTML='';
+  const h=document.createElement('tr');h.className='sel';h.innerHTML=`<td class="rn">1</td><td class="nm">${S.ds==='books'?'Сынып':S.ds==='temp'?'Күн':'Іс-әрекет'}</td><td class="nm" style="text-align:right">${d.head}</td>`;tb.appendChild(h);
+  d.labels.forEach((lab,i)=>{const r=document.createElement('tr');r.className='sel';r.innerHTML=`<td class="rn">${i+2}</td><td class="nm">${lab}</td><td><input id="v-${S.ds}-${i}" type="number" inputmode="decimal" value="${S.vals[S.ds][i]}" aria-label="${lab}"></td>`;
+    r.querySelector('input').oninput=e=>{const v=parseFloat(e.target.value);S.vals[S.ds][i]=isNaN(v)?0:Math.max(0,v);renderStudio()};tb.appendChild(r)});}
+function advice(){const d=DS[S.ds],t=S.type,v=S.vals[S.ds];const a=$('#advice');let cls='ok',txt='';
+  const sum=v.reduce((x,y)=>x+y,0);
+  if(t==='pie'&&S.ds==='free'&&Math.round(sum)!==100){cls='warn';txt=`<b>Байқа!</b> Үлестердің қосындысы ${fmt(sum)}%. Дөңгелек диаграммада бөліктер бірге 100% болуы керек.`}
+  else if(t===d.best){cls='ok';txt={column:'<b>Тамаша таңдау!</b> Гистограмма сыныптарды салыстыруға ең ыңғайлы.',line:'<b>Тамаша таңдау!</b> График температураның күн сайынғы өзгерісін көрсетеді.',pie:'<b>Тамаша таңдау!</b> Дөңгелек диаграмма бүтіннің бөліктерін көрсетеді.'}[t]}
+  else if(t==='pie'){cls='no';txt=S.ds==='temp'?'<b>Сай емес.</b> Температура бүтіннің бөлігі емес. Уақыт бойынша өзгеріске — график.':'<b>Онша сай емес.</b> Кітап саны бүтіннің бөлігі емес, біз салыстырамыз. Гистограмма жақсырақ.'}
+  else if(t==='bar'){cls='warn';txt=S.ds==='free'?'<b>Болады,</b> бірақ үлесті (%) көрсетуге дөңгелек диаграмма көрнекірек.':'<b>Болады.</b> Жолақты диаграмма атаулары ұзын санаттарға ыңғайлы. Бұл деректерге '+(S.ds==='temp'?'график':'гистограмма')+' түсініктірек.'}
+  else if(t==='line'){cls='warn';txt=S.ds==='books'?'<b>Онша емес.</b> Сыныптар уақыт емес, график мұнда өзгерісті жалған көрсетеді. Гистограмма жақсырақ.':'<b>Онша емес.</b> Үлесті көрсетуге дөңгелек диаграмма лайық.'}
+  else{cls='warn';txt=S.ds==='temp'?'<b>Болады,</b> бірақ өзгерісті график айқынырақ көрсетеді.':'<b>Болады,</b> бірақ үлесті (%) көрсетуге дөңгелек диаграмма көрнекірек.'}
+  const miss=[];if(!S.opts.title)miss.push('тақырып');if(!S.opts.axt&&t!=='pie')miss.push('ось атауы');
+  if(miss.length)txt+=' Тағы бір кеңес: '+miss.join(' мен ')+' жоқ — диаграмманы түсіну қиындайды.';
+  a.className='advice '+cls;a.innerHTML=txt;}
+function renderStudio(){const d=DS[S.ds];draw($('#studioChart'),{labels:d.labels,values:S.vals[S.ds],type:S.type,opts:S.opts,title:d.title,axis:d.axis,series:d.series,unit:d.unit});advice();
+  if(curSec==='studio')$('#info').textContent='A1:B'+(d.labels.length+1)+' → Кірістіру → '+TYPES.find(x=>x[0]===S.type)[1];}
+$('#studioChart').addEventListener('click',e=>{const g=e.target.closest('[data-el]');if(!g)return;const k=g.getAttribute('data-el');let t=EL[k]||k;if(k==='slice')t+=' — '+g.getAttribute('data-name');$('#tapInfo').innerHTML='Бұл — <b>'+t+'</b>'});
+let curSec='home';buildTable();renderStudio();
+
+/* ---------- 10 балдық бағалау: аты → 10 сұрақ → нәтиже парағы ---------- */
+function assessment(box, C) {
+  const $b = s => box.querySelector(s);
+  const esc = s => s.replace(/[<>&"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
+  let S;
+  const reset = () => { S = { name: S ? S.name : '', i: 0, score: 0, sk: C.skills.map(() => 0), done: false }; };
+  const max = C.skills.map((_, k) => C.items.filter(x => x.s === k).length);
+  reset();
+  const top = () => box.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  function start() {
+    box.innerHTML = `<div class="as">
+      <p class="as-how"><b>Қалай орындаймыз?</b> ${C.items.length} сұрақ, әр дұрыс жауап — <b>1 балл</b>, барлығы <b>10 балл</b>. Жауапты таңдасаң, дұрыс па, қате ме, <b>неге</b> екені бірден түсіндіріледі. Соңында деңгейің, дескрипторлар және нәтиже парағы шығады.</p>
+      <label class="as-lbl" for="as-nm">Аты-жөнің (нәтиже парағына жазылады)</label>
+      <input class="as-in" type="text" id="as-nm" maxlength="40" placeholder="Мысалы: Айгерім Серікқызы" autocomplete="name" value="${esc(S.name)}">
+      <p class="as-fb as-bad" id="as-er"></p>
+      <div><button class="as-btn" id="as-go">Бағалауды бастау</button></div></div>`;
+    const go = () => { const v = $b('#as-nm').value.trim(); if (v.length < 2) { $b('#as-er').textContent = 'Нәтиже парағына жазу үшін атыңды енгіз.'; $b('#as-nm').focus(); return; } S.name = v; ask(); };
+    $b('#as-go').onclick = go; $b('#as-nm').onkeydown = e => { if (e.key === 'Enter') go(); };
+  }
+  function ask() {
+    if (S.i >= C.items.length) return result();
+    const it = C.items[S.i]; let done = false;
+    box.innerHTML = `<div class="as">
+      <div class="as-top"><span class="as-tag">${it.tag}</span><span class="as-n">${S.i + 1} / ${C.items.length} · ${S.score} балл</span></div>
+      <div class="as-bar"><i style="width:${S.i / C.items.length * 100}%"></i></div>
+      <h3 class="as-q">${it.q}</h3>
+      ${it.pre || ''}
+      <div class="as-opts">${it.o.map((o, k) => `<button class="as-opt${it.mono ? ' as-mono' : ''}" data-k="${k}">${o}</button>`).join('')}</div>
+      <p class="as-fb" id="as-fb" aria-live="polite"></p>
+      <div><button class="as-btn" id="as-nx" hidden>${S.i === C.items.length - 1 ? 'Нәтижені көру' : 'Келесі сұрақ →'}</button></div></div>`;
+    box.querySelectorAll('.as-opt').forEach(b => b.onclick = () => {
+      if (done) return; done = true;
+      const ok = +b.dataset.k === it.a;
+      box.querySelectorAll('.as-opt').forEach(x => x.disabled = true);
+      box.querySelectorAll('.as-opt')[it.a].classList.add('as-ok');
+      if (ok) { S.score++; S.sk[it.s]++; } else b.classList.add('as-no');
+      $b('#as-fb').innerHTML = (ok ? '<b>Дұрыс! +1 балл.</b> ' : '<b>Қате.</b> ') + it.w;
+      $b('.as-n').textContent = `${S.i + 1} / ${C.items.length} · ${S.score} балл`;
+      const nx = $b('#as-nx'); nx.hidden = false; nx.focus({ preventScroll: true });
+      nx.onclick = () => { S.i++; ask(); top(); };
+    });
+  }
+  function result() {
+    const sc = S.score;
+    const L = sc >= 9 ? { n: 'Жоғары деңгей', s: 3, m: 'Тамаша! Тақырыпты толық меңгердің.' }
+            : sc >= 6 ? { n: 'Орта деңгей', s: 2, m: 'Жақсы нәтиже! Төмендегі сары/қызыл дағдыларды қайталасаң, жоғары деңгейге жетесің.' }
+            : { n: 'Бастапқы деңгей', s: 1, m: 'Бастама жақсы! Төмендегі кеңестерді орындап, конспектіні қарап, қайта орында.' };
+    const st = S.sk.map((v, k) => { const q = max[k] ? v / max[k] : 0; return { q, tag: q >= .8 ? 'ok' : q >= .5 ? 'mid' : 'lo' }; });
+    const tagText = { ok: 'Меңгерді', mid: 'Жартылай меңгерді', lo: 'Қайталау керек' };
+    const d = new Date(), p = n => String(n).padStart(2, '0');
+    const weak = C.skills.filter((_, k) => st[k].tag !== 'ok');
+    box.innerHTML = `<div class="as as-res">
+      <p class="as-kick">Нәтиже парағы · ${p(d.getDate())}.${p(d.getMonth() + 1)}.${d.getFullYear()}</p>
+      <p class="as-name">${esc(S.name)}</p>
+      <div class="as-lvl as-${L.s === 3 ? 'ok' : L.s === 2 ? 'mid' : 'lo'}">
+        <p class="as-big">${sc} / 10 балл</p>
+        <p class="as-stars">${'★'.repeat(L.s)}<span>${'★'.repeat(3 - L.s)}</span></p>
+        <p><b>${L.n}</b> · ${C.title} · ${C.obj}</p>
+      </div>
+      <p>${L.m}</p>
+      <h3>Дағдылар бойынша</h3>
+      ${C.skills.map((s, k) => `<div class="as-skill"><div class="as-head"><span>${k + 1}. ${s.name}</span><span class="as-t as-${st[k].tag}">${tagText[st[k].tag]}</span></div>
+        <div class="as-bar"><i class="as-${st[k].tag}" style="width:${Math.round(st[k].q * 100)}%"></i></div>
+        <p class="as-tip">${S.sk[k]} / ${max[k]} балл · ${s.what}</p></div>`).join('')}
+      <h3>Дескрипторлар (оқу мақсаты ${C.obj})</h3>
+      <ul class="as-desc">${C.skills.map((s, k) => `<li class="${st[k].tag === 'lo' ? 'no' : 'ok'}">${s.desc}</li>`).join('')}</ul>
+      ${weak.length ? `<h3>Не қайталау керек?</h3><ul class="as-desc">${weak.map(s => `<li>${s.tip}</li>`).join('')}</ul>` : ''}
+      <p class="as-note">Осы нәтиже парағының скриншотын жасап, мұғаліміңе жібер (немесе Google Classroom-дағы тапсырмаға тірке).</p>
+      <div class="as-row"><button class="as-btn" id="as-again">Қайта орындау</button><button class="as-btn as-ghost" id="as-print">Басып шығару</button></div></div>`;
+    $b('#as-again').onclick = () => { reset(); ask(); top(); };
+    $b('#as-print').onclick = () => { document.body.classList.add('as-printing'); window.print(); setTimeout(() => document.body.classList.remove('as-printing'), 500); };
+  }
+  start();
+}
+
+/* ---------- бағалау (10 балл) ---------- */
+const TOPT = [['column', 'Гистограмма'], ['line', 'График'], ['pie', 'Дөңгелек'], ['bar', 'Жолақты'], ['dot', 'Нүктелік']].map(([k, n]) => ICON[k] + '<span>' + n + '</span>');
+const TI = { column: 0, line: 1, pie: 2, bar: 3, dot: 4 };
+const pick = (q, a, w) => ({ s: 0, tag: 'Қай диаграмма?', q, o: TOPT, a: TI[a], w });
+assessment(document.getElementById('checkBox'), {
+  title: 'Диаграммалар', obj: '7.2.2.3',
+  skills: [
+    { name: 'Диаграмма түрін таңдау', what: 'гистограмма, график, дөңгелек, жолақты, нүктелік',
+      desc: 'Деректер мен мақсатқа сәйкес диаграмма түрін таңдайды',
+      tip: 'Шеберханада үш кестенің әрқайсысына төрт түрлі диаграмма құрып, кеңестерді оқы: салыстыру — гистограмма, өзгеріс — график, үлес — дөңгелек.' },
+    { name: 'Диаграмманы құру және баптау', what: 'Кірістіру қойындысы, тақырып жолы, «+» батырмасы, 100%',
+      desc: 'Диаграмма құру ретін және оның элементтерін баптауды біледі',
+      tip: 'Конспектідегі 3 қадамды Excel-де орында: деректерді тақырыбымен бөлекте → Кірістіру → Диаграммалар → «+» арқылы тақырып пен ось атауын қос.' },
+  ],
+  items: [
+    pick('Төрт сыныптың спартакиадада жинаған ұпайын салыстыру керек.', 'column', 'Бірнеше нәрсені салыстыру — гистограмма.'),
+    pick('Бір ай бойы күн сайын ауа температурасы жазылды. Өзгерісті көрсет.', 'line', 'Уақыт бойынша өзгеріс — график.'),
+    pick('Отбасы бюджетінің қанша пайызы тамаққа, киімге, коммуналдық төлемге кетеді?', 'pie', 'Бүтіннің бөліктері (100%) — дөңгелек диаграмма.'),
+    pick('«Біріккен Араб Әмірліктері», «Ұлыбритания» сияқты атаулары ұзын алты елдің халқын салыстыру.', 'bar', 'Атаулары ұзын санаттар — жолақты диаграмма, жазулар сыяды.'),
+    pick('Сынып оқушыларының бойы мен салмағы арасында байланыс бар ма?', 'dot', 'Екі шаманың байланысы — нүктелік диаграмма.'),
+    pick('Мектеп асханасында бес тағамның қайсысы көп сатылғанын салыстыру керек.', 'column', 'Санаттарды салыстыру — гистограмма.'),
+    { s: 1, tag: 'Құру', q: 'Excel-де диаграмма қай қойындыдан құрылады?', o: ['Басты бет', 'Кірістіру', 'Формулалар', 'Деректер'], a: 1, w: 'Кірістіру → Диаграммалар тобы.' },
+    { s: 1, tag: 'Құру', q: 'Диаграмманың легендасында «1-қатар» деп тұр. Себебі неде?', o: ['Түсі дұрыс емес', 'Тақырып жолы бөлектелмеген', 'Диаграмма түрі қате', 'Сан тым үлкен'], a: 1, w: 'Тақырып ұяшығы ауқымға кірмесе, Excel қатарды «1-қатар» деп атайды.' },
+    { s: 1, tag: 'Баптау', q: 'Дөңгелек диаграмма бөліктерінің қосындысы неше пайыз?', o: ['50%', '100%', 'Кез келген', '10%'], a: 1, w: 'Дөңгелек диаграмма бүтінді көрсетеді — барлығы 100%.' },
+    { s: 1, tag: 'Баптау', q: 'Диаграммаға тақырып пен ось атауларын қай батырмамен қосамыз?', o: ['«+» (Диаграмма элементтері)', 'Ctrl + S', '«Сүзгі» батырмасы', 'Delete'], a: 0, w: 'Диаграмма жанындағы «+» батырмасы элементтерді қосады немесе алып тастайды.' },
+  ],
+});
+
+
+/* ---------- notes types ---------- */
+const TN=[['column','Гистограмма','Мәндерді салыстыру'],['line','График','Уақыт бойынша өзгеріс'],['pie','Дөңгелек','Бүтіннің бөліктері, 100%'],['bar','Жолақты','Атаулары ұзын санаттар'],['dot','Нүктелік','Екі шаманың байланысы']];
+$('#tgrid').innerHTML=TN.map(([k,n,d])=>`<div class="tcard">${ICON[k]}<div><b>${n}</b><small>${d}</small></div></div>`).join('');
+
+/* ---------- tabs ---------- */
+const tabs=[...document.querySelectorAll('.tabs a')];
+const INFO={home:'7.2.2.3 · Диаграммалар құру',check:'Бағалау: 10 сұрақ, 10 балл',notes:'Кірістіру → Диаграммалар'};
+tabs.forEach(a=>a.onclick=e=>{e.preventDefault();const t=document.querySelector(a.getAttribute('href'));t&&t.scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'})});
+function setSec(id){if(id===curSec)return;curSec=id;tabs.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+id));if(id==='studio')renderStudio();else $('#info').textContent=INFO[id]}
+if('IntersectionObserver' in window){const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)setSec(e.target.id)}),{rootMargin:'-45% 0px -50% 0px'});['home','studio','check','notes'].forEach(id=>io.observe(document.getElementById(id)))}
+$('#info').textContent=INFO.home;
+const h=location.hash.slice(1);if(['studio','check','notes'].includes(h))setTimeout(()=>document.getElementById(h).scrollIntoView(),50);
+})();
+</script>
+
+</body></html>

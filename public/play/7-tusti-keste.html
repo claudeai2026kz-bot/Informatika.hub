@@ -1,0 +1,566 @@
+<!doctype html><html lang="kk"><head><meta charset="utf-8"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Түсті кесте зертханасы</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: the page is a spreadsheet — a sticky formula bar on top, sections as "sheets", Excel-style sheet tabs at the bottom. */
+:root{
+  --bg:#F4F7F2; --paper:#FFFFFF; --ink:#16231C; --soft:#56655C; --line:#D3DDD5; --head:#E7EEE8;
+  --accent:#138A57; --accent-ink:#FFFFFF; --pink:#D9466F; --sun:#E9B21F; --sky:#3366D6;
+  --g-bg:#C9F0D6; --g-fg:#0F5A34; --r-bg:#FFD0D9; --r-fg:#9B1032; --y-bg:#FFEDA6; --y-fg:#6E5200; --b-bg:#D3E0FF; --b-fg:#1C3E95;
+  --bar:#7FA6F2; --shadow:0 10px 30px rgba(22,35,28,.10);
+  --f-display:'Unbounded','Rubik','Arial Black',sans-serif;
+  --f-body:'Nunito','Segoe UI',Arial,sans-serif;
+  --f-mono:'JetBrains Mono','Consolas',monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1713; --paper:#16211B; --ink:#E5EEE8; --soft:#9DB0A4; --line:#2A3A31; --head:#1D2B23;
+  --accent:#2FBF7E; --accent-ink:#06150D; --pink:#FF6F96; --sun:#F5C842; --sky:#7B9EFF;
+  --g-bg:#1C5A39; --g-fg:#C9F5DA; --r-bg:#6B1E33; --r-fg:#FFD3DE; --y-bg:#5E4A0E; --y-fg:#FFEEB0; --b-bg:#22386F; --b-fg:#D7E2FF;
+  --bar:#3E66C4; --shadow:0 10px 30px rgba(0,0,0,.4); color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0F1713; --paper:#16211B; --ink:#E5EEE8; --soft:#9DB0A4; --line:#2A3A31; --head:#1D2B23;
+  --accent:#2FBF7E; --accent-ink:#06150D; --pink:#FF6F96; --sun:#F5C842; --sky:#7B9EFF;
+  --g-bg:#1C5A39; --g-fg:#C9F5DA; --r-bg:#6B1E33; --r-fg:#FFD3DE; --y-bg:#5E4A0E; --y-fg:#FFEEB0; --b-bg:#22386F; --b-fg:#D7E2FF;
+  --bar:#3E66C4; --shadow:0 10px 30px rgba(0,0,0,.4); color-scheme:dark }
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:100% 36px,96px 100%;background-attachment:fixed;
+  padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) body{background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px)}}
+:root[data-theme="dark"] body{background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+.wrap{max-width:860px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.15}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
+
+/* formula bar */
+.fbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--paper);border-bottom:1px solid var(--line)}
+.fbar .wrap{display:flex;align-items:center;gap:10px;padding-block:10px}
+.ref{font-family:var(--f-mono);font-weight:700;font-size:13px;background:var(--head);border:1px solid var(--line);border-radius:6px;padding:4px 8px;min-width:44px;text-align:center}
+.fx{font-family:var(--f-mono);font-style:italic;color:var(--accent);font-weight:700}
+.ftext{flex:1;min-width:0;font-family:var(--f-mono);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
+
+section{padding-block:36px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.sec-head{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+.sec-head h2{font-size:clamp(24px,6vw,34px)}
+.lead{color:var(--soft);max-width:60ch}
+
+/* hero */
+.hero{padding-block:28px 20px}
+.hero h1{font-size:clamp(34px,10vw,64px);font-weight:800;letter-spacing:-.02em}
+.hero h1 span{color:var(--accent)}
+.hero .lead{font-size:18px;margin-top:12px}
+.badge{display:inline-flex;gap:8px;align-items:center;font-family:var(--f-mono);font-size:12px;font-weight:700;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:6px 12px;margin-bottom:14px}
+.badge i{width:8px;height:8px;border-radius:50%;background:var(--accent);display:block}
+.sheet{background:var(--paper);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+.demo{margin-top:22px}
+.demo-top{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.rulechip{font-family:var(--f-mono);font-size:13px;font-weight:700;padding:6px 10px;border-radius:8px;background:var(--head);transition:background .3s}
+.dots{display:flex;gap:6px}
+.dots button{width:10px;height:10px;border-radius:50%;border:0;background:var(--line);padding:0}
+.dots button[aria-pressed="true"]{background:var(--accent)}
+.grid{display:grid;grid-template-columns:repeat(6,1fr)}
+.grid div{font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:center;padding:12px 0;border-right:1px solid var(--line);border-bottom:1px solid var(--line);font-size:15px;transition:background .45s,color .45s;position:relative}
+.grid div:nth-child(6n){border-right:0}
+.cap{padding:10px 12px;font-size:14px;color:var(--soft)}
+
+.g{background:var(--g-bg)!important;color:var(--g-fg)!important}
+.r{background:var(--r-bg)!important;color:var(--r-fg)!important}
+.y{background:var(--y-bg)!important;color:var(--y-fg)!important}
+.b{background:var(--b-bg)!important;color:var(--b-fg)!important}
+
+/* how it works strip */
+.flow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}
+.flow div{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.flow b{font-family:var(--f-display);font-size:14px;display:block}
+.flow small{color:var(--soft);font-size:13px;line-height:1.35;display:block;margin-top:4px}
+.flow .k{font-family:var(--f-mono);font-size:11px;color:var(--accent);font-weight:700}
+@media (max-width:520px){.flow{grid-template-columns:1fr}}
+
+/* lab */
+.controls{display:flex;flex-direction:column;gap:14px;padding:14px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.lbl{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--soft);width:100%}
+.chip{border:1.5px solid var(--line);background:var(--paper);border-radius:999px;padding:7px 13px;font-size:14px;font-weight:700}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);background:var(--head);border-radius:10px;padding:4px;gap:4px}
+.seg button{border:0;background:transparent;border-radius:8px;padding:8px 4px;font-size:13px;font-weight:800}
+.seg button[aria-pressed="true"]{background:var(--paper);box-shadow:0 2px 6px rgba(0,0,0,.12)}
+.num{width:84px;font:700 16px var(--f-mono);padding:8px 10px;border:1.5px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink)}
+.sw{width:34px;height:34px;border-radius:10px;border:2px solid var(--line);padding:0}
+.sw[aria-pressed="true"]{outline:3px solid var(--ink);outline-offset:2px}
+.sw.g,.sw.r,.sw.y,.sw.b{border-color:transparent}
+.ftable{width:100%;border-collapse:collapse}
+.ftable th,.ftable td{border-top:1px solid var(--line);padding:0;text-align:left}
+.ftable th{font-family:var(--f-mono);font-size:12px;color:var(--soft);background:var(--head);padding:6px 10px;font-weight:700}
+.ftable td.rn{width:36px;text-align:center;font-family:var(--f-mono);font-size:12px;color:var(--soft);background:var(--head)}
+.ftable td.nm{padding:8px 10px;font-weight:700;border-right:1px solid var(--line)}
+.ftable td.vl{position:relative}
+.ftable input{width:100%;border:0;background:transparent;color:inherit;font:700 16px var(--f-mono);font-variant-numeric:tabular-nums;padding:10px 40px 10px 12px;text-align:right}
+.cellv{transition:background .3s,color .3s}
+.cellv .ic{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:15px;font-weight:800;pointer-events:none}
+.cellv .barf{position:absolute;left:4px;top:7px;bottom:7px;border-radius:4px;background:var(--bar);opacity:.55;pointer-events:none;transition:width .3s}
+.status{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 14px;border-top:1px solid var(--line);background:var(--head);font-size:14px}
+.status b{font-family:var(--f-mono)}
+.hint{font-size:14px;color:var(--soft);padding:0 14px 14px}
+
+/* detective */
+.det{padding:16px;display:flex;flex-direction:column;gap:14px}
+.det-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.lvl{font-family:var(--f-mono);font-weight:700;font-size:13px;color:var(--soft)}
+.stars{font-family:var(--f-mono);font-weight:700;color:var(--sun);font-size:14px}
+.tiles{display:flex;flex-wrap:wrap;gap:8px}
+.tile{min-width:58px;text-align:center;font-family:var(--f-mono);font-weight:700;padding:10px 10px;border-radius:10px;border:1px solid var(--line);background:var(--paper);position:relative;overflow:hidden}
+.tile .barf{position:absolute;left:0;top:0;bottom:0;background:var(--bar);opacity:.5}
+.tile span{position:relative}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media (max-width:460px){.opts{grid-template-columns:1fr}}
+.opt{border:1.5px solid var(--line);background:var(--paper);border-radius:12px;padding:12px;text-align:left;font-weight:700;font-size:15px}
+.opt.ok{background:var(--g-bg);color:var(--g-fg);border-color:transparent}
+.opt.no{background:var(--r-bg);color:var(--r-fg);border-color:transparent}
+.fb{font-size:15px;min-height:1.5em}
+.btn{border:0;background:var(--accent);color:var(--accent-ink);font-weight:800;border-radius:12px;padding:12px 18px;font-size:15px}
+.btn.ghost{background:var(--head);color:var(--ink)}
+.end{text-align:center;padding:24px 16px;display:flex;flex-direction:column;gap:12px;align-items:center}
+.end .big{font-family:var(--f-display);font-size:44px;color:var(--accent)}
+
+/* quiz */
+.q{padding:16px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.q:first-child{border-top:0}
+.q h3{font-family:var(--f-body);font-weight:800;font-size:17px}
+.q .n{font-family:var(--f-mono);color:var(--accent);font-size:13px}
+.q .fb{font-size:14px;color:var(--soft)}
+.score{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--head);border-top:1px solid var(--line);font-weight:800;gap:10px;flex-wrap:wrap}
+
+/* cheat */
+.steps{display:grid;gap:10px}
+.step{display:grid;grid-template-columns:40px 1fr;gap:12px;align-items:start;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.step .k{font-family:var(--f-display);font-size:18px;width:40px;height:40px;border-radius:10px;display:grid;place-items:center;background:var(--accent);color:var(--accent-ink)}
+.step p{color:var(--soft);font-size:15px}
+.path{font-family:var(--f-mono);font-size:13px;background:var(--head);padding:2px 6px;border-radius:6px;color:var(--ink);white-space:nowrap}
+.tw{overflow-x:auto;margin-top:16px}
+.rtable{width:100%;border-collapse:collapse;min-width:420px;font-size:15px}
+.rtable th,.rtable td{border-bottom:1px solid var(--line);padding:10px;text-align:left;vertical-align:top}
+.rtable th{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--soft)}
+.ex{font-family:var(--f-mono);font-size:13px;font-weight:700;padding:3px 8px;border-radius:6px;white-space:nowrap}
+.terms{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:16px}
+.terms div{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.terms b{display:block}
+.terms small{color:var(--soft);font-family:var(--f-mono);font-size:12px}
+footer{padding-block:24px 8px;color:var(--soft);font-size:13px;text-align:center;font-family:var(--f-mono)}
+
+/* sheet tabs */
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:9;background:var(--paper);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.tabs .wrap{display:flex;gap:4px;overflow-x:auto;padding-block:8px;scrollbar-width:none}
+.tabs a{flex:1 0 auto;text-decoration:none;color:var(--soft);font-weight:800;font-size:13px;padding:9px 12px;border-radius:10px;text-align:center;white-space:nowrap;border:1px solid transparent}
+.tabs a.on{color:var(--ink);background:var(--head);border-color:var(--line)}
+.tabs a i{font-style:normal;font-family:var(--f-mono);font-size:11px;color:var(--accent);margin-right:4px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}html{scroll-behavior:auto}}
+/* 10 балдық бағалау блогы */
+.as{padding:16px;display:flex;flex-direction:column;gap:12px;
+  --as-okb:var(--ok-bg,var(--g-bg));--as-okf:var(--ok-fg,var(--g-fg));--as-nob:var(--no-bg,var(--r-bg));--as-nof:var(--no-fg,var(--r-fg));
+  --as-mib:var(--warn-bg,var(--y-bg,var(--param)));--as-mif:var(--warn-fg,var(--y-fg,var(--param-ink)))}
+.as h3{font-size:18px}
+.as-how{background:var(--head);border-radius:12px;padding:12px 14px}
+.as-lbl{font-weight:800}
+.as-in{font:inherit;font-weight:700;font-size:17px;padding:12px 14px;border-radius:12px;border:2px solid var(--line);width:100%;max-width:420px;background:var(--paper);color:var(--ink)}
+.as-btn{border:0;background:var(--accent);color:var(--accent-ink);font-weight:800;border-radius:12px;padding:12px 18px;font-size:15px}
+.as-btn.as-ghost{background:var(--head);color:var(--ink);border:1px solid var(--line)}
+.as-row{display:flex;gap:8px;flex-wrap:wrap}
+.as-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.as-tag{font-family:var(--f-mono);font-size:12px;font-weight:700;background:var(--head);border:1px solid var(--line);border-radius:999px;padding:3px 10px}
+.as-n{font-family:var(--f-mono);font-size:13px;font-weight:700;color:var(--soft)}
+.as-bar{height:8px;border-radius:6px;background:var(--head);overflow:hidden}
+.as-bar i{display:block;height:100%;background:var(--accent)}
+.as-bar i.as-ok{background:var(--as-okf)} .as-bar i.as-mid{background:var(--as-mif)} .as-bar i.as-lo{background:var(--as-nof)}
+.as-q{font-family:var(--f-body);font-weight:800;font-size:18px;line-height:1.35}
+.as-q code{font-family:var(--f-mono);font-size:15px;background:var(--head);padding:2px 6px;border-radius:6px}
+.as-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media (max-width:520px){.as-opts{grid-template-columns:1fr}}
+.as-opt{border:1.5px solid var(--line);background:var(--paper);color:var(--ink);border-radius:12px;padding:12px;text-align:left;font-weight:700;font-size:15px;display:flex;gap:10px;align-items:center}
+.as-opt svg{width:40px;height:28px;flex:none}
+.as-opt.as-mono{font-family:var(--f-mono)}
+.as-opt:disabled{cursor:default}
+.as-opt.as-ok{background:var(--as-okb);color:var(--as-okf);border-color:transparent}
+.as-opt.as-no{background:var(--as-nob);color:var(--as-nof);border-color:transparent}
+.as-fb{min-height:1.5em;font-size:15px}
+.as-fb.as-bad{color:var(--as-nof);font-weight:700}
+.as-kick{font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.as-name{font-family:var(--f-display);font-size:24px;font-weight:800}
+.as-lvl{border-radius:14px;padding:14px;text-align:center}
+.as-lvl.as-ok{background:var(--as-okb);color:var(--as-okf)} .as-lvl.as-mid{background:var(--as-mib);color:var(--as-mif)} .as-lvl.as-lo{background:var(--as-nob);color:var(--as-nof)}
+.as-big{font-family:var(--f-display);font-weight:800;font-size:40px;line-height:1.1}
+.as-stars{font-size:28px;letter-spacing:4px}
+.as-stars span{opacity:.25}
+.as-head{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-weight:800}
+.as-t{font-family:var(--f-mono);font-size:12px;padding:2px 8px;border-radius:6px}
+.as-t.as-ok{background:var(--as-okb);color:var(--as-okf)} .as-t.as-mid{background:var(--as-mib);color:var(--as-mif)} .as-t.as-lo{background:var(--as-nob);color:var(--as-nof)}
+.as-tip{color:var(--soft);font-size:14px;margin-top:4px}
+.as-skill{display:flex;flex-direction:column;gap:4px}
+.as-desc{margin:0;padding-left:22px}
+.as-desc li{margin:4px 0}
+.as-desc li.ok::marker{content:"✓  ";color:var(--as-okf)}
+.as-desc li.no::marker{content:"✗  ";color:var(--as-nof)}
+.as-note{background:var(--head);border-radius:12px;padding:12px 14px;font-weight:700}
+.back{font-family:var(--f-mono);font-size:12px;font-weight:700;color:var(--accent);text-decoration:underline;white-space:nowrap;margin-left:8px}
+@media print{body.as-printing *{visibility:hidden}body.as-printing #check,body.as-printing #check *{visibility:visible}body.as-printing #check{position:absolute;left:0;top:0;width:100%}body.as-printing .as-row,body.as-printing .as-note{display:none}}
+.step{grid-template-columns:40px minmax(0,1fr)}.step>div{min-width:0}.path{white-space:normal}
+</style>
+
+<header class="fbar">
+  <div class="wrap">
+    <span class="ref" id="ref">A1</span>
+    <span class="fx">fx</span>
+    <span class="ftext" id="ftext">=ЕГЕР(мән &gt; 80; «жасыл»; «ақ»)</span>
+    <a class="back" id="back" href="/">← Сабаққа оралу</a>
+  </div>
+</header>
+
+<main>
+<section class="hero" id="home">
+  <div class="wrap">
+    <span class="badge"><i></i>7-сынып · Информатика · 7.2.2.4</span>
+    <h1>Шартты <span>пішімдеу</span></h1>
+    <p class="lead">Кесте өзі түстенеді: мән шартқа сай келсе, ұяшық бірден боялады. Мұнда ережелерді өз қолыңмен сынап көр, сосын 10 балдық бағалаудан өт.</p>
+
+    <div class="sheet demo" aria-label="Шартты пішімдеу мысалы">
+      <div class="demo-top">
+        <span class="rulechip" id="demoRule">Үлкен 80 → жасыл</span>
+        <div class="dots" id="demoDots"></div>
+      </div>
+      <div class="grid" id="demoGrid"></div>
+      <p class="cap" id="demoCap">Ереже: 80-нен үлкен мәндер жасыл түспен боялады.</p>
+    </div>
+
+    <div class="flow">
+      <div><span class="k">1 · ШАРТ</span><b>Ереже бересің</b><small>Мысалы, «80-нен үлкен»</small></div>
+      <div><span class="k">2 · ТЕКСЕРУ</span><b>Excel тексереді</b><small>Әр ұяшықты бір-бірлеп қарайды</small></div>
+      <div><span class="k">3 · ПІШІМ</span><b>Ұяшық боялады</b><small>Мән өзгерсе, түс те өзгереді</small></div>
+    </div>
+  </div>
+</section>
+
+<section id="lab">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">1-парақ · Зертхана</span>
+      <h2>Ереже зертханасы</h2>
+      <p class="lead">Ереже мен түсті таңда. Сандарды өзгертіп көр: ұяшық түсі өзі ауысады.</p>
+    </div>
+    <div class="sheet">
+      <div class="controls">
+        <div class="row"><span class="lbl">Кесте</span>
+          <button class="chip" data-ds="grades" aria-pressed="true">Бағалар журналы</button>
+          <button class="chip" data-ds="weather" aria-pressed="false">Ауа райы</button>
+          <button class="chip" data-ds="shop" aria-pressed="false">Дүкен қоймасы</button>
+        </div>
+        <div><span class="lbl">Құрал</span>
+          <div class="seg" id="mode">
+            <button data-mode="rule" aria-pressed="true">Ереже</button>
+            <button data-mode="bars" aria-pressed="false">Гистограмма</button>
+            <button data-mode="scale" aria-pressed="false">Түс шкаласы</button>
+            <button data-mode="icons" aria-pressed="false">Белгішелер</button>
+          </div>
+        </div>
+        <div id="ruleBox" style="display:flex;flex-direction:column;gap:14px">
+          <div class="row" id="rules"><span class="lbl">Ереже</span></div>
+          <div class="row" id="valRow">
+            <span class="lbl">Мәні</span>
+            <input class="num" id="v1" type="number" inputmode="decimal" value="80" aria-label="Бірінші мән">
+            <span id="andTxt" hidden>және</span>
+            <input class="num" id="v2" type="number" inputmode="decimal" value="90" aria-label="Екінші мән" hidden>
+          </div>
+          <div class="row"><span class="lbl">Түсі</span>
+            <button class="sw g" data-c="g" aria-pressed="true" aria-label="Жасыл толтыру"></button>
+            <button class="sw r" data-c="r" aria-pressed="false" aria-label="Ашық қызыл толтыру"></button>
+            <button class="sw y" data-c="y" aria-pressed="false" aria-label="Сары толтыру"></button>
+            <button class="sw b" data-c="b" aria-pressed="false" aria-label="Көк толтыру"></button>
+          </div>
+        </div>
+      </div>
+      <table class="ftable">
+        <thead><tr><th></th><th>A</th><th style="text-align:right;padding-right:40px" id="colB">B · Балл</th></tr></thead>
+        <tbody id="labBody"></tbody>
+      </table>
+      <div class="status"><span id="labRule">Ереже: Үлкен 80</span><span>Боялды: <b id="labCount">0</b> ұяшық</span></div>
+    </div>
+    <p class="hint" style="padding:10px 2px 0">Кеңес: «Аралығында» ережесі шекаралық мәндерді де бояйды. 50 мен 80 аралығын таңдап, 50 және 80 жазып тексер!</p>
+  </div>
+</section>
+
+<section id="check">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">2-парақ · Бағалау · 10 балл</span>
+      <h2>Өзіңді тексер</h2>
+      <p class="lead">Ереже детективі мен тест бірге: 10 сұрақ, әр дұрыс жауап — 1 балл. Соңында нәтиже парағы шығады — оны мұғаліміңе жібер.</p>
+    </div>
+    <div class="sheet" id="checkBox"></div>
+  </div>
+</section>
+
+<section id="notes">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">3-парақ · Есте сақта</span>
+      <h2>Қысқаша конспект</h2>
+    </div>
+    <div class="steps">
+      <div class="step"><span class="k">1</span><div><b>Ауқымды бөлекте</b><p>Пішімдейтін ұяшықтарды белгіле, мысалы <span class="path">B2:B10</span>.</p></div></div>
+      <div class="step"><span class="k">2</span><div><b>Мәзірді аш</b><p><span class="path">Басты бет → Стильдер → Шартты пішімдеу</span></p></div></div>
+      <div class="step"><span class="k">3</span><div><b>Ережені таңда</b><p>Шарт пен түсті көрсетіп, <b>ОК</b> бас. Өзгерту немесе жою үшін: <span class="path">Ережелерді басқару</span>.</p></div></div>
+    </div>
+    <div class="tw">
+      <table class="rtable">
+        <thead><tr><th>Ереже</th><th>Не істейді</th><th>Мысал</th></tr></thead>
+        <tbody>
+          <tr><td><b>Үлкен</b></td><td>Берілген саннан үлкен мәндер</td><td><span class="ex g">&gt; 80 → жасыл</span></td></tr>
+          <tr><td><b>Кіші</b></td><td>Берілген саннан кіші мәндер</td><td><span class="ex r">&lt; 50 → қызыл</span></td></tr>
+          <tr><td><b>Аралығында</b></td><td>Екі санның арасы, шекарасымен</td><td><span class="ex y">50–80 → сары</span></td></tr>
+          <tr><td><b>Тең</b></td><td>Дәл сол мән</td><td><span class="ex g">= 5 → жасыл</span></td></tr>
+          <tr><td><b>Мәтін бар</b></td><td>Берілген сөзі бар ұяшықтар</td><td><span class="ex r">«жоқ» → қызыл</span></td></tr>
+          <tr><td><b>Қайталанатын</b></td><td>Бірдей мәндер</td><td><span class="ex y">Дана, Дана</span></td></tr>
+          <tr><td><b>Ең үлкен / кіші N</b></td><td>Ең жоғары немесе ең төмен N мән</td><td><span class="ex b">ең үлкен 3</span></td></tr>
+          <tr><td><b>Орташадан жоғары / төмен</b></td><td>Орташа мәнмен салыстыру</td><td><span class="ex b">&gt; орташа</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="terms">
+      <div><b>Шартты пішімдеу</b><small>условное форматирование · conditional formatting</small></div>
+      <div><b>Ереже</b><small>правило · rule</small></div>
+      <div><b>Ауқым</b><small>диапазон · range</small></div>
+      <div><b>Түс шкаласы</b><small>цветовые шкалы · color scales</small></div>
+      <div><b>Гистограмма</b><small>гистограммы · data bars</small></div>
+      <div><b>Google Кестелер</b><small>Пішім → Шартты пішімдеу</small></div>
+    </div>
+  </div>
+</section>
+<footer class="wrap">Информатика · 7-сынып · Шартты пішімдеу</footer>
+</main>
+
+<nav class="tabs" aria-label="Парақтар">
+  <div class="wrap">
+    <a href="#home" class="on" data-ref="A1"><i>A1</i>Басты</a>
+    <a href="#lab" data-ref="B2"><i>B2</i>Зертхана</a>
+    <a href="#check" data-ref="C3"><i>C3</i>Бағалау</a>
+    <a href="#notes" data-ref="D4"><i>D4</i>Конспект</a>
+  </div>
+</nav>
+
+<script>
+(function(){
+// Сабақ бетінен ашылса, «Сабаққа оралу» сол бетке қайтарады.
+try { if (document.referrer && new URL(document.referrer).origin === location.origin) document.getElementById('back').href = document.referrer; } catch (e) {}
+const $=s=>document.querySelector(s);
+const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+
+/* ---------- hero demo ---------- */
+const demoVals=[92,45,67,88,30,75,58,99,41,83,66,12,77,50,95,24,61,86];
+const avg=demoVals.reduce((a,b)=>a+b,0)/demoVals.length;
+const demos=[
+ {chip:'Үлкен 80 → жасыл',cap:'Ереже: 80-нен үлкен мәндер жасыл түспен боялады.',f:'=ЕГЕР(мән > 80; «жасыл»)',fn:v=>v>80?'g':''},
+ {chip:'Кіші 50 → қызыл',cap:'Ереже: 50-ден кіші мәндер ашық қызыл түспен боялады.',f:'=ЕГЕР(мән < 50; «қызыл»)',fn:v=>v<50?'r':''},
+ {chip:'Аралығында 60–80 → сары',cap:'Ереже: 60 пен 80 аралығындағы мәндер сары болады.',f:'=ЕГЕР(60 ≤ мән ≤ 80; «сары»)',fn:v=>v>=60&&v<=80?'y':''},
+ {chip:'Түс шкаласы',cap:'Түс шкаласы: жоғары мән жасыл, орташа сары, төмен қызыл.',f:'Түс шкаласы: жасыл – сары – қызыл',fn:v=>v>=75?'g':v>=50?'y':'r'},
+];
+const grid=$('#demoGrid'),dots=$('#demoDots');
+demoVals.forEach(v=>{const d=document.createElement('div');d.textContent=v;grid.appendChild(d)});
+demos.forEach((d,i)=>{const b=document.createElement('button');b.setAttribute('aria-label',d.chip);b.setAttribute('aria-pressed',i===0);b.onclick=()=>{show(i);restart()};dots.appendChild(b)});
+let di=0,timer=null;
+function show(i){di=i;const d=demos[i];
+  [...grid.children].forEach((c,k)=>{c.className=d.fn(demoVals[k])});
+  $('#demoRule').textContent=d.chip;$('#demoCap').textContent=d.cap;
+  [...dots.children].forEach((b,k)=>b.setAttribute('aria-pressed',k===i));
+  if(curRef==='A1')$('#ftext').textContent=d.f;}
+function restart(){if(reduce)return;clearInterval(timer);timer=setInterval(()=>show((di+1)%demos.length),2800)}
+let curRef='A1';show(0);restart();
+
+/* ---------- lab ---------- */
+const DS={
+ grades:{col:'B · Балл',rows:[['Әлия',92],['Нұрлан',45],['Дана',78],['Ерлан',50],['Мадина',88],['Арман',63],['Сәуле',80],['Тимур',35]],v1:80,v2:90},
+ weather:{col:'B · Температура, °C',rows:[['Дүйсенбі',18],['Сейсенбі',27],['Сәрсенбі',31],['Бейсенбі',9],['Жұма',14],['Сенбі',25],['Жексенбі',22]],v1:25,v2:30},
+ shop:{col:'B · Қалдық, дана',rows:[['Дәптер',25],['Қалам',4],['Сызғыш',40],['Өшіргіш',7],['Бояу',12],['Қаламсап',3],['Желім',18]],v1:10,v2:20},
+};
+const RULES=[
+ {id:'gt',name:'Үлкен',n:1},{id:'lt',name:'Кіші',n:1},{id:'bt',name:'Аралығында',n:2},{id:'eq',name:'Тең',n:1},
+ {id:'top',name:'Ең үлкен N',n:1},{id:'bot',name:'Ең кіші N',n:1},{id:'avgUp',name:'Орташадан жоғары',n:0},{id:'avgDn',name:'Орташадан төмен',n:0},{id:'dup',name:'Қайталанатын',n:0},
+];
+const CN={g:'жасыл',r:'ашық қызыл',y:'сары',b:'көк'};
+let st={ds:'grades',mode:'rule',rule:'gt',c:'g',vals:DS.grades.rows.map(r=>r[1])};
+const rulesEl=$('#rules');
+RULES.forEach(r=>{const b=document.createElement('button');b.className='chip';b.textContent=r.name;b.dataset.rule=r.id;b.setAttribute('aria-pressed',r.id===st.rule);b.onclick=()=>{st.rule=r.id;if(r.id==='top'||r.id==='bot')$('#v1').value=3;syncRuleUI();render()};rulesEl.appendChild(b)});
+document.querySelectorAll('[data-ds]').forEach(b=>b.onclick=()=>{st.ds=b.dataset.ds;st.vals=DS[st.ds].rows.map(r=>r[1]);const R=RULES.find(x=>x.id===st.rule);$('#v1').value=(st.rule==='top'||st.rule==='bot')?3:DS[st.ds].v1;$('#v2').value=DS[st.ds].v2;document.querySelectorAll('[data-ds]').forEach(x=>x.setAttribute('aria-pressed',x===b));build();});
+document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{st.mode=b.dataset.mode;document.querySelectorAll('[data-mode]').forEach(x=>x.setAttribute('aria-pressed',x===b));$('#ruleBox').hidden=st.mode!=='rule';render()});
+document.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{st.c=b.dataset.c;document.querySelectorAll('[data-c]').forEach(x=>x.setAttribute('aria-pressed',x===b));render()});
+$('#v1').oninput=render;$('#v2').oninput=render;
+function syncRuleUI(){const R=RULES.find(x=>x.id===st.rule);
+  rulesEl.querySelectorAll('[data-rule]').forEach(x=>x.setAttribute('aria-pressed',x.dataset.rule===st.rule));
+  $('#valRow').hidden=R.n===0;$('#v2').hidden=R.n<2;$('#andTxt').hidden=R.n<2;}
+function build(){const body=$('#labBody');body.innerHTML='';$('#colB').textContent=DS[st.ds].col;
+  DS[st.ds].rows.forEach((r,i)=>{const tr=document.createElement('tr');
+    tr.innerHTML=`<td class="rn">${i+2}</td><td class="nm">${r[0]}</td><td class="vl cellv"><span class="barf" style="width:0"></span><span class="ic"></span><input id="lab-${st.ds}-${i}" type="number" inputmode="decimal" value="${st.vals[i]}" aria-label="${r[0]}, мәні"></td>`;
+    tr.querySelector('input').oninput=e=>{const v=parseFloat(e.target.value);st.vals[i]=isNaN(v)?0:v;render()};
+    body.appendChild(tr)});render();}
+function hits(){const v=st.vals,a=+$('#v1').value,b=+$('#v2').value,R=st.rule;
+  const mean=v.reduce((x,y)=>x+y,0)/v.length;const sorted=[...v].sort((x,y)=>x-y);const n=Math.max(1,Math.round(a)||1);
+  const lo=Math.min(a,b),hi=Math.max(a,b);
+  return v.map(x=>{switch(R){case'gt':return x>a;case'lt':return x<a;case'bt':return x>=lo&&x<=hi;case'eq':return x===a;
+    case'top':return x>=sorted[Math.max(0,v.length-n)];case'bot':return x<=sorted[Math.min(v.length-1,n-1)];
+    case'avgUp':return x>mean;case'avgDn':return x<mean;case'dup':return v.filter(y=>y===x).length>1;}})}
+function ruleText(){const R=RULES.find(x=>x.id===st.rule),a=$('#v1').value,b=$('#v2').value;
+  if(R.id==='bt')return`Аралығында ${a} және ${b}`;if(R.id==='top')return`Ең үлкен ${a} элемент`;if(R.id==='bot')return`Ең кіші ${a} элемент`;
+  return R.n?`${R.name} ${a}`:R.name}
+function render(){const cells=[...document.querySelectorAll('#labBody .cellv')];const v=st.vals;const mx=Math.max(...v,1),mn=Math.min(...v);
+  let count=0,txt='';
+  const h=st.mode==='rule'?hits():[];
+  cells.forEach((c,i)=>{c.classList.remove('g','r','y','b');const bar=c.querySelector('.barf'),ic=c.querySelector('.ic');bar.style.width='0';ic.textContent='';
+    if(st.mode==='rule'){if(h[i]){c.classList.add(st.c);count++}}
+    else if(st.mode==='bars'){bar.style.width=Math.max(4,(v[i]-Math.min(0,mn))/(mx-Math.min(0,mn))*88)+'%';count++}
+    else{const t=mx===mn?.5:(v[i]-mn)/(mx-mn);
+      if(st.mode==='scale'){c.classList.add(t>=.67?'g':t>=.34?'y':'r')}
+      else{ic.textContent=t>=.67?'▲':t>=.34?'▶':'▼';ic.style.color=t>=.67?'var(--accent)':t>=.34?'var(--sun)':'var(--pink)'}
+      count++}});
+  if(st.mode==='rule')txt='Ереже: '+ruleText()+' → '+CN[st.c];
+  else txt={bars:'Гистограмма: жолақ ұзындығы = мәннің шамасы',scale:'Түс шкаласы: жасыл (жоғары) – сары – қызыл (төмен)',icons:'Белгішелер: ▲ жоғары, ▶ орташа, ▼ төмен'}[st.mode];
+  $('#labRule').textContent=txt;$('#labCount').textContent=count;
+  if(curRef==='B2')$('#ftext').textContent=st.mode==='rule'?`=B2:B${v.length+1} · ${ruleText()} → ${CN[st.c]}`:txt;}
+syncRuleUI();build();
+
+/* ---------- 10 балдық бағалау: аты → 10 сұрақ → нәтиже парағы ---------- */
+function assessment(box, C) {
+  const $b = s => box.querySelector(s);
+  const esc = s => s.replace(/[<>&"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
+  let S;
+  const reset = () => { S = { name: S ? S.name : '', i: 0, score: 0, sk: C.skills.map(() => 0), done: false }; };
+  const max = C.skills.map((_, k) => C.items.filter(x => x.s === k).length);
+  reset();
+  const top = () => box.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  function start() {
+    box.innerHTML = `<div class="as">
+      <p class="as-how"><b>Қалай орындаймыз?</b> ${C.items.length} сұрақ, әр дұрыс жауап — <b>1 балл</b>, барлығы <b>10 балл</b>. Жауапты таңдасаң, дұрыс па, қате ме, <b>неге</b> екені бірден түсіндіріледі. Соңында деңгейің, дескрипторлар және нәтиже парағы шығады.</p>
+      <label class="as-lbl" for="as-nm">Аты-жөнің (нәтиже парағына жазылады)</label>
+      <input class="as-in" type="text" id="as-nm" maxlength="40" placeholder="Мысалы: Айгерім Серікқызы" autocomplete="name" value="${esc(S.name)}">
+      <p class="as-fb as-bad" id="as-er"></p>
+      <div><button class="as-btn" id="as-go">Бағалауды бастау</button></div></div>`;
+    const go = () => { const v = $b('#as-nm').value.trim(); if (v.length < 2) { $b('#as-er').textContent = 'Нәтиже парағына жазу үшін атыңды енгіз.'; $b('#as-nm').focus(); return; } S.name = v; ask(); };
+    $b('#as-go').onclick = go; $b('#as-nm').onkeydown = e => { if (e.key === 'Enter') go(); };
+  }
+  function ask() {
+    if (S.i >= C.items.length) return result();
+    const it = C.items[S.i]; let done = false;
+    box.innerHTML = `<div class="as">
+      <div class="as-top"><span class="as-tag">${it.tag}</span><span class="as-n">${S.i + 1} / ${C.items.length} · ${S.score} балл</span></div>
+      <div class="as-bar"><i style="width:${S.i / C.items.length * 100}%"></i></div>
+      <h3 class="as-q">${it.q}</h3>
+      ${it.pre || ''}
+      <div class="as-opts">${it.o.map((o, k) => `<button class="as-opt${it.mono ? ' as-mono' : ''}" data-k="${k}">${o}</button>`).join('')}</div>
+      <p class="as-fb" id="as-fb" aria-live="polite"></p>
+      <div><button class="as-btn" id="as-nx" hidden>${S.i === C.items.length - 1 ? 'Нәтижені көру' : 'Келесі сұрақ →'}</button></div></div>`;
+    box.querySelectorAll('.as-opt').forEach(b => b.onclick = () => {
+      if (done) return; done = true;
+      const ok = +b.dataset.k === it.a;
+      box.querySelectorAll('.as-opt').forEach(x => x.disabled = true);
+      box.querySelectorAll('.as-opt')[it.a].classList.add('as-ok');
+      if (ok) { S.score++; S.sk[it.s]++; } else b.classList.add('as-no');
+      $b('#as-fb').innerHTML = (ok ? '<b>Дұрыс! +1 балл.</b> ' : '<b>Қате.</b> ') + it.w;
+      $b('.as-n').textContent = `${S.i + 1} / ${C.items.length} · ${S.score} балл`;
+      const nx = $b('#as-nx'); nx.hidden = false; nx.focus({ preventScroll: true });
+      nx.onclick = () => { S.i++; ask(); top(); };
+    });
+  }
+  function result() {
+    const sc = S.score;
+    const L = sc >= 9 ? { n: 'Жоғары деңгей', s: 3, m: 'Тамаша! Тақырыпты толық меңгердің.' }
+            : sc >= 6 ? { n: 'Орта деңгей', s: 2, m: 'Жақсы нәтиже! Төмендегі сары/қызыл дағдыларды қайталасаң, жоғары деңгейге жетесің.' }
+            : { n: 'Бастапқы деңгей', s: 1, m: 'Бастама жақсы! Төмендегі кеңестерді орындап, конспектіні қарап, қайта орында.' };
+    const st = S.sk.map((v, k) => { const q = max[k] ? v / max[k] : 0; return { q, tag: q >= .8 ? 'ok' : q >= .5 ? 'mid' : 'lo' }; });
+    const tagText = { ok: 'Меңгерді', mid: 'Жартылай меңгерді', lo: 'Қайталау керек' };
+    const d = new Date(), p = n => String(n).padStart(2, '0');
+    const weak = C.skills.filter((_, k) => st[k].tag !== 'ok');
+    box.innerHTML = `<div class="as as-res">
+      <p class="as-kick">Нәтиже парағы · ${p(d.getDate())}.${p(d.getMonth() + 1)}.${d.getFullYear()}</p>
+      <p class="as-name">${esc(S.name)}</p>
+      <div class="as-lvl as-${L.s === 3 ? 'ok' : L.s === 2 ? 'mid' : 'lo'}">
+        <p class="as-big">${sc} / 10 балл</p>
+        <p class="as-stars">${'★'.repeat(L.s)}<span>${'★'.repeat(3 - L.s)}</span></p>
+        <p><b>${L.n}</b> · ${C.title} · ${C.obj}</p>
+      </div>
+      <p>${L.m}</p>
+      <h3>Дағдылар бойынша</h3>
+      ${C.skills.map((s, k) => `<div class="as-skill"><div class="as-head"><span>${k + 1}. ${s.name}</span><span class="as-t as-${st[k].tag}">${tagText[st[k].tag]}</span></div>
+        <div class="as-bar"><i class="as-${st[k].tag}" style="width:${Math.round(st[k].q * 100)}%"></i></div>
+        <p class="as-tip">${S.sk[k]} / ${max[k]} балл · ${s.what}</p></div>`).join('')}
+      <h3>Дескрипторлар (оқу мақсаты ${C.obj})</h3>
+      <ul class="as-desc">${C.skills.map((s, k) => `<li class="${st[k].tag === 'lo' ? 'no' : 'ok'}">${s.desc}</li>`).join('')}</ul>
+      ${weak.length ? `<h3>Не қайталау керек?</h3><ul class="as-desc">${weak.map(s => `<li>${s.tip}</li>`).join('')}</ul>` : ''}
+      <p class="as-note">Осы нәтиже парағының скриншотын жасап, мұғаліміңе жібер (немесе Google Classroom-дағы тапсырмаға тірке).</p>
+      <div class="as-row"><button class="as-btn" id="as-again">Қайта орындау</button><button class="as-btn as-ghost" id="as-print">Басып шығару</button></div></div>`;
+    $b('#as-again').onclick = () => { reset(); ask(); top(); };
+    $b('#as-print').onclick = () => { document.body.classList.add('as-printing'); window.print(); setTimeout(() => document.body.classList.remove('as-printing'), 500); };
+  }
+  start();
+}
+
+/* ---------- бағалау (10 балл) ---------- */
+const tiles = (vals, hl, c, unit, bars) => { const mx = bars ? Math.max(...vals) : 1;
+  return `<div class="tiles">${vals.map((v, i) => bars ? `<div class="tile"><span class="barf" style="width:${v / mx * 100}%"></span><span>${v}</span></div>` : `<div class="tile ${hl.includes(i) ? c : ''}"><span>${v}${unit || ''}</span></div>`).join('')}</div>`; };
+assessment(document.getElementById('checkBox'), {
+  title: 'Шартты пішімдеу', obj: '7.2.2.4',
+  skills: [
+    { name: 'Ереже түрін анықтау', what: 'тең, ең үлкен N, аралығында, қайталанатын, мәтін бар, гистограмма',
+      desc: 'Кестеге қолданылған шартты пішімдеу ережесін боялған ұяшықтар бойынша анықтайды',
+      tip: '«Ереже зертханасында» әр ережені (Үлкен, Аралығында, Қайталанатын, Ең үлкен N) бір-бірлеп қосып, қай ұяшықтар боялатынын бақыла.' },
+    { name: 'Командалардың орны', what: 'Басты бет → Стильдер, ережелерді жою',
+      desc: 'Шартты пішімдеу командасының орнын және ережені жою жолын біледі',
+      tip: 'Конспектідегі 3 қадамды Excel-де орында: ауқымды бөлекте → Басты бет → Стильдер → Шартты пішімдеу. Сосын ережені жойып көр.' },
+    { name: 'Шартты пішімдеудің қасиеттері', what: 'шекаралық мән, мән өзгергенде автоматты түрде жаңару',
+      desc: 'Шартты пішімдеудің жұмыс ережесін (шекара, автоматты жаңару) түсіндіреді',
+      tip: 'Зертханада «Аралығында 50 және 80» ережесін қойып, кестеге 50 және 80 жаз. Сосын мәндерді өзгертіп, түстің өзі ауысатынын көр.' },
+  ],
+  items: [
+    { s: 0, tag: 'Детектив', q: 'Кестеге қандай ереже қолданылған?', pre: tiles([3, 5, 2, 5, 4, 5], [1, 3, 5], 'g'),
+      o: ['Тең 5', 'Үлкен 3', 'Кіші 5', 'Орташадан төмен'], a: 0, w: 'Тек 5 бағалары боялған. «Үлкен 3» болса, 4 те боялар еді.' },
+    { s: 0, tag: 'Детектив', q: 'Ең жоғары екі нәтиже ерекшеленген. Бұл қай ереже?', pre: tiles([45, 92, 67, 88, 30, 75], [1, 3], 'g'),
+      o: ['Үлкен 90', 'Ең үлкен 2 элемент', 'Орташадан жоғары', 'Тең 92'], a: 1, w: '92 мен 88 — ең үлкен екі мән. «Үлкен 90» болса, 88 боялмас еді.' },
+    { s: 0, tag: 'Детектив', q: 'Температура кестесінде қай ереже бойынша сары түс берілген?', pre: tiles([12, 18, 25, 31, 8, 22], [1, 2, 5], 'y', '°'),
+      o: ['Үлкен 18', 'Кіші 25', 'Аралығында 18 және 25', 'Орташадан жоғары'], a: 2, w: '18, 22 және 25 сары. «Аралығында» ережесі шекараны да қамтиды. «Үлкен 18» болса, 31 де боялар еді.' },
+    { s: 0, tag: 'Детектив', q: 'Тізімде не ерекшеленген?', pre: tiles(['Әлия', 'Дана', 'Ерлан', 'Дана', 'Мадина', 'Ерлан'], [1, 2, 3, 5], 'y'),
+      o: ['Мәтін бар «Дана»', 'Қайталанатын мәндер', 'Ең үлкен 4 элемент', 'Тең «Ерлан»'], a: 1, w: 'Дана мен Ерлан екі реттен жазылған. Бұл — «Қайталанатын мәндер» ережесі.' },
+    { s: 0, tag: 'Детектив', q: 'Қоймада таусылған тауарлар қызыл. Ереже қандай?', pre: tiles(['бар', 'жоқ', 'бар', 'жоқ', 'жоқ'], [1, 3, 4], 'r'),
+      o: ['Мәтін бар «жоқ»', 'Мәтін бар «бар»', 'Қайталанатын мәндер', 'Кіші 0'], a: 0, w: '«жоқ» сөзі бар ұяшықтар ғана боялған. «Қайталанатын» болса, «бар» сөздері де боялар еді.' },
+    { s: 0, tag: 'Детектив', q: 'Ұяшық ішінде жолақтар пайда болды. Бұл қандай құрал?', pre: tiles([30, 55, 12, 40, 20], [], '', '', true),
+      o: ['Түс шкаласы', 'Белгішелер жиыны', 'Гистограмма', 'Ең үлкен 1 элемент'], a: 2, w: 'Жолақтың ұзындығы мәнге сай. Бұл — гистограмма (деректер жолағы).' },
+    { s: 1, tag: 'Мәзір', q: 'Excel-де «Шартты пішімдеу» батырмасы қай жерде орналасқан?',
+      o: ['Кірістіру → Кестелер', 'Басты бет → Стильдер', 'Формулалар → Функциялар', 'Файл → Параметрлер'], a: 1, w: 'Басты бет қойындысының «Стильдер» тобында.' },
+    { s: 1, tag: 'Мәзір', q: 'Қате қойылған ережені қалай жоямыз?',
+      o: ['Delete пернесімен', 'Шартты пішімдеу → Ережелерді жою', 'Ctrl + Z ғана', 'Файлды жабу'], a: 1, w: '«Ережелерді жою» немесе «Ережелерді басқару» терезесі арқылы. Delete ұяшықтағы мәнді өшіреді, ережені емес.' },
+    { s: 2, tag: 'Қасиеті', q: '«Аралығында 50 және 80» ережесі 80 санын бояй ма?',
+      o: ['Иә, шекара да кіреді', 'Жоқ, тек 51–79', 'Тек 50-ді бояйды', 'Ешқайсысын'], a: 0, w: '«Аралығында» ережесі шекаралық мәндерді (50 мен 80-ді) де қамтиды.' },
+    { s: 2, tag: 'Қасиеті', q: 'Ұяшықтағы мән 45-тен 95-ке өзгерді. «Үлкен 80 → жасыл» ережесі бар. Не болады?',
+      o: ['Ештеңе өзгермейді', 'Ұяшық өзі жасыл болады', 'Ережені қайта қою керек', 'Мән өшіп қалады'], a: 1, w: 'Шартты пішімдеу мән өзгерген сайын шартты автоматты түрде қайта тексереді.' },
+  ],
+});
+
+/* ---------- tabs / formula bar ---------- */
+const tabs=[...document.querySelectorAll('.tabs a')];
+const tips={A1:null,B2:null,C3:'=БАҒАЛАУ(10 сұрақ; 10 балл)',D4:'=КОНСПЕКТ(Басты бет → Стильдер → Шартты пішімдеу)'};
+tabs.forEach(a=>a.onclick=e=>{e.preventDefault();const t=document.querySelector(a.getAttribute('href'));t&&t.scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'})});
+function setRef(r){if(r===curRef)return;curRef=r;$('#ref').textContent=r;tabs.forEach(a=>a.classList.toggle('on',a.dataset.ref===r));
+  if(r==='A1')$('#ftext').textContent=demos[di].f;else if(r==='B2')render();else $('#ftext').textContent=tips[r];}
+if('IntersectionObserver' in window){const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){const a=tabs.find(t=>t.getAttribute('href')==='#'+e.target.id);a&&setRef(a.dataset.ref)}})},{rootMargin:'-45% 0px -50% 0px'});
+  ['home','lab','check','notes'].forEach(id=>io.observe(document.getElementById(id)));}
+const h=location.hash.slice(1);if(['lab','check','notes'].includes(h))setTimeout(()=>document.getElementById(h).scrollIntoView(),50);
+})();
+</script>
+
+</body></html>

@@ -1,0 +1,433 @@
+<!doctype html><html lang="kk"><head><meta charset="utf-8"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Робо-кафе</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@600;800;900&family=PT+Sans:wght@400;700&family=JetBrains+Mono:wght@500;800&display=swap">
+<style>
+/* Layout: a spreadsheet-paper page (green grid lines) holding one white "sheet" card per level; the finale is a printed café receipt. Single committed look. */
+:root{
+  --xl:#217346; --xl-dark:#14532D; --xl-tint:#E3F4EA; --grid:#CFE7D8;
+  --ink:#16261D; --ink-soft:#4B5E53; --paper:#FCFDFB; --line:#C9D6CE;
+  --sun:#FFD43B; --coral:#FF8E8E; --violet:#6A45DD; --red:#C92A2A; --ok:#0B7A5A;
+  --display:'Rubik','Arial Black',Arial,sans-serif;
+  --body:'PT Sans','Trebuchet MS',Arial,sans-serif;
+  --mono:'JetBrains Mono','Courier New',monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.45;
+  background-color:#EEF7F1;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:96px 28px}
+.wrap{max-width:880px;margin:0 auto;padding-inline:16px;padding-block:18px 40px;display:flex;flex-direction:column;gap:14px}
+.top{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:var(--xl);color:#fff;border-radius:18px;padding:12px 16px}
+.logo{width:44px;height:44px;border-radius:12px;background:#fff;color:var(--xl);font-family:var(--display);font-weight:900;font-size:24px;display:grid;place-items:center;flex:none}
+.brand{margin:0;font-family:var(--display);font-weight:900;font-size:clamp(20px,3.6vw,28px);line-height:1.1}
+.brand small{display:block;font-family:var(--body);font-weight:700;font-size:14px;opacity:.9}
+.spacer{flex:1}
+.coins{font-family:var(--mono);font-weight:800;background:var(--sun);color:var(--ink);border-radius:999px;padding:6px 14px;font-variant-numeric:tabular-nums}
+.tabsbar{display:flex;gap:6px;flex-wrap:wrap}
+.lt{flex:1 1 150px;background:var(--paper);border:2px solid var(--line);border-bottom-width:4px;border-radius:12px 12px 4px 4px;padding:8px 12px;font-weight:700;font-size:14px;color:var(--ink-soft)}
+.lt.now{border-color:var(--xl);color:var(--xl-dark);background:var(--xl-tint)}
+.lt.done{background:var(--xl);border-color:var(--xl-dark);color:#fff}
+.card{background:var(--paper);border:2px solid var(--line);border-radius:22px;padding:clamp(16px,4vw,28px);box-shadow:0 18px 40px rgba(20,60,40,.15);display:flex;flex-direction:column;gap:16px;min-width:0}
+.robo{display:flex;gap:12px;align-items:center}
+.robo svg{flex:none;width:66px;height:78px}
+.bubble{margin:0;background:var(--xl-tint);border-radius:18px 18px 18px 6px;padding:11px 15px;font-weight:700;min-width:0}
+.kicker{margin:0;font-family:var(--mono);font-weight:800;font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--xl)}
+h2{margin:0;font-family:var(--display);font-weight:800;font-size:clamp(21px,3.4vw,28px);text-wrap:balance}
+.lead{margin:0;color:var(--ink-soft)}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.counter{font-family:var(--mono);font-weight:800;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+button{font:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:4px solid var(--sun);outline-offset:2px}
+.btn{border:0;border-radius:14px;padding:13px 22px;font-weight:700;font-size:17px;background:var(--xl);color:#fff}
+.btn:hover{background:var(--xl-dark)}
+.btn.sun{background:var(--sun);color:var(--ink)}
+.btn.ghost{background:transparent;color:var(--ink);border:3px solid var(--xl)}
+.back{color:#fff;font-weight:700;text-decoration:underline;font-size:15px}
+.how{margin:0;background:#fff;border:2px solid var(--line);border-radius:14px;padding:12px 14px}
+.intro em{display:block;font-style:normal;font-family:var(--mono);font-size:13px;color:var(--xl);margin-top:4px}
+.res{background:#fff;border:2px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.res h3{margin:0;font-family:var(--display);font-size:19px}
+.res .lvl{margin:0;font-family:var(--display);font-weight:900;font-size:clamp(22px,4vw,30px);color:var(--xl-dark)}
+.skill .head{display:flex;justify-content:space-between;gap:8px;font-weight:700;flex-wrap:wrap}
+.tag{font-family:var(--mono);font-size:12px;padding:2px 8px;border-radius:6px}
+.tag.ok{background:#D3F9EA;color:var(--ok)} .tag.mid{background:#FFF3BF;color:#7A5A00} .tag.lo{background:#FFE3E3;color:var(--red)}
+.meter{height:10px;border-radius:6px;background:#E9EDEA;overflow:hidden;margin-top:4px}
+.meter i{display:block;height:100%}
+.tip{margin:4px 0 0;color:var(--ink-soft);font-size:14px}
+.desc{margin:0;padding-left:22px}
+.desc li{margin:4px 0}
+.desc li.ok::marker{content:"✓  ";color:var(--ok)}
+.desc li.no::marker{content:"✗  ";color:var(--red)}
+@media print{body{background:#fff}.top,.tabsbar,.row,.note,.robo{display:none!important}.card{box-shadow:none;border:0}}
+.fb{margin:0;min-height:24px;font-weight:700}
+.fb.good{color:var(--ok)} .fb.bad{color:var(--red)}
+input[type=text]{font:inherit;font-weight:700;font-size:18px;padding:13px 15px;border-radius:14px;border:3px solid var(--line);width:100%;max-width:420px;background:#fff;color:var(--ink)}
+/* matching */
+.match{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:12px}
+.col{display:flex;flex-direction:column;gap:8px}
+.tile{border:3px solid var(--line);background:#fff;color:var(--ink);border-radius:14px;padding:12px;text-align:left;font-weight:700;min-height:54px;transition:transform .12s,border-color .12s}
+.tile.term{font-family:var(--display);font-weight:800}
+.tile.sel{border-color:var(--xl);background:var(--xl-tint);transform:translateX(4px)}
+.tile.shake{animation:shake .35s}
+.tile.paired{cursor:default;color:var(--ink)}
+.tile.p0{background:#FFF3BF;border-color:#E0B000}.tile.p1{background:#D3F9EA;border-color:#2FB67C}.tile.p2{background:#FFE3E3;border-color:#F25C5C}
+.tile.p3{background:#E5DBFF;border-color:#7048E8}.tile.p4{background:#D0EBFF;border-color:#339AF0}.tile.p5{background:#FFE8CC;border-color:#F08C00}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+/* address grid */
+.sheet{display:grid;grid-template-columns:40px repeat(6,minmax(0,1fr));max-width:560px;width:100%;align-self:center;border:2px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}
+.sheet > *{border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-height:42px;display:grid;place-items:center;font-family:var(--mono);font-weight:800;font-size:14px}
+.sheet .hd{background:#E9EDEA;color:var(--ink-soft)}
+.cellb{background:#fff;border:0;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:0}
+.cellb:hover{background:var(--xl-tint)}
+.cellb.pick{background:var(--sun)}
+.cellb.range{background:#BFEBD2}
+.cellb.miss{background:#FFC9C9}
+.target{font-family:var(--mono);font-weight:800;font-size:clamp(30px,6vw,44px);color:var(--xl-dark);background:var(--xl-tint);border-radius:16px;padding:8px 18px;align-self:flex-start}
+/* format machine */
+.machine{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:12px;align-items:center}
+.slot{border:3px dashed var(--line);border-radius:16px;padding:14px;text-align:center;background:#fff;min-width:0}
+.slot b{display:block;font-family:var(--mono);font-size:clamp(22px,4.5vw,30px);overflow-wrap:anywhere}
+.slot small{font-weight:700;color:var(--ink-soft)}
+.gear{font-size:36px;color:var(--xl);animation:spin 3s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.fmts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.opt{border:3px solid var(--line);background:#fff;color:var(--ink);border-radius:14px;padding:12px;font-weight:700;text-align:center}
+.opt:hover:not(:disabled){border-color:var(--xl)}
+.opt.right{background:#D3F9EA;border-color:var(--ok)} .opt.wrong{background:#FFE3E3;border-color:var(--red)}
+.opt:disabled{cursor:default}
+/* café sheet */
+.cafe{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px;align-items:start}
+.menu{display:grid;grid-template-columns:36px minmax(0,1.3fr) var(--bw,64px) minmax(0,.9fr);border:1px solid var(--line);background:#fff;font-size:15px;transition:all .3s}
+.menu > div{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:8px;min-height:40px;display:flex;align-items:center;overflow:hidden;white-space:nowrap}
+.menu .hd{background:#E9EDEA;font-family:var(--mono);font-weight:800;justify-content:center;color:var(--ink-soft)}
+.menu .r{justify-content:flex-end;font-family:var(--mono)}
+.menu .t{font-weight:700}
+.menu.bord{border:3px solid var(--ink)} .menu.bord > div:not(.hd){border-color:var(--ink)}
+.menu .title.merged{grid-column:span 3;justify-content:center;background:var(--coral);font-family:var(--display);font-weight:800}
+.menu .hot{background:var(--sun);font-weight:800}
+.complaint{background:#FFF8E1;border:2px solid #F0C419;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.complaint p{margin:0}
+.who{font-weight:700;color:var(--ink-soft);font-size:14px}
+.say{font-family:var(--display);font-weight:800;font-size:19px;text-wrap:balance}
+.tools{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tools .opt{font-size:15px}
+/* receipt */
+.receipt{align-self:center;width:100%;max-width:380px;background:#fff;font-family:var(--mono);font-size:15px;padding:22px 20px 26px;box-shadow:0 14px 30px rgba(0,0,0,.12);
+  mask:radial-gradient(circle 8px at 50% 100%,transparent 98%,#000) 0 0/16px 100% repeat-x;-webkit-mask:radial-gradient(circle 8px at 50% 100%,transparent 98%,#000) 0 0/16px 100% repeat-x;display:flex;flex-direction:column;gap:6px}
+.receipt h3{margin:0;text-align:center;font-family:var(--display);font-weight:900;font-size:24px;letter-spacing:1px}
+.receipt .c{text-align:center;color:var(--ink-soft)}
+.receipt .ln{display:flex;gap:6px}
+.receipt .ln span:nth-child(2){flex:1;border-bottom:2px dotted #9AA9A0;transform:translateY(-5px)}
+.receipt hr{border:0;border-top:2px dashed #9AA9A0;width:100%;margin:6px 0}
+.receipt .tot{font-weight:800;font-size:18px}
+.stars{text-align:center;font-size:34px;letter-spacing:4px;color:#F0B400}
+.stars .off{color:#D6DDD8}
+.bar{font-size:30px;letter-spacing:-2px;text-align:center;color:var(--ink)}
+.note{margin:0;background:#FFF3BF;border-radius:14px;padding:12px 14px;font-weight:700}
+.intro{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.intro li{background:var(--xl-tint);border-radius:14px;padding:12px 14px;font-weight:700}
+.intro b{display:block;font-family:var(--display)}
+.pop{animation:pop .3s ease}
+@keyframes pop{from{transform:translateY(6px);opacity:.6}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:640px){
+  .match,.cafe,.intro{grid-template-columns:1fr}
+  .machine{grid-template-columns:1fr}
+  .gear{justify-self:center;transform:rotate(90deg)}
+  .fmts{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .robo svg{width:52px;height:62px}
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="logo" aria-hidden="true">X</div>
+    <p class="brand">Робо-кафе<small>Электронды кестелердің элементтерін пішімдеу · 7-сынып</small></p>
+    <span class="spacer"></span>
+    <a class="back" id="back" href="/">← Сабаққа оралу</a><span class="coins" id="coins">0 / 10 балл</span>
+  </header>
+  <nav class="tabsbar" aria-label="Деңгейлер">
+    <span class="lt" data-i="1">1 · Сәйкестендір</span>
+    <span class="lt" data-i="2">2 · Адрес мергені</span>
+    <span class="lt" data-i="3">3 · Пішім машинасы</span>
+    <span class="lt" data-i="4">4 · Шағым кітабы</span>
+  </nav>
+  <main class="card" id="card" aria-live="polite"></main>
+</div>
+
+<script>
+const ROBO = `<svg viewBox="0 0 220 260" aria-hidden="true"><line x1="110" y1="14" x2="110" y2="46" stroke="#16261D" stroke-width="6" stroke-linecap="round"/><circle cx="110" cy="14" r="12" fill="#FFD43B" stroke="#16261D" stroke-width="5"/><rect x="40" y="46" width="140" height="104" rx="34" fill="#FCFDFB" stroke="#16261D" stroke-width="6"/><rect x="58" y="66" width="104" height="60" rx="24" fill="#16261D"/><ellipse cx="88" cy="94" rx="11" ry="14" fill="#63E6BE"/><ellipse cx="132" cy="94" rx="11" ry="14" fill="#63E6BE"/><path d="M96 114 Q110 124 124 114" stroke="#63E6BE" stroke-width="5" fill="none" stroke-linecap="round"/><rect x="66" y="22" width="88" height="22" rx="6" fill="#FCFDFB" stroke="#16261D" stroke-width="5"/><path d="M70 22 Q72 0 92 6 Q110 -6 128 6 Q148 0 150 22Z" fill="#FCFDFB" stroke="#16261D" stroke-width="5"/><path d="M62 176 Q30 180 24 150" stroke="#16261D" stroke-width="7" fill="none" stroke-linecap="round"/><circle cx="24" cy="146" r="11" fill="#FFD43B" stroke="#16261D" stroke-width="5"/><path d="M158 180 Q186 196 192 222" stroke="#16261D" stroke-width="7" fill="none" stroke-linecap="round"/><rect x="62" y="158" width="96" height="76" rx="26" fill="#217346" stroke="#16261D" stroke-width="6"/><rect x="86" y="176" width="48" height="38" rx="6" fill="#FCFDFB" stroke="#16261D" stroke-width="4"/><line x1="86" y1="189" x2="134" y2="189" stroke="#16261D" stroke-width="3"/><line x1="86" y1="201" x2="134" y2="201" stroke="#16261D" stroke-width="3"/><line x1="104" y1="176" x2="104" y2="214" stroke="#16261D" stroke-width="3"/><rect x="76" y="232" width="20" height="22" rx="8" fill="#16261D"/><rect x="124" y="232" width="20" height="22" rx="8" fill="#16261D"/></svg>`;
+const robo = t => `<div class="robo">${ROBO}<p class="bubble">${t}</p></div>`;
+const $ = (s, r = document) => r.querySelector(s);
+const card = $('#card');
+// Балл жарты балмен есептеледі: score = 1 → 0,5 балл. Әр деңгей 5 тапсырма × 0,5 = 2,5 балл, барлығы 10 балл.
+const S = { name: '', score: 0, lv: [0, 0, 0, 0], miss: 0 };
+const MAX = [5, 5, 5, 5];
+const bal = h => String(h / 2).replace('.', ',');
+// Сабақ бетінен ашылса, «Сабаққа оралу» сол бетке қайтарады.
+try { if (document.referrer && new URL(document.referrer).origin === location.origin) document.getElementById('back').href = document.referrer; } catch (e) {}
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const coins = () => $('#coins').textContent = `${bal(S.score)} / 10 балл`;
+const point = l => { S.score++; S.lv[l]++; coins(); };
+function step(n) { document.querySelectorAll('.lt').forEach(e => { const i = +e.dataset.i; e.classList.toggle('now', i === n); e.classList.toggle('done', i < n); }); }
+function show(h) { card.innerHTML = h; card.classList.remove('pop'); void card.offsetWidth; card.classList.add('pop'); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+const safe = s => s.replace(/[<>&"]/g, '');
+
+/* ---------- start ---------- */
+function start() {
+  step(0);
+  show(`${robo('Сәлем! Мен — аспаз Робо. Мектепте «Робо-кафе» ашамыз, бірақ Excel-дегі мәзіріміз шатасып қалды. Көмектесесің бе?')}
+    <p class="kicker">Сабақты бекіту ойыны · 10 балл · 10–12 минут</p>
+    <h2>Кафені ашуға көмектес!</h2>
+    <p class="how"><b>Қалай ойнаймыз?</b> 4 деңгей, әр деңгейде 5 тапсырма. Әр дұрыс жауап — <b>0,5 балл</b>, барлығы <b>10 балл</b>. Жауап бергенде Робо дұрыс па, қате ме, <b>неге</b> екенін түсіндіреді. Соңында деңгейің мен нәтиже чегі шығады.</p>
+    <ul class="intro">
+      <li><b>1 · Сәйкестендір</b>Excel ұғымын оның түсіндірмесімен жұпта.<em>5 жұп · 2,5 балл</em></li>
+      <li><b>2 · Адрес мергені</b>Айтылған ұяшық пен ауқымды кестеден тап.<em>5 адрес · 2,5 балл</em></li>
+      <li><b>3 · Пішім машинасы</b>Санды керекті түрге айналдыратын пішімді таңда.<em>5 сан · 2,5 балл</em></li>
+      <li><b>4 · Шағым кітабы</b>Келушілердің шағымын дұрыс құралмен шеш.<em>5 шағым · 2,5 балл</em></li>
+    </ul>
+    <label for="nm" style="font-weight:700">Аты-жөнің (чекке жазылады)</label>
+    <input type="text" id="nm" maxlength="40" placeholder="Мысалы: Ерлан Нұрланұлы" autocomplete="name">
+    <p class="fb bad" id="er"></p>
+    <div class="row"><button class="btn sun" id="go">Кафені ашу</button></div>`);
+  const go = () => { const v = $('#nm').value.trim(); if (v.length < 2) { $('#er').textContent = 'Чекке жазу үшін атыңды енгіз.'; $('#nm').focus(); return; } S.name = v; level1(); };
+  $('#go').onclick = go; $('#nm').onkeydown = e => { if (e.key === 'Enter') go(); };
+}
+
+/* ---------- level 1: matching ---------- */
+const PAIRS = [
+  ['Ұяшық адресі', 'баған әрпі + жол нөмірі, мысалы C3'],
+  ['Ауқым', 'ұяшықтардың тіктөртбұрышты тобы: B2:D4'],
+  ['Атау өрісі', 'белсенді ұяшықтың адресі көрінетін өріс'],
+  ['Формула жолы', 'ұяшықтың шын мәні көрінетін жол'],
+  ['Ctrl + 1', '«Ұяшықтарды пішімдеу» терезесін ашады'],
+];
+function level1() {
+  step(1);
+  const left = shuffle(PAIRS.map((p, i) => ({ i, t: p[0] })));
+  const right = shuffle(PAIRS.map((p, i) => ({ i, t: p[1] })));
+  let selL = null, selR = null, found = 0, errorsHere = new Set();
+  show(`${robo('1-деңгей! Сол жақтан ұғымды, оң жақтан оның түсіндірмесін таңда. Дұрыс жұп бір түске боялады.')}
+    <div class="row"><p class="kicker">1-деңгей · Сәйкестендір</p><span class="spacer"></span><span class="counter" id="ct">0 / 5 жұп</span></div>
+    <div class="match">
+      <div class="col" id="L">${left.map(x => `<button class="tile term" data-i="${x.i}">${x.t}</button>`).join('')}</div>
+      <div class="col" id="R">${right.map(x => `<button class="tile" data-i="${x.i}">${x.t}</button>`).join('')}</div>
+    </div>
+    <p class="fb" id="fb">Бірінші рет қатесіз табылған әр жұп — 0,5 балл.</p>
+    <div class="row"><span class="spacer"></span><button class="btn" id="nx" hidden>2-деңгейге өту</button></div>`);
+  const check = () => {
+    if (!selL || !selR) return;
+    const a = +selL.dataset.i, b = +selR.dataset.i;
+    if (a === b) {
+      [selL, selR].forEach(e => { e.classList.remove('sel'); e.classList.add('paired', 'p' + found); e.disabled = true; });
+      if (!errorsHere.has(a)) point(0);
+      found++; $('#ct').textContent = `${found} / 5 жұп`;
+      $('#fb').className = 'fb good'; $('#fb').textContent = 'Дұрыс жұп!';
+      if (found === 5) { $('#fb').textContent = 'Барлық жұп табылды! Мәзірдің ұғымдарын білесің.'; const nx = $('#nx'); nx.hidden = false; nx.focus(); nx.onclick = () => level2(0); }
+    } else {
+      errorsHere.add(a); S.miss++;
+      [selL, selR].forEach(e => { e.classList.remove('sel'); e.classList.add('shake'); setTimeout(() => e.classList.remove('shake'), 400); });
+      $('#fb').className = 'fb bad'; $('#fb').textContent = 'Бұлар жұп емес. Қайта көр!';
+    }
+    selL = selR = null;
+  };
+  card.querySelectorAll('#L .tile').forEach(b => b.onclick = () => { if (selL) selL.classList.remove('sel'); selL = b; b.classList.add('sel'); check(); });
+  card.querySelectorAll('#R .tile').forEach(b => b.onclick = () => { if (selR) selR.classList.remove('sel'); selR = b; b.classList.add('sel'); check(); });
+}
+
+/* ---------- level 2: address sniper ---------- */
+const COLS = 'ABCDEF';
+const TARGETS = shuffle(['D2', 'A5', 'F1']).concat(shuffle(['B2:C4', 'E3:F6']));
+const parse = a => ({ c: COLS.indexOf(a[0]), r: +a.slice(1) - 1 });
+function level2(k = 0) {
+  step(2);
+  if (k >= TARGETS.length) return level3();
+  const tg = TARGETS[k], isRange = tg.includes(':');
+  let first = null, locked = false;
+  let grid = `<div class="hd"></div>${[...COLS].map(c => `<div class="hd">${c}</div>`).join('')}`;
+  for (let r = 0; r < 6; r++) { grid += `<div class="hd">${r + 1}</div>`; for (let c = 0; c < 6; c++) grid += `<button class="cellb" data-r="${r}" data-c="${c}" aria-label="${COLS[c]}${r + 1}"></button>`; }
+  show(`${robo(k === 0 ? '2-деңгей! Кафеге жеткізуші келді, тауарды қай ұяшыққа жазамыз? Адресті тауып бас.' : isRange ? 'Енді ауқым! Бірінші ұяшықты, сосын соңғы ұяшықты бас.' : 'Тағы бір адрес!')}
+    <div class="row"><p class="kicker">2-деңгей · Адрес мергені</p><span class="spacer"></span><span class="counter">${k + 1} / 5</span></div>
+    <div class="row"><span class="target">${tg}</span><p class="lead" style="min-width:0;flex:1">${isRange ? 'Ауқымның бірінші және соңғы ұяшығын бас.' : 'Осы адрестегі ұяшықты бас.'}</p></div>
+    <div class="sheet">${grid}</div>
+    <p class="fb" id="fb"></p>
+    <div class="row"><span class="spacer"></span><button class="btn" id="nx" hidden>Келесі</button></div>`);
+  const cell = (r, c) => card.querySelector(`.cellb[data-r="${r}"][data-c="${c}"]`);
+  const paintRange = (a, b, cls) => { for (let r = Math.min(a.r, b.r); r <= Math.max(a.r, b.r); r++) for (let c = Math.min(a.c, b.c); c <= Math.max(a.c, b.c); c++) cell(r, c).classList.add(cls); };
+  const end = (ok, msg) => {
+    locked = true; const fb = $('#fb');
+    if (ok) { point(1); fb.className = 'fb good'; } else { S.miss++; fb.className = 'fb bad'; }
+    fb.textContent = msg; const nx = $('#nx'); nx.hidden = false; nx.focus(); nx.onclick = () => level2(k + 1);
+  };
+  card.querySelectorAll('.cellb').forEach(b => b.onclick = () => {
+    if (locked) return;
+    const p = { r: +b.dataset.r, c: +b.dataset.c }, name = COLS[p.c] + (p.r + 1);
+    if (!isRange) {
+      const t = parse(tg);
+      if (p.r === t.r && p.c === t.c) { b.classList.add('pick'); end(true, `Дәл тидің! ${tg} — ${tg[0]} баған, ${tg.slice(1)}-жол.`); }
+      else { b.classList.add('miss'); cell(t.r, t.c).classList.add('pick'); end(false, `Сен ${name} бастың. ${tg} — ${tg[0]} баған мен ${tg.slice(1)}-жолдың қиылысы.`); }
+      return;
+    }
+    if (!first) { first = p; b.classList.add('pick'); $('#fb').className = 'fb'; $('#fb').textContent = `Басы: ${name}. Енді соңғы ұяшықты бас.`; return; }
+    const [a, z] = tg.split(':').map(parse);
+    const ok = first.r === a.r && first.c === a.c && p.r === z.r && p.c === z.c;
+    const rows = Math.abs(z.r - a.r) + 1, cols = Math.abs(z.c - a.c) + 1;
+    paintRange(a, z, 'range');
+    end(ok, ok ? `Тамаша! ${tg} ауқымында ${cols} × ${rows} = ${cols * rows} ұяшық.` : `Сен ${COLS[first.c]}${first.r + 1}:${name} белгіледің. Дұрысы — ${tg} (жасыл).`);
+  });
+}
+
+/* ---------- level 3: format machine ---------- */
+const FM = shuffle([
+  ['0,45', '45%', 'Пайыздық'], ['2500', '2 500,00 ₸', 'Қаржылық'], ['1234,5', '1 234,50', 'Сандық'],
+  ['46303', '08.10.2026', 'Күн'], ['007', '007', 'Мәтіндік'],
+]);
+const FNAMES = ['Жалпы', 'Сандық', 'Қаржылық', 'Пайыздық', 'Күн', 'Мәтіндік'];
+const WHY = { 'Пайыздық': '0,45 × 100 = 45%.', 'Қаржылық': 'ақша сомасына бөлгіш, 2 ондық таңба және ₸ қосылады.', 'Сандық': 'мың бөлгіші мен 2 ондық таңба шығады.', 'Күн': 'Excel күндерді 01.01.1900-ден бастап санайды: 46303-күн = 08.10.2026.', 'Мәтіндік': 'мәтін ретінде алдыңғы нөлдер сақталады.', 'Жалпы': 'арнайы пішім керек емес — сан өзгеріссіз.' };
+function level3(k = 0) {
+  step(3);
+  if (k >= FM.length) return level4();
+  const [inp, out, fmt] = FM[k];
+  show(`${robo(k === 0 ? '3-деңгей! Бұл — пішім машинасы. Сол жаққа сан кіреді, оң жақтан керекті түр шығуы тиіс. Қай пішімді қосамыз?' : 'Машина келесі санды күтіп тұр!')}
+    <div class="row"><p class="kicker">3-деңгей · Пішім машинасы</p><span class="spacer"></span><span class="counter">${k + 1} / 5</span></div>
+    <div class="machine">
+      <div class="slot"><small>Енгізілді (шын мәні)</small><b>${inp}</b></div>
+      <div class="gear" aria-hidden="true">⚙</div>
+      <div class="slot" id="outs"><small>Керек көрініс</small><b>${out}</b></div>
+    </div>
+    <div class="fmts">${FNAMES.map(f => `<button class="opt">${f}</button>`).join('')}</div>
+    <p class="fb" id="fb"></p>
+    <div class="row"><span class="spacer"></span><button class="btn" id="nx" hidden>Келесі сан</button></div>`);
+  const bs = card.querySelectorAll('.opt');
+  bs.forEach(b => b.onclick = () => {
+    bs.forEach(x => { x.disabled = true; if (x.textContent === fmt) x.classList.add('right'); });
+    const fb = $('#fb');
+    if (b.textContent === fmt) { point(2); fb.className = 'fb good'; fb.textContent = `Дұрыс! «${fmt}»: ${WHY[fmt]}`; $('#outs').style.borderColor = 'var(--ok)'; }
+    else { S.miss++; b.classList.add('wrong'); fb.className = 'fb bad'; fb.textContent = `Қате. Керегі — «${fmt}»: ${WHY[fmt]}`; }
+    const nx = $('#nx'); nx.hidden = false; nx.focus(); nx.onclick = () => level3(k + 1);
+  });
+}
+
+/* ---------- level 4: complaint book ---------- */
+const CMP = [
+  { who: 'Айгерім, 7А', say: 'Бағасының орнында ##### тұр!', fix: 'wide', ans: 'Баған енін автотаңдау', opts: ['Баған енін автотаңдау', 'Құйма', 'Пайыздық пішім', 'Мәтінді тасымалдау'], why: 'Баған тар болғандықтан сан сыймай тұрған. Шекараны екі рет шерту — автотаңдау.' },
+  { who: 'Нұрлан, 7Ә', say: 'Бағасы ақшаға ұқсамайды: жай ғана 450 деп тұр.', fix: 'money', ans: 'Қаржылық (₸) пішім', opts: ['Сандық пішім', 'Қаржылық (₸) пішім', 'Күн пішімі', 'Жиектер'], why: 'Қаржылық пішім ₸ белгісін және 2 ондық таңбаны қосады.' },
+  { who: 'Дана, 7Б', say: 'Жеңілдік «0,1» деп жазылған. Бұл қанша?', fix: 'pct', ans: 'Пайыздық пішім', opts: ['Бөлшек пішім', 'Мәтіндік пішім', 'Пайыздық пішім', 'Шартты пішімдеу'], why: '0,1 Пайыздық пішімде 10% болып көрінеді, мәні өзгермейді.' },
+  { who: 'Ерлан, 7А', say: 'Мәзірдің атауы бір шетте қалып қойған.', fix: 'merge', ans: 'Біріктіру және ортаға орналастыру', opts: ['Біріктіру және ортаға орналастыру', 'Ұяшықты жою', 'Жол биіктігі', 'Пішім үлгісі'], why: 'A1:C1 біріктіріліп, тақырып ортаға келеді.' },
+  { who: 'Асхана меңгерушісі', say: 'Мәзірді басып шығарсам, кестенің сызықтары жоқ!', fix: 'border', ans: 'Барлық жиектер', opts: ['Тор сызықтары', 'Барлық жиектер', 'Қаріп түсі', 'Ортаға туралау'], why: 'Экрандағы тор сызықтары басылмайды — жиек қою керек.' },
+];
+function level4() {
+  step(4);
+  const st = { wide: false, money: false, pct: false, merge: false, cond: false, border: false };
+  const order = shuffle(CMP);
+  let k = 0;
+  const DATA = [['Бәліш', 250, .1], ['Палау', 450, .05], ['Самса', 200, .1], ['Шай', 50, 0]];
+  const menu = () => {
+    const price = v => !st.wide ? '#####' : st.money ? v.toLocaleString('ru-RU', { minimumFractionDigits: 2 }).replace(/ /g, ' ') + ' ₸' : String(v);
+    const pc = v => st.pct ? Math.round(v * 100) + '%' : String(v).replace('.', ',');
+    let h = `<div class="hd"></div><div class="hd">A</div><div class="hd">B</div><div class="hd">C</div><div class="hd">1</div>`;
+    h += st.merge ? `<div class="title merged">Робо-кафе мәзірі</div>` : `<div class="t">Робо-кафе мәзірі</div><div></div><div></div>`;
+    h += `<div class="hd">2</div><div class="t">Тағам</div><div class="t">Бағасы</div><div class="t">Жеңілдік</div>`;
+    DATA.forEach((d, i) => { h += `<div class="hd">${i + 3}</div><div>${d[0]}</div><div class="r ${st.cond && d[1] > 300 ? 'hot' : ''}">${price(d[1])}</div><div class="r">${pc(d[2])}</div>`; });
+    return `<div class="menu ${st.border ? 'bord' : ''}" style="--bw:${st.wide ? '120px' : '64px'}">${h}</div>`;
+  };
+  const draw = (fbText = '', good) => {
+    const over = k >= order.length;
+    const c = order[Math.min(k, order.length - 1)];
+    const side = over
+      ? `<div class="complaint"><p class="who">Шағым кітабы</p><p class="say">Барлық шағым шешілді! Мәзір енді әдемі әрі түсінікті.</p><button class="btn sun" id="nx">Чекті алу</button></div>`
+      : `<div class="complaint"><p class="who">${c.who} жазды:</p><p class="say">«${c.say}»</p>
+          <div class="tools">${shuffle(c.opts).map(o => `<button class="opt">${o}</button>`).join('')}</div></div>`;
+    show(`${robo(k === 0 ? '4-деңгей! Кафе ашылды, бірақ шағым кітабы толып жатыр. Әр шағымға дұрыс Excel құралын таңда — мәзір бірден өзгереді!' : over ? 'Қарашы, мәзіріміз қандай әдемі болды!' : 'Келесі келуші не дейді екен?')}
+      <div class="row"><p class="kicker">4-деңгей · Шағым кітабы</p><span class="spacer"></span><span class="counter">${Math.min(k + 1, 5)} / 5</span></div>
+      <div class="cafe">
+        <div style="overflow-x:auto;min-width:0">${menu()}</div>
+        ${side}
+      </div>
+      <p class="fb ${good === undefined ? '' : good ? 'good' : 'bad'}" id="fb">${fbText}</p>`);
+    if (over) { $('#nx').onclick = finish; $('#nx').focus(); return; }
+    card.querySelectorAll('.tools .opt').forEach(b => b.onclick = () => {
+      card.querySelectorAll('.tools .opt').forEach(x => x.disabled = true);
+      const ok = b.textContent === c.ans;
+      if (ok) point(3); else S.miss++;
+      st[c.fix] = true;
+      k++;
+      draw((ok ? 'Дұрыс! ' : `Қате, керегі — «${c.ans}». `) + c.why, ok);
+    });
+  };
+  draw();
+}
+
+/* ---------- нәтиже чегі: деңгей, дағдылар, дескрипторлар ---------- */
+const SKILLS = [
+  { name: 'Excel терезесінің ұғымдары', what: 'адрес, ауқым, атау өрісі, формула жолы, Ctrl + 1',
+    tip: 'Excel терезесінің бөліктерін (атау өрісі, формула жолы) слайдтан қайта қарап, дәптерге сызып белгіле.' },
+  { name: 'Ұяшық пен ауқымның адресі', what: 'D2, A5, B2:C4 сияқты адрестер',
+    tip: 'Кестеден 3 ұяшық пен 2 ауқымды өзің ойлап, досыңа тапқыз: адрес = баған әрпі + жол нөмірі.' },
+  { name: 'Сан пішімдері', what: 'пайыздық, қаржылық, сандық, күн, мәтіндік',
+    tip: 'Excel-де бір санға Ctrl + 1 арқылы әртүрлі пішім беріп, көрінісінің қалай өзгеретінін бақыла.' },
+  { name: 'Кестені пішімдеу құралдары', what: 'баған ені, біріктіру, жиек, пішімдер',
+    tip: 'Жұмыс парағындағы кестені Excel-де қайта пішімдеп шық: баған ені, біріктіру, жиек.' },
+];
+const DESCRIPTORS = [
+  'Электронды кесте терезесінің элементтерін атайды',
+  'Ұяшық пен ауқымның адресін анықтайды',
+  'Деректерге сәйкес сан пішімін таңдайды',
+  'Кесте элементтерін пішімдеу құралдарын қолданады',
+];
+function finish() {
+  step(5);
+  const pts = S.score / 2;
+  const stars = pts >= 8.5 ? 3 : pts >= 6 ? 2 : 1;
+  const level = stars === 3 ? 'Жоғары деңгей' : stars === 2 ? 'Орта деңгей' : 'Бастапқы деңгей';
+  const rank = stars === 3 ? 'Бас аспаз' : stars === 2 ? 'Аспаз' : 'Аспаздың көмекшісі';
+  const d = new Date(), p = n => String(n).padStart(2, '0');
+  const date = `${p(d.getDate())}.${p(d.getMonth() + 1)}.${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;
+  const no = String(1000 + Math.floor(Math.random() * 9000));
+  const names = ['Сәйкестендіру', 'Адрес мергені', 'Пішім машинасы', 'Шағым кітабы'];
+  const st = S.lv.map((v, k) => { const q = v / MAX[k]; return { q, tag: q >= .8 ? 'ok' : q >= .5 ? 'mid' : 'lo' }; });
+  const tagText = { ok: 'Меңгерді', mid: 'Жартылай меңгерді', lo: 'Қайталау керек' };
+  const colors = { ok: '#2FB67C', mid: '#F0C419', lo: '#F25C5C' };
+  const weak = SKILLS.filter((_, k) => st[k].tag !== 'ok');
+  show(`${robo(stars === 3 ? 'Кафеміз қаланың ең үздік кафесі болды! Сен — нағыз Excel шеберісің.' : stars === 2 ? 'Жарайсың! Кафе жақсы жұмыс істеп тұр. Төмендегі сары/қызыл дағдыларды қайталасаң — бас аспаз боласың.' : 'Кафе ашылды! Төмендегі кеңестерді орындап, ойынды тағы бір ойнап көр.')}
+    <div class="receipt" role="img" aria-label="Нәтиже чегі">
+      <h3>РОБО-КАФЕ</h3>
+      <div class="c">Чек № ${no}<br>${date}</div>
+      <hr>
+      <div class="ln"><span>Оқушы:</span><span></span><span>${safe(S.name)}</span></div>
+      <div class="ln"><span>Атағы:</span><span></span><span>${rank}</span></div>
+      <hr>
+      ${names.map((n, i) => `<div class="ln"><span>${n}</span><span></span><span>${bal(S.lv[i])}/2,5</span></div>`).join('')}
+      <div class="ln"><span>Қателер</span><span></span><span>${S.miss}</span></div>
+      <hr>
+      <div class="ln tot"><span>БАРЛЫҒЫ</span><span></span><span>${bal(S.score)}/10 балл</span></div>
+      <div class="stars" aria-label="${stars} жұлдыз">${'★'.repeat(stars)}<span class="off">${'★'.repeat(3 - stars)}</span></div>
+      <div class="c">${level}<br>7.2.2.2 · Электронды кесте<br>элементтерін пішімдеу</div>
+      <div class="bar" aria-hidden="true">║▌║█║▌│║▌║▌█║</div>
+    </div>
+    <div class="res">
+      <p class="lvl">${level} · ${bal(S.score)} / 10 балл</p>
+      <h3>Дағдылар бойынша</h3>
+      ${SKILLS.map((s, k) => `<div class="skill">
+        <div class="head"><span>${k + 1}. ${s.name}</span><span class="tag ${st[k].tag}">${tagText[st[k].tag]}</span></div>
+        <div class="meter"><i style="width:${Math.round(st[k].q * 100)}%;background:${colors[st[k].tag]}"></i></div>
+        <p class="tip">${bal(S.lv[k])} / 2,5 балл · ${s.what}</p>
+      </div>`).join('')}
+      <h3>Дескрипторлар (оқу мақсаты 7.2.2.2)</h3>
+      <ul class="desc">${DESCRIPTORS.map((t, k) => `<li class="${st[k].tag === 'lo' ? 'no' : 'ok'}">${t}</li>`).join('')}</ul>
+      ${weak.length ? `<h3>Не қайталау керек?</h3><ul class="desc">${weak.map(s => `<li>${s.tip}</li>`).join('')}</ul>` : '<p class="tip">Барлық дағдыны меңгердің. Жарайсың!</p>'}
+    </div>
+    <p class="note">Осы чектің скриншотын жасап, мұғаліміңе жібер (немесе Google Classroom-дағы тапсырмаға тірке).</p>
+    <div class="row"><button class="btn" id="again">Қайта ойнау</button><button class="btn ghost" id="print">Басып шығару</button></div>`);
+  $('#again').onclick = () => { Object.assign(S, { score: 0, lv: [0, 0, 0, 0], miss: 0 }); coins(); level1(); };
+  $('#print').onclick = () => window.print();
+}
+
+coins();
+start();
+</script>
+
+</body></html>
