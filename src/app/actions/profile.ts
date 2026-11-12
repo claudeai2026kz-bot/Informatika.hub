@@ -6,6 +6,7 @@ import { getCurrentUser, hashPassword, verifyPassword, sha256 } from "@/lib/auth
 import { cookies } from "next/headers";
 import { emailSchema, nameSchema, passwordSchema } from "@/lib/validation";
 import { IMAGE_EXTS, UploadError, removeStored, saveUpload } from "@/lib/storage";
+import { CATEGORIES } from "@/lib/profile";
 
 export type FormState = { error?: string; ok?: string } | undefined;
 
@@ -16,7 +17,10 @@ export async function updateProfile(_: FormState, fd: FormData): Promise<FormSta
   if (!p.success) return { error: p.error.issues[0].message };
   if (p.data.email !== u.email && (await db.user.findUnique({ where: { email: p.data.email } }))) return { error: "Бұл email басқа аккаунтқа тіркелген" };
 
-  let avatarPath: string | undefined;
+  const extra = profileExtra(fd);
+  if ("error" in extra) return { error: extra.error };
+
+  let avatarPath: string | null | undefined;
   const file = fd.get("avatar");
   if (file instanceof File && file.size > 0) {
     try {
@@ -25,10 +29,28 @@ export async function updateProfile(_: FormState, fd: FormData): Promise<FormSta
       return { error: e instanceof UploadError ? e.message : "Суретті жүктеу мүмкін болмады" };
     }
     await removeStored(u.avatarPath);
+  } else if (fd.get("removeAvatar") === "on" && u.avatarPath) {
+    await removeStored(u.avatarPath);
+    avatarPath = null;
   }
-  await db.user.update({ where: { id: u.id }, data: { name: p.data.name, email: p.data.email, ...(avatarPath && { avatarPath }) } });
+  await db.user.update({ where: { id: u.id }, data: { name: p.data.name, email: p.data.email, ...extra.data, ...(avatarPath !== undefined && { avatarPath }) } });
   revalidatePath("/", "layout");
   return { ok: "Профиль сақталды" };
+}
+
+/** Мұғалім профилінің қосымша өрістері: бәрі міндетті емес, бос қалса өшіріледі. */
+function profileExtra(fd: FormData): { data: { school: string | null; region: string | null; subject: string | null; category: string | null; experience: number | null; bio: string | null } } | { error: string } {
+  const str = (k: string, max: number) => { const v = String(fd.get(k) ?? "").trim().replace(/s+/g, " "); return v ? v.slice(0, max) : null; };
+  const bio = String(fd.get("bio") ?? "").trim().slice(0, 300) || null;
+  const category = str("category", 40);
+  if (category && !CATEGORIES.includes(category)) return { error: "Біліктілік санатын тізімнен таңдаңыз" };
+  const expRaw = String(fd.get("experience") ?? "").trim();
+  let experience: number | null = null;
+  if (expRaw) {
+    experience = Number(expRaw);
+    if (!Number.isInteger(experience) || experience < 0 || experience > 60) return { error: "Еңбек өтілі 0 мен 60 жыл аралығында болуы керек" };
+  }
+  return { data: { school: str("school", 120), region: str("region", 80), subject: str("subject", 60), category, experience, bio } };
 }
 
 export async function changePassword(_: FormState, fd: FormData): Promise<FormState> {

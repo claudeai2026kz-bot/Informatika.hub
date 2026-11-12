@@ -29,6 +29,13 @@ model User {
   voiceOn      Boolean   @default(true)
   notifyOn     Boolean   @default(true)
   profilePublic Boolean  @default(false)
+  // Мұғалім профилі (міндетті емес)
+  school       String?
+  region       String?
+  subject      String?
+  category     String?   // біліктілік санаты
+  experience   Int?      // еңбек өтілі, жыл
+  bio          String?
   theme        String?   // light | dark | read
   lang         String?   // kk | ru | en
   createdAt    DateTime  @default(now())

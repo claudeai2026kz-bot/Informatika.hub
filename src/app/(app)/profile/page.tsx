@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Eye, Download, MessageSquare, Star, Heart, Trophy } from "lucide-react";
+import { Eye, Download, MessageSquare, Star, Heart, Trophy, School, MapPin, BookOpen, Award, Briefcase } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { formatDate } from "@/lib/labels";
@@ -7,6 +7,8 @@ import ActionForm from "@/components/ui/ActionForm";
 import SubmitButton from "@/components/ui/SubmitButton";
 import PasswordInput from "@/components/ui/PasswordInput";
 import { changePassword, updateProfile } from "@/app/actions/profile";
+import AvatarPicker from "@/components/AvatarPicker";
+import { CATEGORIES } from "@/lib/profile";
 
 import { getT } from "@/lib/i18n/server";
 export async function generateMetadata() {
@@ -17,7 +19,8 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
   const t = await getT();
   const user = await requireUser("/profile");
   const tab = (await searchParams).tab ?? "viewed";
-  const [counts, history, comments, reviews, results] = await Promise.all([
+  const [info, counts, history, comments, reviews, results] = await Promise.all([
+    db.user.findUnique({ where: { id: user.id }, select: { school: true, region: true, subject: true, category: true, experience: true, bio: true } }),
     Promise.all([
       db.userHistory.count({ where: { userId: user.id, action: "VIEW" } }),
       db.userHistory.count({ where: { userId: user.id, action: "DOWNLOAD" } }),
@@ -49,22 +52,46 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
         <div className="card p-6 text-center">
           {user.avatarPath ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={`/api/files/avatar/${user.id}`} alt={t("Профиль суреті")} className="mx-auto h-24 w-24 rounded-full object-cover ring-4 ring-sky-100" />
+            <img src={`/api/files/avatar/${user.id}?v=${encodeURIComponent(user.avatarPath.slice(-16))}`} alt={t("Профиль суреті")} className="mx-auto h-24 w-24 rounded-full object-cover ring-4 ring-sky-100" />
           ) : (
             <span className="mx-auto grid h-24 w-24 place-items-center rounded-full bg-gradient-to-br from-sky-400 to-lilac-500 text-3xl font-bold text-white ring-4 ring-sky-100">{initials}</span>
           )}
           <h1 className="mt-3 text-xl font-bold">{user.name}</h1>
           <p className="text-sm muted">{user.email}</p>
           <span className="chip mt-2">{t(user.role === "ADMIN" ? "Әкімші" : "Мұғалім")}</span>
+          {info?.bio && <p className="mt-3 text-sm text-ink-soft whitespace-pre-line">{info.bio}</p>}
+          {(info?.school || info?.region || info?.subject || info?.category || info?.experience != null) ? (
+            <ul className="mt-4 space-y-2 text-left text-sm">
+              {info.school && <li className="flex gap-2"><School className="h-4 w-4 shrink-0 text-sky-500 mt-0.5" /><span>{info.school}</span></li>}
+              {info.region && <li className="flex gap-2"><MapPin className="h-4 w-4 shrink-0 text-sky-500 mt-0.5" /><span>{info.region}</span></li>}
+              {info.subject && <li className="flex gap-2"><BookOpen className="h-4 w-4 shrink-0 text-sky-500 mt-0.5" /><span>{info.subject}</span></li>}
+              {info.category && <li className="flex gap-2"><Award className="h-4 w-4 shrink-0 text-sky-500 mt-0.5" /><span>{t(info.category)}</span></li>}
+              {info.experience != null && <li className="flex gap-2"><Briefcase className="h-4 w-4 shrink-0 text-sky-500 mt-0.5" /><span>{t("Еңбек өтілі: {n} жыл", { n: info.experience })}</span></li>}
+            </ul>
+          ) : (
+            <p className="mt-4 text-sm muted">{t("Төмендегі «Жеке ақпаратты өңдеу» бөлімінде мектебіңізді, пәніңізді және өзіңіз туралы толтырыңыз.")}</p>
+          )}
           <Link href="/favorites" className="btn-ghost w-full mt-5"><Heart className="h-4 w-4 text-rose-500" /> {t("Таңдаулылар")} ({counts[4]})</Link>
         </div>
 
         <details className="card p-6" open>
           <summary className="font-bold cursor-pointer">{t("Жеке ақпаратты өңдеу")}</summary>
           <ActionForm action={updateProfile} className="mt-4 space-y-4">
+            <AvatarPicker src={user.avatarPath ? `/api/files/avatar/${user.id}?v=${encodeURIComponent(user.avatarPath.slice(-16))}` : null} initials={initials} />
             <div><label className="label" htmlFor="name">{t("Аты-жөні")}</label><input id="name" name="name" className="input" defaultValue={user.name} required /></div>
             <div><label className="label" htmlFor="email">Email</label><input id="email" name="email" type="email" className="input" defaultValue={user.email} required /></div>
-            <div><label className="label" htmlFor="avatar">{t("Профиль суреті (PNG, JPG, WEBP, 3 МБ дейін)")}</label><input id="avatar" name="avatar" type="file" accept="image/png,image/jpeg,image/webp" className="block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-sky-100 file:px-3 file:py-2 file:font-semibold file:text-sky-600" /></div>
+            <div><label className="label" htmlFor="school">{t("Мектеп")}</label><input id="school" name="school" className="input" maxLength={120} defaultValue={info?.school ?? ""} placeholder={t("Мысалы: №12 жалпы білім беретін мектеп")} /></div>
+            <div><label className="label" htmlFor="region">{t("Қала / аудан")}</label><input id="region" name="region" className="input" maxLength={80} defaultValue={info?.region ?? ""} placeholder={t("Мысалы: Шымкент қаласы")} /></div>
+            <div><label className="label" htmlFor="subject">{t("Пән")}</label><input id="subject" name="subject" className="input" maxLength={60} defaultValue={info?.subject ?? ""} placeholder={t("Информатика")} /></div>
+            <div className="grid grid-cols-[1fr_110px] gap-3">
+              <div><label className="label" htmlFor="category">{t("Біліктілік санаты")}</label>
+                <select id="category" name="category" className="input" defaultValue={info?.category ?? ""}>
+                  <option value="">{t("Таңдалмаған")}</option>
+                  {CATEGORIES.map((c) => <option key={c} value={c}>{t(c)}</option>)}
+                </select></div>
+              <div><label className="label" htmlFor="experience">{t("Өтілі, жыл")}</label><input id="experience" name="experience" type="number" min={0} max={60} inputMode="numeric" className="input" defaultValue={info?.experience ?? ""} /></div>
+            </div>
+            <div><label className="label" htmlFor="bio">{t("Өзім туралы")}</label><textarea id="bio" name="bio" rows={3} maxLength={300} className="input" defaultValue={info?.bio ?? ""} placeholder={t("Қысқаша: тәжірибеңіз, қызығушылығыңыз (300 таңбаға дейін)")} /></div>
             <SubmitButton className="btn-primary w-full">{t("Сақтау")}</SubmitButton>
           </ActionForm>
         </details>
