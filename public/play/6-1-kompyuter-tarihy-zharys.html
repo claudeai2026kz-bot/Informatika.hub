@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Компьютер тарихы: жарыс</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#cfe8ff;--bg2:#eaf5ff;--ink:#0c1f4d;--muted:#46598a;--card:#ffffff;--line:#a9c7ee;--acc:#ff8a00;--good:#0f9d68;--bad:#d92f4b;--p1:#2f6fe8;--p2:#ff8a00;--o1:#ffd23f;--o2:#7fd8ff;--o3:#ff9ec2;--o4:#a8e88a;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a1330;--bg2:#13204a;--ink:#eef3ff;--muted:#a3b3de;--card:#1a2a5c;--line:#34498a;--acc:#ffa63d;--good:#3fd9a0;--bad:#ff7088;--p1:#6e9bff;--p2:#ffa63d;--o1:#e9c235;--o2:#4fb8e8;--o3:#e87fa6;--o4:#7fcb63}}
+:root[data-theme="dark"]{--bg:#0a1330;--bg2:#13204a;--ink:#eef3ff;--muted:#a3b3de;--card:#1a2a5c;--line:#34498a;--acc:#ffa63d;--good:#3fd9a0;--bad:#ff7088;--p1:#6e9bff;--p2:#ffa63d;--o1:#e9c235;--o2:#4fb8e8;--o3:#e87fa6;--o4:#7fcb63}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(var(--bg2),var(--bg));color:var(--ink);font:500 22px/1.4 Rubik,Arial,sans-serif;min-height:100vh}
+main{max-width:1280px;margin:0 auto;padding:18px 20px 40px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+h1{font:800 clamp(24px,4vw,38px)/1.1 Rubik,Arial,sans-serif;margin:0}
+.theme{background:none;color:var(--muted);border:2px solid var(--line);border-radius:22px;padding:8px 14px;font:500 16px Rubik,Arial,sans-serif;cursor:pointer}
+.card{background:var(--card);border-radius:24px;padding:26px;box-shadow:0 6px 0 var(--line)}
+.lane{display:flex;align-items:center;gap:14px;margin:6px 0}
+.lane b{width:150px;flex:none;font-size:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rail{position:relative;flex:1;height:12px;border-radius:6px;background:var(--line)}
+.fill{position:absolute;left:0;top:0;bottom:0;border-radius:6px;transition:width .6s ease}
+.rk{position:absolute;top:-20px;font-size:34px;transform:translateX(-50%);transition:left .6s ease}
+.lane em{font-style:normal;font-weight:800;width:34px;text-align:right}
+.q{font:700 clamp(24px,3.4vw,38px)/1.3 Rubik,Arial,sans-serif;margin:0;text-align:center}
+.sub{color:var(--muted);margin:0 0 6px;text-align:center}
+.msg{min-height:92px;margin:14px 0;text-align:center;font-weight:700;font-size:clamp(20px,2.6vw,28px)}
+.msg small{display:block;font-weight:500;font-size:clamp(18px,2vw,22px);color:var(--ink)}
+.msg.ok{color:var(--good)}.msg.bad{color:var(--bad)}
+.duel{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.pn{background:var(--card);border-radius:22px;padding:16px;border-top:10px solid var(--c);box-shadow:0 6px 0 var(--line)}
+.pn h2{margin:0 0 4px;font:800 26px/1.2 Rubik,Arial,sans-serif;color:var(--c);display:flex;justify-content:space-between;gap:8px}
+.pn .st{min-height:30px;color:var(--bad);font-weight:700;font-size:19px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.o{display:flex;align-items:center;gap:10px;text-align:left;border:0;border-radius:16px;padding:16px 14px;min-height:96px;font:700 clamp(17px,2vw,24px)/1.2 Rubik,Arial,sans-serif;color:#0c1f4d;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+.o i{font-style:normal;font-size:26px;flex:none}
+.o:nth-child(1){background:var(--o1)}.o:nth-child(2){background:var(--o2)}.o:nth-child(3){background:var(--o3)}.o:nth-child(4){background:var(--o4)}
+.o:focus-visible,.go:focus-visible,input:focus-visible{outline:5px solid var(--ink);outline-offset:3px}
+.o:active:not(:disabled){transform:translateY(3px)}
+.o.bad{background:var(--bad);color:#fff}
+.o.ok{background:var(--good);color:#fff}
+.o:disabled{cursor:default;opacity:.55}.o.bad:disabled,.o.ok:disabled{opacity:1}
+.go{display:block;width:100%;max-width:520px;margin:6px auto 0;border:0;border-radius:18px;background:var(--acc);color:#1a1000;font:800 clamp(22px,3vw,30px) Rubik,Arial,sans-serif;padding:20px;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,.2)}
+.go.sec{background:var(--card);color:var(--ink);box-shadow:0 5px 0 var(--line);margin-top:14px}
+.names{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:22px 0}
+.names label{display:block;font-weight:700;color:var(--muted);margin-bottom:6px}
+.names input{width:100%;font:700 26px Rubik,Arial,sans-serif;padding:16px;border-radius:14px;border:4px solid var(--c);background:var(--bg2);color:var(--ink)}
+.end{text-align:center}
+.trophy{font-size:clamp(60px,12vw,110px);margin:0}
+.big{font:800 clamp(34px,6vw,60px)/1.1 Rubik,Arial,sans-serif;margin:6px 0}
+.res{display:flex;justify-content:center;gap:30px;font-size:clamp(24px,4vw,40px);font-weight:800;margin:14px 0 22px}
+@media (max-width:760px){.duel,.names{grid-template-columns:1fr}.lane b{width:92px;font-size:16px}}
+@media (prefers-reduced-motion:reduce){.fill,.rk{transition:none}}
+</style>
+</head>
+<body>
+<main>
+<header><h1>Компьютер тарихы: жарыс</h1><button class="theme" id="th" type="button">Түнгі режим</button></header>
+<div id="app"></div>
+</main>
+<script>
+var Q=[
+["1642 жылы Блез Паскаль жасаған алғашқы есептеу машинасы қалай аталады?",["Паскалина","Абакус","Аналитикалық машина","ENIAC"],0,"Дұрыс жауап: Паскалина. Блез Паскаль оны 1642 жылы жасады."],
+["1946–1954 жылдар аралығында қазіргі компьютердің негізі болған қай буын қолданылды?",["1-буын","2-буын","3-буын","4-буын"],0,"Бұл бірінші буын: электронды лампалармен жұмыс істейтін үлкен машиналар."],
+["Болашақта қандай компьютер тірі организм сияқты жұмыс істейді?",["Ноутбук","Суперкомпьютер","Биокомпьютер","Дербес компьютер"],2,"Бұл биокомпьютер: ол тірі организмдей жұмыс істейді."],
+["«Дербес компьютер» түсінігі компьютердің қай буынында пайда болды?",["2-буын","3-буын","4-буын","5-буын"],2,"Төртінші буында микропроцессор мен дербес компьютер пайда болды."],
+["Үшінші буын компьютерлерінің жылдамдығы қандай болды?",["Секундына ондаған операция","Секундына 10–20 мың операция","Секундына бірнеше миллион операция","Секундына миллиардтаған операция"],2,"Интегралды схемалар арқасында жылдамдық секундына миллиондаған операцияға жетті."]
+];
+var SH=['▲','◆','●','■'],RK=['🚀','🛸'],COL=['var(--p1)','var(--p2)'];
+var app=document.getElementById('app'),names=['Ойыншы 1','Ойыншы 2'],sc,i,pk,win,done;
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;')}
+function start(){
+ app.innerHTML='<div class="card"><p class="q">Екі оқушы шығып жарысады!</p><p class="sub">Сұрақ бірдей. Дұрыс жауапты бірінші басқан ұпай алады.</p><div class="names"><div style="--c:var(--p1)"><label for="n0">Сол жақ ойыншы 🚀</label><input id="n0" maxlength="14" value="'+esc(names[0])+'"></div><div style="--c:var(--p2)"><label for="n1">Оң жақ ойыншы 🛸</label><input id="n1" maxlength="14" value="'+esc(names[1])+'"></div></div><button class="go" id="go" type="button">Жарысты бастау</button></div>';
+ document.getElementById('go').onclick=function(){
+  for(var p=0;p<2;p++){var v=document.getElementById('n'+p).value.trim();names[p]=v||('Ойыншы '+(p+1))}
+  sc=[0,0];i=0;round()};
+}
+function round(){pk=[-1,-1];win=-1;done=false;view()}
+function lane(p){var pc=sc[p]/Q.length*100;return '<div class="lane"><b style="color:'+COL[p]+'">'+esc(names[p])+'</b><div class="rail"><div class="fill" style="width:'+pc+'%;background:'+COL[p]+'"></div><div class="rk" style="left:'+pc+'%">'+RK[p]+'</div></div><em>'+sc[p]+'</em></div>'}
+function view(){
+ var q=Q[i],m,cls='msg';
+ if(win>=0){m='🎉 '+esc(names[win])+' бірінші дұрыс жауап берді!<small>'+esc(q[3])+'</small>';cls+=' ok'}
+ else if(done){m='Екеуі де қателесті. Дұрыс жауап: '+esc(q[1][q[2]])+'<small>'+esc(q[3])+'</small>';cls+=' bad'}
+ else m='Кім бірінші дұрыс жауап береді?';
+ var pn='';
+ for(var p=0;p<2;p++){
+  var o='';
+  for(var k=0;k<4;k++){
+   var c=(done&&k===q[2])?' ok':(pk[p]===k?' bad':'');
+   o+='<button class="o'+c+'" type="button" data-p="'+p+'" data-k="'+k+'"'+((done||pk[p]>=0)?' disabled':'')+'><i>'+SH[k]+'</i><span>'+esc(q[1][k])+'</span></button>';
+  }
+  pn+='<div class="pn" style="--c:'+COL[p]+'"><h2><span>'+esc(names[p])+'</span><span>'+sc[p]+'</span></h2><div class="st">'+(pk[p]>=0&&!done?'Қате! Басқасын күт.':'')+'</div><div class="opts">'+o+'</div></div>';
+ }
+ app.innerHTML='<div class="card">'+lane(0)+lane(1)+'<p class="sub" style="margin-top:14px">Сұрақ '+(i+1)+' / '+Q.length+'</p><p class="q">'+esc(q[0])+'</p></div><div class="'+cls+'" aria-live="polite">'+m+'</div><div class="duel">'+pn+'</div>'+(done?'<button class="go" id="nx" type="button" style="margin-top:20px">'+(i==Q.length-1?'Нәтижені көру':'Келесі сұрақ')+'</button>':'');
+ var bs=app.querySelectorAll('.o');for(var j=0;j<bs.length;j++)bs[j].onclick=function(){pick(+this.getAttribute('data-p'),+this.getAttribute('data-k'))};
+ var nx=document.getElementById('nx');if(nx){nx.onclick=function(){i++;if(i>=Q.length)end();else round()};nx.focus()}
+}
+function pick(p,k){
+ if(done||pk[p]>=0)return;
+ pk[p]=k;
+ if(k===Q[i][2]){win=p;sc[p]++;done=true}
+ else if(pk[0]>=0&&pk[1]>=0)done=true;
+ view();
+}
+function end(){
+ var t,w;
+ if(sc[0]===sc[1]){t='🤝';w='Тең жарыс!'}else{var p=sc[0]>sc[1]?0:1;t='🏆';w=esc(names[p])+' жеңді!'}
+ app.innerHTML='<div class="card end"><p class="trophy">'+t+'</p><p class="big">'+w+'</p><div class="res"><span style="color:var(--p1)">'+esc(names[0])+': '+sc[0]+'</span><span style="color:var(--p2)">'+esc(names[1])+': '+sc[1]+'</span></div><button class="go" id="again" type="button">Қайта ойнау</button><button class="go sec" id="chg" type="button">Басқа оқушылар</button></div>';
+ document.getElementById('again').onclick=function(){sc=[0,0];i=0;round()};
+ document.getElementById('chg').onclick=function(){names=['Ойыншы 1','Ойыншы 2'];start()};
+}
+var th=document.getElementById('th'),root=document.documentElement;
+th.onclick=function(){var dark=getComputedStyle(root).getPropertyValue('--bg').trim()==='#0a1330';root.setAttribute('data-theme',dark?'light':'dark');th.textContent=dark?'Түнгі режим':'Күндізгі режим'};
+start();
+</script>
+</body>
+</html>

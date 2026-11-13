@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>№18 — Бірөлшемді массивте деректерді енгізу және шығару</title>
+<style>
+:root{--b:#0b4f9c;--c:#16b9df;--n:#071d3b;--bg:#eef7ff;--ok:#128a54;--bad:#c43d4b}
+*{box-sizing:border-box} body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(135deg,#eaf6ff,#f8fbff);color:#14263d}
+header{background:linear-gradient(120deg,var(--n),var(--b));color:white;padding:28px 18px;text-align:center}
+header h1{margin:0;font-size:clamp(24px,4vw,42px)} header p{opacity:.9}
+main{max-width:1050px;margin:auto;padding:20px}
+.card{background:white;border-radius:22px;padding:22px;margin:18px 0;box-shadow:0 10px 28px #0b4f9c18;border:1px solid #d8ecff}
+.badge{display:inline-block;background:#dff6ff;color:#075c89;padding:7px 12px;border-radius:20px;font-weight:700}
+h2{color:var(--b)} code,pre{font-family:Consolas,monospace}
+pre{background:#071d3b;color:#eaf7ff;padding:16px;border-radius:15px;overflow:auto;font-size:16px}
+button,.choice{border:0;border-radius:14px;padding:13px 17px;margin:6px;font-size:16px;cursor:pointer;touch-action:manipulation}
+button{background:var(--b);color:white}.choice{background:#eaf4ff;color:#123b67;border:2px solid transparent}
+.choice:hover,.choice.sel{border-color:var(--c);background:#dff7ff}
+input,select{padding:12px;border:2px solid #b9d8f3;border-radius:12px;font-size:17px;max-width:100%}
+.feedback{font-weight:700;margin-top:10px}.ok{color:var(--ok)}.bad{color:var(--bad)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.array span{padding:15px 18px;background:#e8f4ff;border:2px solid #9dccf3;border-radius:14px;font-weight:700;font-size:20px}
+.score{position:sticky;top:8px;z-index:5;background:#071d3be8;color:white;border-radius:18px;padding:12px 18px;display:flex;justify-content:space-between;backdrop-filter:blur(8px)}
+.small{color:#58708b}.taskno{font-weight:800;color:#16a5c8}
+@media(max-width:600px){.card{padding:16px}button,.choice{width:100%;margin:5px 0}}
+</style>
+</head>
+<body>
+<header>
+<h1>№18 сабақ • Бірөлшемді массивте деректерді енгізу және шығару</h1>
+<p>9-сынып • Python • Интерактивті практикум</p>
+</header>
+<main>
+<div class="score"><b>Нәтиже</b><span><b id="score">0</b> / 20 балл</span></div>
+
+<div class="card"><span class="badge">Жылдам қайталау</span>
+<h2>Массивпен жұмыс</h2>
+<p>Python-да бірөлшемді массив ретінде <b>list</b> қолданамыз. Индекс 0-ден басталады.</p>
+<pre>a = [12, 7, 5, 18, 9]
+print(a[0])     # 12
+print(len(a))   # 5</pre>
+</div>
+
+<div class="card" id="t1"><div class="taskno">1-тапсырма • Индексті тап</div>
+<h2>Қай элементтің индексі 3?</h2>
+<div class="array row"><span>8</span><span>14</span><span>6</span><span>21</span><span>10</span></div>
+<div class="row"><button class="choice" onclick="pick(1,this,0)">8</button><button class="choice" onclick="pick(1,this,0)">14</button><button class="choice" onclick="pick(1,this,0)">6</button><button class="choice" onclick="pick(1,this,2)">21</button><button class="choice" onclick="pick(1,this,0)">10</button></div>
+<div class="feedback"></div></div>
+
+<div class="card" id="t2"><div class="taskno">2-тапсырма • Нәтижені болжа</div>
+<h2>Код экранға не шығарады?</h2>
+<pre>a = [3, 9, 12, 5]
+print(a[1])</pre>
+<div class="row"><button class="choice" onclick="pick(2,this,0)">3</button><button class="choice" onclick="pick(2,this,2)">9</button><button class="choice" onclick="pick(2,this,0)">12</button><button class="choice" onclick="pick(2,this,0)">5</button></div>
+<div class="feedback"></div></div>
+
+<div class="card" id="t3"><div class="taskno">3-тапсырма • Кодты толықтыр</div>
+<h2>5 санды бір жолдан енгізетін команданы жаз.</h2>
+<pre>a = list(map(int, <input id="q3" placeholder="..."> .split()))</pre>
+<button onclick="textCheck(3,'q3','input()',2)">Тексеру</button><div class="feedback"></div></div>
+
+<div class="card" id="t4"><div class="taskno">4-тапсырма • Дұрыс функция</div>
+<h2>Массивтегі элементтер санын не анықтайды?</h2>
+<div class="row"><button class="choice" onclick="pick(4,this,0)">sum(a)</button><button class="choice" onclick="pick(4,this,2)">len(a)</button><button class="choice" onclick="pick(4,this,0)">max(a)</button><button class="choice" onclick="pick(4,this,0)">input(a)</button></div><div class="feedback"></div></div>
+
+<div class="card" id="t5"><div class="taskno">5-тапсырма • Циклді түсін</div>
+<h2>Нәтижені таңда.</h2>
+<pre>a = [2, 4, 6]
+for x in a:
+    print(x, end=" ")</pre>
+<div class="row"><button class="choice" onclick="pick(5,this,2)">2 4 6</button><button class="choice" onclick="pick(5,this,0)">0 1 2</button><button class="choice" onclick="pick(5,this,0)">12</button><button class="choice" onclick="pick(5,this,0)">[2]</button></div><div class="feedback"></div></div>
+
+<div class="card" id="t6"><div class="taskno">6-тапсырма • Қате код</div>
+<h2>Қате қай жолда?</h2>
+<pre>1  a = [10, 20, 30]
+2  print(a[0])
+3  print(a[3])</pre>
+<div class="row"><button class="choice" onclick="pick(6,this,0)">1-жол</button><button class="choice" onclick="pick(6,this,0)">2-жол</button><button class="choice" onclick="pick(6,this,2)">3-жол</button></div><div class="feedback"></div></div>
+
+<div class="card" id="t7"><div class="taskno">7-тапсырма • append()</div>
+<h2>Кодтан кейін a массиві қандай болады?</h2>
+<pre>a = [5, 10]
+a.append(15)</pre>
+<div class="row"><button class="choice" onclick="pick(7,this,2)">[5, 10, 15]</button><button class="choice" onclick="pick(7,this,0)">[15, 5, 10]</button><button class="choice" onclick="pick(7,this,0)">[5, 15]</button></div><div class="feedback"></div></div>
+
+<div class="card" id="t8"><div class="taskno">8-тапсырма • Пернетақтадан енгізу</div>
+<h2>Бос орынды толтыр.</h2>
+<pre>a = []
+for i in range(4):
+    x = int(input())
+    a.<input id="q8" placeholder="әдіс">(x)
+print(a)</pre>
+<button onclick="textCheck(8,'q8','append',2)">Тексеру</button><div class="feedback"></div></div>
+
+<div class="card" id="t9"><div class="taskno">9-тапсырма • Есептеу</div>
+<h2>a = [4, 7, 9, 5] массивінің қосындысын тап.</h2>
+<input id="q9" type="number" placeholder="Жауап"><button onclick="textCheck(9,'q9','25',2)">Тексеру</button><div class="feedback"></div></div>
+
+<div class="card" id="t10"><div class="taskno">10-тапсырма • Орташа мән</div>
+<h2>[5, 4, 3, 5, 4] бағаларының орташа мәні қанша?</h2>
+<div class="row"><button class="choice" onclick="pick(10,this,0)">5</button><button class="choice" onclick="pick(10,this,2)">4.2</button><button class="choice" onclick="pick(10,this,0)">4</button><button class="choice" onclick="pick(10,this,0)">21</button></div><div class="feedback"></div></div>
+
+<div class="card" id="t11"><div class="taskno">11-тапсырма • Код нәтижесі</div>
+<h2>Нәтижені тап.</h2>
+<pre>a = [8, 3, 11, 6]
+print(max(a) - min(a))</pre>
+<input id="q11" type="number" placeholder="Жауап"><button onclick="textCheck(11,'q11','8',2)">Тексеру</button><div class="feedback"></div></div>
+
+<div class="card" id="t12"><div class="taskno">12-тапсырма • Шартпен шығару</div>
+<h2>Қандай сандар шығады?</h2>
+<pre>a = [3, 8, 12, 5, 16]
+for x in a:
+    if x > 7:
+        print(x, end=" ")</pre>
+<div class="row"><button class="choice" onclick="pick(12,this,2)">8 12 16</button><button class="choice" onclick="pick(12,this,0)">3 5</button><button class="choice" onclick="pick(12,this,0)">12 16</button><button class="choice" onclick="pick(12,this,0)">Барлығы</button></div><div class="feedback"></div></div>
+
+<div class="card" id="t13"><div class="taskno">13-тапсырма • Индекс бойынша шығару</div>
+<h2>Соңғы элементті индекспен шығарудың дұрыс тәсілі қайсы?</h2>
+<div class="row"><button class="choice" onclick="pick(13,this,0)">a[len(a)]</button><button class="choice" onclick="pick(13,this,2)">a[len(a)-1]</button><button class="choice" onclick="pick(13,this,0)">a[1]</button></div><div class="feedback"></div></div>
+
+<div class="card" id="t14"><div class="taskno">14-тапсырма • Өмірлік есеп</div>
+<h2>Температуралар: [18, 21, 19, 24, 22]. Ең жоғары температура?</h2>
+<input id="q14" type="number" placeholder="°C"><button onclick="textCheck(14,'q14','24',2)">Тексеру</button><div class="feedback"></div></div>
+
+<div class="card" id="t15"><div class="taskno">15-тапсырма • Challenge</div>
+<h2>Кодтың нәтижесі қандай?</h2>
+<pre>a = [2, 5, 8, 11, 14]
+s = 0
+for x in a:
+    if x % 2 == 0:
+        s += x
+print(s)</pre>
+<div class="row"><button class="choice" onclick="pick(15,this,0)">40</button><button class="choice" onclick="pick(15,this,2)">24</button><button class="choice" onclick="pick(15,this,0)">16</button><button class="choice" onclick="pick(15,this,0)">3</button></div><div class="feedback"></div></div>
+
+<div class="card">
+<h2>Қорытынды</h2>
+<p id="final">Барлық тапсырманы орындап шық. Жоғарыдағы нәтиже автоматты есептеледі.</p>
+<button onclick="finish()">Нәтижені көрсету</button>
+<button onclick="location.reload()">Қайта бастау</button>
+</div>
+</main>
+<script>
+let score=0, done={};
+function fb(n,msg,ok){
+ const e=document.querySelector('#t'+n+' .feedback'); e.textContent=msg; e.className='feedback '+(ok?'ok':'bad');
+}
+function award(n,pts){if(!done[n]){done[n]=true;score+=pts;document.getElementById('score').textContent=score}}
+function pick(n,el,pts){
+ if(done[n])return;
+ document.querySelectorAll('#t'+n+' .choice').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');
+ if(pts){award(n,pts);fb(n,'Дұрыс! +2 балл ✓',true)}else{done[n]=true;fb(n,'Қате. Кодты/массивті тағы бір рет талда.',false)}
+}
+function textCheck(n,id,ans,pts){
+ if(done[n])return;
+ let v=document.getElementById(id).value.trim().replace(/\s+/g,'');
+ let a=ans.replace(/\s+/g,'');
+ done[n]=true;
+ if(v===a){score+=pts;document.getElementById('score').textContent=score;fb(n,'Дұрыс! +2 балл ✓',true)}
+ else fb(n,'Қате. Дұрыс жауапты қайта ойлан.',false);
+}
+function finish(){
+ let answered=Object.keys(done).length;
+ let pct=Math.round(score/30*100);
+ let level=score>=26?'Өте жақсы!':score>=20?'Жақсы нәтиже!':score>=14?'Орташа. Тағы жаттық!':'Тақырыпты қайталау керек.';
+ document.getElementById('final').innerHTML=`Орындалғаны: <b>${answered}/15</b><br>Балл: <b>${score}/30</b> (${pct}%)<br><b>${level}</b>`;
+}
+</script>
+</body></html>

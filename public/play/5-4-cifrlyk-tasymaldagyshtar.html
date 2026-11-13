@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="kk">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ақпаратты цифрлық тасымалдағыштар</title>
+<style>
+:root{--bg:#0f172a;--text:#f8fafc;--muted:#b9c4d6;--accent:#22d3ee;--accent2:#38bdf8;--line:#263652}
+*{box-sizing:border-box}
+html{height:100%}
+body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(135deg,#0b1224,#101a31 55%,#0b1730);background-color:#0b1224;color:var(--text);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.container{max-width:1050px;margin:auto;padding:28px 18px 60px}
+.hero{background:linear-gradient(135deg,#16223f,#0f2b46);border:1px solid #24486b;border-radius:22px;padding:26px}
+.badge{display:inline-block;background:#0b3950;color:#9eeeff;border:1px solid #16637c;padding:7px 12px;border-radius:999px;font-weight:700;font-size:13px}
+h1{margin:14px 0 8px;font-size:clamp(28px,5vw,46px)}
+.hero p{color:var(--muted);margin:6px 0 0;line-height:1.6}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px;margin-top:18px}
+.card{background:rgba(17,28,52,.96);border:1px solid var(--line);border-radius:18px;padding:18px;margin-top:16px}
+.grid .card{margin-top:0}
+.card h2{margin:0 0 10px;font-size:20px}
+.q{margin:14px 0;padding:14px;border:1px solid #263a59;border-radius:14px;background:#0d1830}
+.q p{margin:0 0 10px;line-height:1.55}
+.option,.chk{display:block;padding:10px 12px;border:1px solid #2c4161;border-radius:11px;margin:8px 0;cursor:pointer;background:#111f3b}
+.chk{display:flex;gap:10px;align-items:flex-start}
+.chk input{margin-top:3px}
+.option:hover,.chk:hover{border-color:#49d8f5;background:#13284a}
+input[type=text],textarea{width:100%;background:#0a1427;color:#fff;border:1px solid #355072;border-radius:10px;padding:11px 12px;font-size:15px;outline:none}
+textarea{min-height:120px;font-family:ui-monospace,Menlo,monospace}
+button{border:0;border-radius:11px;padding:11px 16px;font-weight:800;cursor:pointer;margin:6px 6px 0 0}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#062033}
+.btn2{background:#233654;color:#e8f7ff;border:1px solid #36547b}
+.result{margin-top:10px;font-weight:800}
+.ok{color:#61e58a}.bad{color:#ff7474}
+code,pre{font-family:ui-monospace,Menlo,monospace}
+pre{white-space:pre-wrap;background:#071120;border:1px solid #223855;border-radius:13px;padding:14px;overflow:auto;color:#eaf8ff;line-height:1.55}
+.kpi{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.kpi span{background:#0b2039;border:1px solid #234769;border-radius:12px;padding:9px 12px;color:#cdeefe}
+.scorebox{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;margin:16px 0;background:#0a1c33;border:1px solid #22517a;border-radius:14px;padding:12px 14px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.small{font-size:13px;color:var(--muted)}
+.tbl{width:100%;border-collapse:collapse;font-size:14px;display:block;overflow-x:auto}
+.tbl th,.tbl td{border:1px solid #2c4161;padding:8px 10px;text-align:left}
+.tbl th{background:#0b2039;color:#cdeefe}
+footer{margin-top:28px;color:#8fa0b9;text-align:center;font-size:13px}
+@media (max-width:600px){.container{padding:16px 12px 40px}.hero{padding:20px}.card{padding:14px}}
+</style>
+</head>
+<body>
+<div class="container">
+<section class="hero">
+<span class="badge">5-сынып • Информатика • Интерактив тапсырма</span>
+<h1>Ақпаратты цифрлық тасымалдағыштар</h1>
+<p>Флешка, қатты диск, SSD, жад картасы, оптикалық диск және бұлттық сақтау: ақпаратты қайда және қалай сақтауға болады.</p>
+<div class="kpi"><span>Автотексеру</span><span>Салыстыру</span><span>Есептер</span><span>Өзіндік жұмыс</span></div>
+</section>
+<div class="scorebox"><div><b>Жинаған ұпай:</b> <span id="score">0</span> / 8</div><button class="btn2" onclick="resetAll()">Қайта бастау</button></div>
+
+<section class="card">
+<h2>Еске түсірейік</h2>
+<table class="tbl">
+<tr><th>Тасымалдағыш</th><th>Қайда қолданылады</th><th>Ерекшелігі</th></tr>
+<tr><td>USB-флешка</td><td>Файлды бір компьютерден екіншісіне көшіру</td><td>Шағын, жылжымалы бөлшегі жоқ</td></tr>
+<tr><td>Қатты диск (HDD)</td><td>Компьютердің негізгі қоймасы</td><td>Көлемі үлкен, ішінде айналатын диск бар</td></tr>
+<tr><td>SSD</td><td>Заманауи компьютерлер мен ноутбуктер</td><td>Жылдам, қозғалатын бөлшегі жоқ</td></tr>
+<tr><td>Жад картасы (microSD)</td><td>Телефон, фотоаппарат</td><td>Өте кішкентай</td></tr>
+<tr><td>CD / DVD</td><td>Музыка, фильм, бағдарлама</td><td>Лазермен оқылады, сызылса бүлінеді</td></tr>
+<tr><td>Бұлттық сақтау</td><td>Интернеттегі қойма (Google Drive т.б.)</td><td>Интернет арқылы кез келген жерден ашылады</td></tr>
+</table>
+</section>
+
+<div class="grid">
+<section class="card">
+<h2>1. Негізгі ұғымдар</h2>
+<div class="q"><p><b>1.</b> Цифрлық тасымалдағыш дегеніміз...</p>
+<label class="option"><input type="radio" name="q1" value="a"> ақпаратты цифрлық түрде сақтайтын құрылғы</label>
+<label class="option"><input type="radio" name="q1" value="b"> тек қағаз бетіндегі жазу</label>
+<label class="option"><input type="radio" name="q1" value="c"> компьютердің пернетақтасы</label>
+<button class="btn" onclick="checkRadio('q1','a','r1','k1')">Тексеру</button><div id="r1" class="result"></div></div>
+
+<div class="q"><p><b>2.</b> Қайсысы цифрлық тасымалдағыш <u>емес</u>?</p>
+<label class="option"><input type="radio" name="q2" value="a"> USB-флешка</label>
+<label class="option"><input type="radio" name="q2" value="b"> Қағаз дәптер</label>
+<label class="option"><input type="radio" name="q2" value="c"> SSD</label>
+<button class="btn" onclick="checkRadio('q2','b','r2','k2')">Тексеру</button><div id="r2" class="result"></div></div>
+</section>
+
+<section class="card">
+<h2>2. Көлем бірліктері</h2>
+<div class="q"><p><b>3.</b> 1 Килобайт (КБ) неше байт? (санмен жаз)</p>
+<p class="small">Көрсеткіш: информатикада 1 КБ = 1024 байт.</p>
+<input id="t3" type="text" inputmode="numeric"><button class="btn" onclick="checkText('t3',['1024'],'r3','k3')">Тексеру</button><div id="r3" class="result"></div></div>
+
+<div class="q"><p><b>4.</b> Бірліктерді кішіден үлкенге қарай дұрыс орналастыр:</p>
+<label class="option"><input type="radio" name="q4" value="a"> байт → КБ → МБ → ГБ → ТБ</label>
+<label class="option"><input type="radio" name="q4" value="b"> ГБ → МБ → КБ → байт → ТБ</label>
+<label class="option"><input type="radio" name="q4" value="c"> МБ → байт → ТБ → КБ → ГБ</label>
+<button class="btn" onclick="checkRadio('q4','a','r4','k4')">Тексеру</button><div id="r4" class="result"></div></div>
+</section>
+</div>
+
+<section class="card">
+<h2>3. Қайсысын таңдаймыз?</h2>
+<div class="q"><p><b>5.</b> Телефонда фото мен бейне сақтау үшін көбіне қандай тасымалдағыш қолданылады?</p>
+<label class="option"><input type="radio" name="q5" value="a"> CD-диск</label>
+<label class="option"><input type="radio" name="q5" value="b"> Жад картасы (microSD)</label>
+<label class="option"><input type="radio" name="q5" value="c"> Дискета</label>
+<button class="btn" onclick="checkRadio('q5','b','r5','k5')">Тексеру</button><div id="r5" class="result"></div></div>
+
+<div class="q"><p><b>6.</b> Қайсысы цифрлық тасымалдағыш? Дұрыстарын белгіле:</p>
+<label class="chk"><input type="checkbox" name="m" value="1"> Қатты диск (HDD)</label>
+<label class="chk"><input type="checkbox" name="m" value="0"> Оқулық кітап</label>
+<label class="chk"><input type="checkbox" name="m" value="1"> DVD-диск</label>
+<label class="chk"><input type="checkbox" name="m" value="0"> Сурет салған қағаз</label>
+<label class="chk"><input type="checkbox" name="m" value="1"> Бұлттық сақтау</label>
+<button class="btn" onclick="checkMulti()">Тексеру</button><div id="r6" class="result"></div></div>
+</section>
+
+<section class="card">
+<h2>4. Есеп</h2>
+<div class="q"><p><b>7.</b> Флешканың көлемі 8 ГБ. Онда 3 ГБ бейне сақталған. Қанша ГБ бос орын қалды? (санмен жаз)</p>
+<input id="t7" type="text" inputmode="numeric"><button class="btn" onclick="checkText('t7',['5'],'r7','k7')">Тексеру</button><div id="r7" class="result"></div></div>
+
+<div class="q"><p><b>8.</b> Флешканы дұрыс қалай пайдалануға болады?</p>
+<label class="option"><input type="radio" name="q8" value="a"> Файл көшіріліп жатқанда суырып алу</label>
+<label class="option"><input type="radio" name="q8" value="b"> Құрылғыны «қауіпсіз өшіру» арқылы алу, суға салмау, құлатпау</label>
+<label class="option"><input type="radio" name="q8" value="c"> Қыздырғыштың жанында сақтау</label>
+<button class="btn" onclick="checkRadio('q8','b','r8','k8')">Тексеру</button><div id="r8" class="result"></div></div>
+</section>
+
+<div class="grid">
+<section class="card">
+<h2>5. Мини-жоба: салыстыру кестесі</h2>
+<p>Флешка, қатты диск және DVD-диск үшін кесте жаз: <b>атауы</b>, <b>қайда қолданылады</b>, <b>артықшылығы</b>, <b>кемшілігі</b>.</p>
+<textarea placeholder="Кесте..."></textarea>
+<button class="btn2" onclick="show('ans1')">Үлгі жауап</button>
+<pre id="ans1" style="display:none">Флешка: файл көшіру; шағын, әр компьютерге қосылады; жоғалтып алу оңай.
+Қатты диск: компьютердің негізгі қоймасы; көлемі үлкен; соққыдан бүлінуі мүмкін.
+DVD-диск: фильм, бағдарлама сақтау; арзан; сызылса оқылмайды, көлемі аз.</pre>
+</section>
+
+<section class="card">
+<h2>6. Менің сақтау жоспарым</h2>
+<p>Сенде 4 ГБ бейне, 2 ГБ фото және 1 ГБ құжат бар. Оларды қайда сақтайсың? Қандай тасымалдағыш таңдайсың және неге?</p>
+<textarea placeholder="Жауабың..."></textarea>
+<button class="btn2" onclick="show('ans2')">Бір мүмкін шешім</button>
+<pre id="ans2" style="display:none">Барлығы 4 + 2 + 1 = 7 ГБ. Ол 8 ГБ флешкаға сыяды, бірақ бос орын аз.
+Тиімдісі: 16 ГБ флешка немесе қатты диск таңдау. Маңызды құжаттың көшірмесін бұлттық қоймаға да сақтау керек, өйткені флешка жоғалуы мүмкін.</pre>
+</section>
+</div>
+
+<p class="small" style="margin-top:16px">Автоұпай: 8 балл. Мини-жоба мен сақтау жоспары мұғаліммен бағаланады.</p>
+<footer>Информатика • 5-сынып • Цифрлық тасымалдағыштар • HTML интерактив тапсырмалар</footer>
+</div>
+<script>
+let score=0;const checked=new Set();
+function mark(id,ok,msg){const el=document.getElementById(id);el.className='result '+(ok?'ok':'bad');el.textContent=msg}
+function addScore(key,pts){if(!checked.has(key)){score+=pts;checked.add(key);document.getElementById('score').textContent=score}}
+function checkRadio(name,correct,out,key){
+  const x=document.querySelector('input[name="'+name+'"]:checked');
+  if(!x){mark(out,false,'Жауапты таңдаңыз.');return}
+  const ok=x.value===correct;
+  mark(out,ok,ok?'Дұрыс!':'Қате. Қайта ойланып көріңіз.');
+  if(ok)addScore(key,1)
+}
+function checkText(id,answers,out,key){
+  const v=document.getElementById(id).value.trim().toLowerCase().replace(/\s+/g,' ');
+  const ok=answers.some(a=>v===a);
+  mark(out,ok,ok?'Дұрыс!':'Қате. Жауапты қайта тексеріңіз.');
+  if(ok)addScore(key,1)
+}
+function checkMulti(){
+  const all=[...document.querySelectorAll('input[name="m"]')];
+  if(!all.some(i=>i.checked)){mark('r6',false,'Кемінде біреуін белгілеңіз.');return}
+  const ok=all.every(i=>i.checked===(i.value==='1'));
+  mark('r6',ok,ok?'Дұрыс!':'Қате. Қағаз бұйымдар цифрлық тасымалдағыш емес.');
+  if(ok)addScore('k6',1)
+}
+function show(id){const e=document.getElementById(id);e.style.display=e.style.display==='none'?'block':'none'}
+function resetAll(){location.reload()}
+</script>
+</body></html>

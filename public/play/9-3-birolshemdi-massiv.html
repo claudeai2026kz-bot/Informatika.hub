@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="kk">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>№17 Бірөлшемді массив — интерактивті тапсырмалар</title>
+<style>
+:root{--b:#0b4ea2;--c:#16b7df;--n:#071f42;--bg:#eef6ff;--ok:#16834a;--bad:#c93636}
+*{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:linear-gradient(135deg,#eaf5ff,#f9fcff);color:#13243a}
+header{background:linear-gradient(120deg,var(--n),var(--b));color:#fff;padding:24px 18px;position:sticky;top:0;z-index:5;box-shadow:0 4px 20px #0002}
+.wrap{max-width:980px;margin:auto}.top{display:flex;gap:12px;align-items:center;justify-content:space-between}.badge{background:#ffffff1c;border:1px solid #ffffff44;padding:7px 12px;border-radius:999px}.score{font-weight:800;font-size:18px}
+h1{font-size:clamp(24px,4vw,38px);margin:10px 0 4px} header p{margin:0;opacity:.9}
+main{max-width:980px;margin:22px auto;padding:0 14px 50px}.card{background:#fff;border:1px solid #d7e8f7;border-radius:22px;padding:22px;margin:18px 0;box-shadow:0 10px 30px #0b4ea20f}.card h2{margin-top:0;color:var(--b)}
+.arr{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0}.cell{min-width:62px;text-align:center;padding:15px 12px;border-radius:14px;background:#eaf4ff;border:2px solid #a9d4f5;font-size:22px;font-weight:800;cursor:pointer;transition:.15s;user-select:none}.cell:hover,.cell.sel{transform:translateY(-3px);border-color:var(--c);background:#d9f7ff}.idx{font-size:11px;font-weight:600;color:#667;margin-top:4px}
+button{border:0;border-radius:13px;padding:12px 17px;font-weight:750;cursor:pointer;background:var(--b);color:#fff;font-size:15px}button.secondary{background:#e7f2ff;color:var(--b)}button:hover{filter:brightness(1.08)}
+input,select{padding:12px;border:2px solid #c9dced;border-radius:12px;font-size:16px;max-width:100%}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.feedback{margin-top:12px;font-weight:750;min-height:24px}.ok{color:var(--ok)}.bad{color:var(--bad)}
+pre{background:#071f42;color:#eaf7ff;padding:18px;border-radius:16px;overflow:auto;font:15px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace}.dropzone{border:2px dashed #82bde7;background:#f4faff;border-radius:15px;padding:15px;min-height:58px;display:flex;gap:8px;flex-wrap:wrap}.chip{padding:10px 13px;background:#dff5ff;border:1px solid #8dd6f2;border-radius:12px;cursor:grab;font-weight:700}.progress{height:9px;background:#d9e9f5;border-radius:99px;overflow:hidden;margin-top:10px}.bar{height:100%;width:0;background:linear-gradient(90deg,var(--c),var(--b));transition:.3s}.final{font-size:25px;font-weight:900}.small{color:#63758b;font-size:14px}.hidden{display:none}@media(max-width:600px){.card{padding:16px}.cell{min-width:54px;padding:12px 9px}.top{align-items:flex-start;flex-direction:column}}
+</style>
+</head><body>
+<header><div class="wrap"><div class="top"><span class="badge">9-сынып • Python • №17 сабақ</span><span class="score">Балл: <b id="score">0</b>/10</span></div><h1>Бірөлшемді массив</h1><p>Интерактивті практикум • оқу мақсаты 9.3.3.1</p><div class="progress"><div class="bar" id="bar"></div></div></div></header>
+<main>
+<section class="card"><h2>1. Индексті тап — 2 балл</h2><p><b>a = [12, 7, 5, 18, 9]</b>. Мәні <b>18</b> болатын элементті бас.</p><div class="arr" id="arr1"></div><div class="feedback" id="f1"></div></section>
+
+<section class="card"><h2>2. Массивті құрастыр — 2 балл</h2><p>Элементтерді өсу ретімен орналастыр: <b>[3, 6, 8, 11]</b>. Карточкаларды төменгі аймаққа дұрыс ретпен басып көшір.</p><div class="row" id="chips"></div><p class="small">Таңдалған рет:</p><div class="dropzone" id="drop"></div><div class="row" style="margin-top:12px"><button onclick="check2()">Тексеру</button><button class="secondary" onclick="reset2()">Қайта бастау</button></div><div class="feedback" id="f2"></div></section>
+
+<section class="card"><h2>3. Кодты толықтыр — 2 балл</h2><pre>a = [4, 7, 9, 6, 8]
+print( _____ (a) )   # элементтер саны
+print( _____ (a) )   # ең үлкен элемент</pre><div class="row"><select id="q31"><option value="">1-бос орын</option><option>sum</option><option>len</option><option>max</option></select><select id="q32"><option value="">2-бос орын</option><option>min</option><option>max</option><option>len</option></select><button onclick="check3()">Тексеру</button></div><div class="feedback" id="f3"></div></section>
+
+<section class="card"><h2>4. Код нәтижесін болжа — 2 балл</h2><pre>a = [5, 2, 8, 4]
+s = 0
+for x in a:
+    if x % 2 == 0:
+        s += x
+print(s)</pre><div class="row"><input id="q4" inputmode="numeric" placeholder="Нәтижені жаз"><button onclick="check4()">Жауап беру</button></div><div class="feedback" id="f4"></div></section>
+
+<section class="card"><h2>5. Қатені тап — 2 балл</h2><pre>a = [10, 20, 30, 40]
+print(a[4])</pre><p>Код қате береді. Соңғы элементті дұрыс шығаратын индексті жаз.</p><div class="row"><span><b>a[</b></span><input id="q5" style="width:90px" placeholder="?"><span><b>]</b></span><button onclick="check5()">Тексеру</button></div><div class="feedback" id="f5"></div></section>
+
+<section class="card"><h2>Нәтиже</h2><p class="final" id="final">Барлық тапсырманы орындап көр ✨</p><p id="level"></p><button onclick="location.reload()">Қайта орындау</button></section>
+</main>
+<script>
+let score=0, done={};
+function award(k,pts){if(!done[k]){done[k]=1;score+=pts;document.getElementById('score').textContent=score;document.getElementById('bar').style.width=(score*10)+'%';finalize()}}
+function msg(id,ok,t){let e=document.getElementById(id);e.className='feedback '+(ok?'ok':'bad');e.textContent=(ok?'✓ ':'✗ ')+t}
+function finalize(){let f=document.getElementById('final'),l=document.getElementById('level');if(score===10){f.textContent='10/10 — Керемет! 🎉';l.textContent='Сен бірөлшемді массивтің негізгі ұғымдарын сенімді қолдана аласың.'}else if(score>=7){f.textContent=score+'/10 — Жақсы нәтиже!';l.textContent='Индекс пен Python функцияларын тағы бір рет бекітсең, өте жақсы болады.'}else{f.textContent=score+'/10 — Жалғастыр!';l.textContent='Массив, индекс, len(), max() және цикл тақырыптарын қайталап көр.'}}
+const vals=[12,7,5,18,9];let a1=document.getElementById('arr1');vals.forEach((v,i)=>{let d=document.createElement('div');d.className='cell';d.innerHTML=v+'<div class="idx">индекс '+i+'</div>';d.onclick=()=>{document.querySelectorAll('#arr1 .cell').forEach(x=>x.classList.remove('sel'));d.classList.add('sel');if(v===18){msg('f1',1,'Дұрыс! 18 элементінің индексі — 3.');award('q1',2)}else msg('f1',0,'Тағы ойлан: индекстер 0-ден басталады.')};a1.appendChild(d)});
+let source=[11,3,8,6], picked=[];function renderChips(){let c=document.getElementById('chips');c.innerHTML='';source.forEach(v=>{let x=document.createElement('span');x.className='chip';x.textContent=v;x.onclick=()=>{picked.push(v);source=source.filter((z,idx)=>!(z===v && idx===source.indexOf(v)));renderChips();renderDrop()};c.appendChild(x)})}function renderDrop(){document.getElementById('drop').innerHTML=picked.map(v=>'<span class="chip">'+v+'</span>').join('')}function reset2(){source=[11,3,8,6];picked=[];renderChips();renderDrop();document.getElementById('f2').textContent=''}function check2(){let ok=JSON.stringify(picked)===JSON.stringify([3,6,8,11]);msg('f2',ok,ok?'Дұрыс рет!':'Ретті қайта тексер.');if(ok)award('q2',2)}renderChips();
+function check3(){let ok=document.getElementById('q31').value==='len'&&document.getElementById('q32').value==='max';msg('f3',ok,ok?'len(a)=5, max(a)=9.':'Бірінші функция элементтер санын, екіншісі ең үлкен мәнді табуы керек.');if(ok)award('q3',2)}
+function check4(){let ok=document.getElementById('q4').value.trim()==='14';msg('f4',ok,ok?'Дұрыс: 2 + 8 + 4 = 14.':'Цикл тек жұп сандарды s айнымалысына қосады.');if(ok)award('q4',2)}
+function check5(){let v=document.getElementById('q5').value.trim();let ok=v==='3'||v==='-1';msg('f5',ok,ok?'Дұрыс! Соңғы элемент a[3] (немесе a[-1]).':'4 элемент болса, индекстер 0, 1, 2, 3 болады.');if(ok)award('q5',2)}
+</script></body></html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Жұпты тап: Файлдармен жұмыс</title>
+<style>
+:root{--bg:#f3f0fb;--fg:#241a3d;--card:#ffffff;--mut:#6a5f85;--ac:#7c3aed;--gold:#f59e0b;--ok:#16a34a;--back:#7c3aed;--line:#d9d0f0;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#150f26;--fg:#f0eaff;--card:#251a40;--mut:#b2a5d3;--ac:#a78bfa;--back:#5b34b8;--line:#3b2d63}}
+:root[data-theme="dark"]{--bg:#150f26;--fg:#f0eaff;--card:#251a40;--mut:#b2a5d3;--ac:#a78bfa;--back:#5b34b8;--line:#3b2d63}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--fg);font:16px/1.35 Calibri,Arial,sans-serif}
+.w{max-width:640px;margin:0 auto;padding:14px}
+h1{font-size:24px;margin:6px 0 2px}.sub{color:var(--mut);margin-bottom:10px}
+.hud{display:flex;justify-content:space-between;gap:8px;margin-bottom:10px;font-weight:700}
+.hud span{background:var(--card);border-radius:999px;padding:4px 14px;border:2px solid var(--line)}
+.g{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.c{position:relative;height:88px;perspective:600px;cursor:pointer}
+.in{position:absolute;inset:0;transition:transform .35s;transform-style:preserve-3d}
+.c.f .in{transform:rotateY(180deg)}
+.fa,.bk{position:absolute;inset:0;backface-visibility:hidden;border-radius:12px;display:flex;align-items:center;justify-content:center;text-align:center;padding:4px;overflow-wrap:anywhere}
+.bk{background:var(--back);color:#fff;font-size:30px;font-weight:700}
+.fa{transform:rotateY(180deg);background:var(--card);border:2px solid var(--ac);font-size:14px;font-weight:700}
+.fa.t{font-family:"Courier New",monospace;color:var(--ac)}
+.c.m .fa{border-color:var(--ok);background:rgba(22,163,74,.2)}
+.end{margin-top:14px;background:var(--card);border:2px solid var(--gold);border-radius:14px;padding:16px;text-align:center}
+.btn{margin-top:10px;padding:11px 22px;border:0;border-radius:10px;background:var(--ac);color:#fff;font:700 16px Calibri,Arial,sans-serif;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="w">
+<h1>🧩 Жұпты тап</h1>
+<div class="sub">Python-да файлмен жұмыс: терминді мағынасымен жұптастыр. Аз жүріспен аяқта!</div>
+<div class="hud"><span id="mv">Жүріс: 0</span><span id="pr">Жұп: 0 / 8</span><span id="tm">⏱ 0 с</span></div>
+<div class="g" id="g"></div>
+<div id="end"></div>
+</div>
+<script>
+const P=[["open()","Файлды ашады"],['"r"',"Тек оқуға арналған"],['"w"',"Ескіні өшіріп жазады"],['"a"',"Соңына қосып жазады"],["close()","Файлды жабады"],["write()","Файлға жазады"],["read()","Файлдан оқиды"],["FileNotFound Error","Файл табылмады"]];
+let first,lock,mv,pr,t0,tid;
+const g=document.getElementById("g"),$=id=>document.getElementById(id);
+function init(){
+  clearInterval(tid);first=null;lock=false;mv=0;pr=0;t0=0;$("end").innerHTML="";$("mv").textContent="Жүріс: 0";$("pr").textContent="Жұп: 0 / 8";$("tm").textContent="⏱ 0 с";
+  const cards=[];P.forEach((p,i)=>{cards.push({i,t:p[0],c:1});cards.push({i,t:p[1],c:0});});
+  cards.sort(()=>Math.random()-.5);
+  g.innerHTML=cards.map((c,k)=>`<div class="c" data-k="${k}"><div class="in"><div class="bk">?</div><div class="fa ${c.c?"t":""}">${c.t}</div></div></div>`).join("");
+  g.querySelectorAll(".c").forEach((el,k)=>el.onclick=()=>flip(el,cards[k]));
+}
+function flip(el,c){
+  if(lock||el.classList.contains("f"))return;
+  if(!t0){t0=Date.now();tid=setInterval(()=>$("tm").textContent="⏱ "+Math.floor((Date.now()-t0)/1000)+" с",500);}
+  el.classList.add("f");
+  if(!first){first={el,c};return;}
+  mv++;$("mv").textContent="Жүріс: "+mv;
+  if(first.c.i===c.i){first.el.classList.add("m");el.classList.add("m");pr++;$("pr").textContent="Жұп: "+pr+" / 8";first=null;if(pr===8)fin();}
+  else{lock=true;const a=first.el;first=null;setTimeout(()=>{a.classList.remove("f");el.classList.remove("f");lock=false;},800);}
+}
+function fin(){
+  clearInterval(tid);const s=Math.floor((Date.now()-t0)/1000),st=mv<=12?3:mv<=16?2:1;
+  $("end").innerHTML=`<div class="end"><div style="font-size:34px">${"⭐".repeat(st)}${"☆".repeat(3-st)}</div><h2>Барлық жұп табылды!</h2><p>Жүріс: <b>${mv}</b> · уақыт: <b>${s} с</b></p><p>${st===3?"Керемет жады! «Кітапхана билетіне» мөр бас.":st===2?"Жақсы! 16 жүріс немесе одан аз – мөр алдың.":"Тағы бір рет көр – жүрісті азайтуға болады!"}</p><button class="btn" id="re">Қайта ойнау</button></div>`;
+  $("re").onclick=init;
+}
+init();
+</script>
+</body>
+</html>

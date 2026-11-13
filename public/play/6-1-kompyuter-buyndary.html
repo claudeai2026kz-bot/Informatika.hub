@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Иә / Жоқ: компьютер буындары</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;600&family=Unbounded:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#e6ebf2;--ink:#101a2e;--muted:#52607a;--card:#fbfcfe;--line:#c3cddd;--yes:#0b7a5e;--yes-t:#ffffff;--no:#b3263a;--no-t:#ffffff;--acc:#2f5fd0;--hole:#e6ebf2;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1524;--ink:#e8edf7;--muted:#9aa8c4;--card:#18223a;--line:#2c3a5c;--yes:#35c79c;--yes-t:#06251c;--no:#ff7a8c;--no-t:#3a0a13;--acc:#8fb0ff;--hole:#0e1524}}
+:root[data-theme="dark"]{--bg:#0e1524;--ink:#e8edf7;--muted:#9aa8c4;--card:#18223a;--line:#2c3a5c;--yes:#35c79c;--yes-t:#06251c;--no:#ff7a8c;--no-t:#3a0a13;--acc:#8fb0ff;--hole:#0e1524}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 20px/1.5 Onest,Arial,sans-serif;min-height:100vh}
+main{max-width:760px;margin:0 auto;padding:28px 20px 56px}
+h1{font:700 clamp(26px,5vw,38px)/1.15 Unbounded,Arial,sans-serif;margin:0 0 6px}
+.sub{color:var(--muted);margin:0 0 24px}
+.bar{display:flex;gap:6px;margin-bottom:8px}
+.bar i{flex:1;height:10px;border-radius:5px;background:var(--line)}
+.bar i.ok{background:var(--yes)}.bar i.bad{background:var(--no)}.bar i.cur{background:var(--acc)}
+.meta{display:flex;justify-content:space-between;color:var(--muted);font-size:17px;margin-bottom:18px}
+.punch{position:relative;background:var(--card);border:2px solid var(--line);border-radius:14px 14px 14px 14px;padding:44px 28px 30px;clip-path:polygon(0 0,calc(100% - 38px) 0,100% 38px,100% 100%,0 100%)}
+.punch:before{content:"";position:absolute;left:20px;right:60px;top:14px;height:12px;background:radial-gradient(circle,var(--hole) 4px,transparent 5px) 0 0/24px 12px repeat-x}
+.q{font:600 clamp(22px,4.4vw,30px)/1.35 Onest,Arial,sans-serif;margin:0;min-height:5.4em}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:22px}
+button{font:700 28px/1 Unbounded,Arial,sans-serif;border:0;border-radius:14px;padding:22px 10px;cursor:pointer;min-height:72px}
+button:focus-visible{outline:4px solid var(--acc);outline-offset:3px}
+.y{background:var(--yes);color:var(--yes-t)}.n{background:var(--no);color:var(--no-t)}
+button:disabled{opacity:.35;cursor:default}
+button.pick{opacity:1;outline:4px solid var(--ink);outline-offset:3px}
+.fb{margin-top:20px;padding:18px 20px;border-radius:12px;border-left:8px solid var(--line);background:var(--card);min-height:96px}
+.fb.ok{border-color:var(--yes)}.fb.bad{border-color:var(--no)}
+.fb b{font-family:Unbounded,Arial,sans-serif;font-size:20px}
+.next{margin-top:16px;background:var(--ink);color:var(--bg);width:100%;font-size:22px;padding:18px}
+.next[hidden]{display:none}
+.res{text-align:center;padding:10px 0}
+.score{font:700 clamp(60px,16vw,110px)/1 Unbounded,Arial,sans-serif;margin:8px 0}
+.grade{font:700 30px Unbounded,Arial,sans-serif;color:var(--acc);margin:0 0 20px}
+.rev{text-align:left;background:var(--card);border-radius:12px;padding:6px 20px;margin:18px 0}
+.rev p{margin:12px 0;font-size:18px}.rev em{font-style:normal;font-weight:600;color:var(--no)}
+.theme{position:absolute;right:16px;top:calc(12px + env(safe-area-inset-top,0px));background:none;color:var(--muted);font:600 15px Onest,Arial,sans-serif;min-height:0;padding:8px 12px;border:1px solid var(--line);border-radius:20px}
+@media (prefers-reduced-motion:no-preference){.fb{transition:border-color .2s}}
+</style>
+</head>
+<body>
+<button class="theme" id="th" type="button">Түнгі режим</button>
+<main>
+<h1>Иә / Жоқ</h1>
+<p class="sub">Компьютер буындары: тұжырым дұрыс болса «Иә», қате болса «Жоқ» бас.</p>
+<div id="app"></div>
+</main>
+<script>
+var Q=[
+["Бірінші буын компьютерлері электронды лампаларға негізделген.",1,"Дұрыс: бірінші буын машиналары электронды лампалармен жұмыс істеді."],
+["Екінші буын компьютерлері механикалық есептеуіш машиналар болды.",0,"Қате: екінші буында транзисторлар қолданылды, механикалық машиналар одан әлдеқайда ертерек болған."],
+["Үшінші буын компьютерлері транзисторларды пайдаланды.",0,"Қате: үшінші буында транзистор емес, интегралды схемалар қолданылды."],
+["Төртінші буын компьютерлерінде микропроцессорлар пайда болды.",1,"Дұрыс: төртінші буында микропроцессор және дербес компьютер пайда болды."],
+["Қазіргі заманғы компьютерлер бесінші буынға жатады.",1,"Дұрыс: қазіргі компьютерлер бесінші буынға жатады."],
+["Алғашқы есептеу құрылғыларына абакус пен арифмометр жатады.",1,"Дұрыс: абакус пен арифмометр алғашқы есептеу құрылғылары."],
+["Бесінші буын компьютерлері тек ойын ойнау үшін жасалды.",0,"Қате: олар жасанды интеллект элементтерімен жұмыс істеуге арналған."],
+["Қазіргі компьютерлер жасанды интеллект элементтерін қолданады.",1,"Дұрыс: жасанды интеллект қазіргі технологиялардың бір бағыты."],
+["Бірінші буын компьютерлері өте кішкентай әрі жеңіл болды.",0,"Қате: олар бөлмені толтыратын үлкен әрі ауыр машиналар болды."],
+["Компьютерлердің даму тарихын білу болашақтағы технологияны түсінуге көмектеседі.",1,"Дұрыс: тарихты білсең, келесі қадамды болжай аласың."]
+];
+var app=document.getElementById('app'),i=0,res=[],done=false;
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+function bar(){var h='';for(var k=0;k<Q.length;k++){h+='<i class="'+(k<res.length?(res[k]?'ok':'bad'):(k==i?'cur':''))+'"></i>'}return '<div class="bar" aria-hidden="true">'+h+'</div>'}
+function show(){
+ if(i>=Q.length){return finish()}
+ app.innerHTML=bar()+'<div class="meta"><span>Сұрақ '+(i+1)+' / '+Q.length+'</span><span>Дұрыс: '+res.filter(Boolean).length+'</span></div>'+
+ '<div class="punch"><p class="q">'+esc(Q[i][0])+'</p><div class="btns"><button class="y" type="button" data-a="1">Иә</button><button class="n" type="button" data-a="0">Жоқ</button></div></div>'+
+ '<div class="fb" id="fb" aria-live="polite">Жауабыңды таңда.</div><button class="next" id="nx" type="button" hidden>Келесі</button>';
+ var bs=app.querySelectorAll('.btns button');
+ for(var k=0;k<bs.length;k++)bs[k].onclick=function(){answer(+this.getAttribute('data-a'),this)};
+}
+function answer(a,el){
+ var ok=(a===Q[i][1]);res.push(ok);
+ var bs=app.querySelectorAll('.btns button');for(var k=0;k<bs.length;k++){bs[k].disabled=true}
+ el.classList.add('pick');
+ var fb=document.getElementById('fb');fb.className='fb '+(ok?'ok':'bad');
+ fb.innerHTML='<b>'+(ok?'Дұрыс!':'Қате.')+'</b><br>'+esc(Q[i][2]);
+ var nx=document.getElementById('nx');nx.hidden=false;nx.textContent=(i==Q.length-1?'Нәтижені көру':'Келесі');nx.focus();
+ nx.onclick=function(){i++;show();window.scrollTo(0,0)};
+}
+function finish(){
+ var s=res.filter(Boolean).length,g=s>=9?'Керемет!':(s>=6?'Жақсы!':'Талпын!'),r='';
+ for(var k=0;k<Q.length;k++){if(!res[k])r+='<p><em>'+(k+1)+'.</em> '+esc(Q[k][0])+'<br>'+esc(Q[k][2])+'</p>'}
+ app.innerHTML=bar()+'<div class="res"><p class="sub">Сенің нәтижең</p><p class="score">'+s+' / '+Q.length+'</p><p class="grade">'+g+'</p>'+
+ (r?'<div class="rev"><p><b>Қайталап шығатын сұрақтар:</b></p>'+r+'</div>':'<p>Барлық жауап дұрыс!</p>')+
+ '<button class="next" id="rs" type="button">Қайта бастау</button></div>';
+ document.getElementById('rs').onclick=function(){i=0;res=[];show()};
+}
+var th=document.getElementById('th'),root=document.documentElement;
+th.onclick=function(){var dark=getComputedStyle(root).getPropertyValue('--bg').trim()==='#0e1524';root.setAttribute('data-theme',dark?'light':'dark');th.textContent=dark?'Түнгі режим':'Күндізгі режим'};
+show();
+</script>
+</body>
+</html>

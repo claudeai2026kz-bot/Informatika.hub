@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Антивирус сканері – рефлексия</title>
+<style>
+:root{
+  --bg:#f3f7fb;--card:#ffffff;--text:#13263b;--muted:#5a6b7d;--line:#d5e0ea;
+  --green:#14935a;--green-bg:#e3f6ec;--orange:#d9701a;--orange-bg:#fdeede;--blue:#2563c9;--blue-bg:#e6eefc;
+  --accent:#2563c9;--on-accent:#ffffff;
+  color-scheme:light;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0c1522;--card:#142133;--text:#e6eef7;--muted:#9fb1c4;--line:#27374d;
+    --green:#4cd18f;--green-bg:#12301f;--orange:#f0a35e;--orange-bg:#3a2612;--blue:#7fa8f5;--blue-bg:#16264a;
+    --accent:#7fa8f5;--on-accent:#0c1522;color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0c1522;--card:#142133;--text:#e6eef7;--muted:#9fb1c4;--line:#27374d;
+  --green:#4cd18f;--green-bg:#12301f;--orange:#f0a35e;--orange-bg:#3a2612;--blue:#7fa8f5;--blue-bg:#16264a;
+  --accent:#7fa8f5;--on-accent:#0c1522;color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.5}
+main{max-width:640px;margin:0 auto;padding:20px 16px 40px}
+header{text-align:center;margin-bottom:18px}
+.shield{font-size:44px;line-height:1}
+h1{font-size:1.6rem;margin:6px 0 4px}
+.sub{color:var(--muted);margin:0;font-size:.98rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:14px 0;border-left-width:6px}
+.card.g{border-left-color:var(--green)}.card.o{border-left-color:var(--orange)}.card.b{border-left-color:var(--blue)}
+.tag{display:inline-block;font-weight:700;font-size:.85rem;padding:3px 10px;border-radius:999px;margin-bottom:8px}
+.g .tag{background:var(--green-bg);color:var(--green)}
+.o .tag{background:var(--orange-bg);color:var(--orange)}
+.b .tag{background:var(--blue-bg);color:var(--blue)}
+label{display:block;font-weight:600;margin-bottom:8px}
+textarea{width:100%;min-height:84px;resize:vertical;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit;background:var(--bg);color:var(--text)}
+textarea:focus{outline:2px solid var(--accent);outline-offset:1px}
+textarea.err{border-color:var(--orange);outline:2px solid var(--orange)}
+.hint{font-size:.85rem;color:var(--muted);margin-top:6px}
+.score{display:flex;align-items:center;gap:12px}
+input[type=range]{flex:1;accent-color:var(--accent)}
+.val{min-width:64px;text-align:right;font-weight:700;font-size:1.1rem}
+.level{margin-top:6px;font-weight:600;color:var(--accent)}
+button{font:inherit;font-weight:700;border:0;border-radius:14px;padding:14px 18px;cursor:pointer;background:var(--accent);color:var(--on-accent);width:100%}
+button.ghost{background:transparent;color:var(--accent);border:2px solid var(--accent);margin-top:10px}
+button:disabled{opacity:.6;cursor:default}
+#scan{display:none}
+.bar{height:14px;border-radius:999px;background:var(--line);overflow:hidden;margin:10px 0}
+.bar>i{display:block;height:100%;width:0;background:var(--accent);transition:width .12s linear}
+#log{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.9rem;color:var(--muted);min-height:1.5em}
+#result{display:none}
+.ok{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.15rem;color:var(--green)}
+.res{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px}
+.res b{display:block;margin-bottom:2px}
+.res p{margin:0;white-space:pre-wrap;word-break:break-word}
+.note{text-align:center;color:var(--muted);font-size:.85rem;margin-top:18px}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div class="shield" aria-hidden="true">🛡️</div>
+  <h1>Антивирус сканері</h1>
+  <p class="sub">Сабақтағы жұмысыңды «сканерле» – үш сөйлем жаз</p>
+</header>
+
+<section id="form">
+  <div class="card g">
+    <span class="tag">1 · Жаңартылған база</span>
+    <label for="a1">Бүгін үйренген жаңа нәрсем:</label>
+    <textarea id="a1" placeholder="Мысалы: вирустың түрлерін ажыратуды үйрендім…"></textarea>
+  </div>
+  <div class="card o">
+    <span class="tag">2 · Табылған қауіп</span>
+    <label for="a2">Қиын болған немесе түсінбеген тұсым:</label>
+    <textarea id="a2" placeholder="Мысалы: ревизор мен детектордың айырмасы қиын болды…"></textarea>
+  </div>
+  <div class="card b">
+    <span class="tag">3 · Қорғаныс күшейту</span>
+    <label for="a3">Сабақты жақсарту үшін тілегім:</label>
+    <textarea id="a3" placeholder="Мысалы: практикаға көбірек уақыт берсе екен…"></textarea>
+  </div>
+  <div class="card">
+    <label for="sc">Өзін-өзі бағалау (жұмыс парағы)</label>
+    <div class="score"><input id="sc" type="range" min="0" max="10" step="0.5" value="8"><span class="val" id="scv">8 / 10</span></div>
+    <div class="level" id="lvl"></div>
+  </div>
+  <button id="go" type="button">Сканерлеуді бастау</button>
+  <div class="hint" id="warn" style="text-align:center;margin-top:8px"></div>
+</section>
+
+<section id="scan" class="card">
+  <b>Сканерлеу жүріп жатыр…</b>
+  <div class="bar"><i id="fill"></i></div>
+  <div id="log"></div>
+</section>
+
+<section id="result" class="card">
+  <div class="ok"><span aria-hidden="true">✅</span> Сканерлеу аяқталды</div>
+  <div class="res"><b style="color:var(--green)">Жаңартылған база</b><p id="r1"></p></div>
+  <div class="res"><b style="color:var(--orange)">Табылған қауіп</b><p id="r2"></p></div>
+  <div class="res"><b style="color:var(--blue)">Қорғаныс күшейту</b><p id="r3"></p></div>
+  <div class="res"><b>Өзін-өзі бағалау</b><p id="r4"></p></div>
+  <button id="copy" type="button" style="margin-top:14px">Нәтижені көшіру</button>
+  <button id="again" class="ghost" type="button">Қайта бастау</button>
+  <div class="hint" id="cmsg" style="text-align:center;margin-top:8px"></div>
+</section>
+
+<p class="note">Нәтижені мұғалімге көрсет немесе көшіріп жібер.</p>
+</main>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var sc=$('sc'),scv=$('scv'),lvl=$('lvl');
+  function level(v){
+    if(v>=9) return 'Жоғары деңгей';
+    if(v>=6) return 'Орта деңгей';
+    return 'Төмен деңгей';
+  }
+  function upd(){
+    var v=parseFloat(sc.value);
+    scv.textContent=String(v).replace('.',',')+' / 10';
+    lvl.textContent=level(v);
+  }
+  sc.addEventListener('input',upd);upd();
+
+  var ids=['a1','a2','a3'];
+  var summary='';
+  $('go').addEventListener('click',function(){
+    var bad=false;
+    ids.forEach(function(id){
+      var el=$(id),ok=el.value.trim().length>=3;
+      el.classList.toggle('err',!ok);
+      if(!ok) bad=true;
+    });
+    $('warn').textContent=bad?'Үш өрісті де толтыр – сонда сканер іске қосылады.':'';
+    if(bad) return;
+    $('form').style.display='none';
+    $('scan').style.display='block';
+    runScan();
+  });
+
+  function runScan(){
+    var steps=['Жаңартылған база тексерілуде…','Қауіптер іздестірілуде…','Қорғаныс күшейтілуде…','Нәтиже дайындалуда…'];
+    var fill=$('fill'),log=$('log'),p=0;
+    var t=setInterval(function(){
+      p+=4;
+      fill.style.width=Math.min(p,100)+'%';
+      log.textContent='> '+steps[Math.min(Math.floor(p/25),3)];
+      if(p>=100){clearInterval(t);finish();}
+    },100);
+  }
+
+  function finish(){
+    var v=parseFloat(sc.value);
+    var a1=$('a1').value.trim(),a2=$('a2').value.trim(),a3=$('a3').value.trim();
+    var sv=String(v).replace('.',',')+' / 10 – '+level(v);
+    $('r1').textContent=a1;$('r2').textContent=a2;$('r3').textContent=a3;$('r4').textContent=sv;
+    summary='Антивирус сканері\n'
+      +'Жаңартылған база: '+a1+'\n'
+      +'Табылған қауіп: '+a2+'\n'
+      +'Қорғаныс күшейту: '+a3+'\n'
+      +'Өзін-өзі бағалау: '+sv;
+    $('scan').style.display='none';
+    $('result').style.display='block';
+    window.scrollTo(0,0);
+  }
+
+  $('copy').addEventListener('click',function(){
+    var msg=$('cmsg');
+    function fallback(){
+      try{
+        var ta=document.createElement('textarea');
+        ta.value=summary;ta.setAttribute('readonly','');
+        ta.style.position='fixed';ta.style.opacity='0';
+        document.body.appendChild(ta);ta.select();
+        var ok=document.execCommand('copy');
+        document.body.removeChild(ta);
+        msg.textContent=ok?'Көшірілді ✓':'Көшіру мүмкін болмады – мәтінді белгілеп көшір.';
+      }catch(e){msg.textContent='Көшіру мүмкін болмады – мәтінді белгілеп көшір.';}
+    }
+    try{
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(summary).then(function(){msg.textContent='Көшірілді ✓';},fallback);
+      }else{fallback();}
+    }catch(e){fallback();}
+  });
+
+  $('again').addEventListener('click',function(){
+    ids.forEach(function(id){$(id).value='';$(id).classList.remove('err');});
+    sc.value=8;upd();
+    $('fill').style.width='0';$('cmsg').textContent='';$('warn').textContent='';
+    $('result').style.display='none';
+    $('form').style.display='block';
+    window.scrollTo(0,0);
+  });
+})();
+</script>
+</body>
+</html>

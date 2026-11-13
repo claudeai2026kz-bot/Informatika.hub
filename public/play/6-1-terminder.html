@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Терминдерді анықтамасымен сәйкестендір</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--text:#1b2a41;--muted:#5d6b82;--line:#d5deea;--accent:#2f7d32;--sel:#fff3cd;--selb:#e0a800;--pair:#e3edff;--pairb:#3b6fd4;--ok:#d9f2dc;--okb:#2f7d32;--bad:#fde0e0;--badb:#c62828;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121821;--card:#1c2533;--text:#e8eef7;--muted:#9db0c9;--line:#33425a;--accent:#6fcf75;--sel:#4a3f12;--pair:#1d2c4d;--pairb:#6b97f0;--ok:#1d3a22;--okb:#6fcf75;--bad:#4a1f1f;--badb:#ef6b6b}}
+:root[data-theme="dark"]{--bg:#121821;--card:#1c2533;--text:#e8eef7;--muted:#9db0c9;--line:#33425a;--accent:#6fcf75;--sel:#4a3f12;--pair:#1d2c4d;--pairb:#6b97f0;--ok:#1d3a22;--okb:#6fcf75;--bad:#4a1f1f;--badb:#ef6b6b}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.4}
+main{max-width:900px;margin:0 auto;padding:16px}
+h1{font-size:1.3rem;margin:8px 0 4px}
+p.hint{color:var(--muted);margin:0 0 14px;font-size:.95rem}
+.bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap}
+.score{font-weight:700;color:var(--accent)}
+.btns{display:flex;gap:8px}
+button.act{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:9px 16px;font-size:.95rem;cursor:pointer}
+button.act.sec{background:transparent;color:var(--text);border:2px solid var(--line)}
+button.act:disabled{opacity:.45;cursor:default}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:600px){.cols{grid-template-columns:1fr}}
+.col h2{font-size:1rem;margin:0 0 8px;color:var(--muted)}
+.item{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;background:var(--card);color:var(--text);border:2px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:1rem;cursor:pointer;font-family:inherit}
+.item b{min-width:1.6em;color:var(--accent)}
+.item.sel{background:var(--sel);border-color:var(--selb)}
+.item.pair{background:var(--pair);border-color:var(--pairb)}
+.item.ok{background:var(--ok);border-color:var(--okb)}
+.item.bad{background:var(--bad);border-color:var(--badb)}
+.tag{margin-left:auto;font-weight:700;white-space:nowrap}
+.fix{display:block;font-size:.85rem;color:var(--muted);margin-top:2px}
+#res{display:none;margin-top:12px;padding:14px;border-radius:10px;background:var(--card);border:2px solid var(--line);font-weight:700;text-align:center}
+</style>
+</head>
+<body>
+<main>
+<h1>5) Терминдерді анықтамасымен сәйкестендір</h1>
+<p class="hint">Терминді, содан кейін сәйкес анықтаманы таңда. Барлығын жұптап болған соң «Тексеру» батырмасын бас. Қайта таңдап, өзгертуге болады.</p>
+<div class="bar"><span class="score" id="score">Жұпталды: 0 / 5</span>
+<div class="btns"><button class="act sec" id="reset">Қайта бастау</button><button class="act" id="check" disabled>Тексеру</button></div></div>
+<div class="cols">
+<div class="col"><h2>Терминдер</h2><div id="terms"></div></div>
+<div class="col"><h2>Анықтамалар</h2><div id="defs"></div></div>
+</div>
+<div id="res"></div>
+</main>
+<script>
+var terms=[
+{n:1,t:"Интернетке тәуелділік",a:"B"},
+{n:2,t:"Әлеуметтік желі",a:"A"},
+{n:3,t:"Онлайн ойындар",a:"C"},
+{n:4,t:"Ақпараттық қауіпсіздік",a:"E"},
+{n:5,t:"Саналы тұтынушы",a:"D"}];
+var defs=[
+{l:"A",t:"Онлайн арқылы адамдардың өзара қарым-қатынас жасап, ақпарат алмасатын орта"},
+{l:"B",t:"Интернетті шамадан тыс қолдану нәтижесінде денсаулық пен әлеуметтік өмірге кері әсері бар жағдай"},
+{l:"C",t:"Компьютер немесе интернет арқылы ойналатын виртуалды ойын түрі"},
+{l:"D",t:"Уақытын, денсаулығын, қарым-қатынасын ескере отырып интернетті тиімді пайдалана білетін адам"},
+{l:"E",t:"Жеке деректерді, құпия сөздерді қорғау және зиянды бағдарламалардан сақтану шаралары"}];
+var tEl=document.getElementById("terms"),dEl=document.getElementById("defs"),res=document.getElementById("res"),chk=document.getElementById("check");
+var map={},selT=null,checked=false;
+function build(){
+map={};selT=null;checked=false;res.style.display="none";
+tEl.innerHTML="";dEl.innerHTML="";
+terms.forEach(function(x){var b=document.createElement("button");b.className="item";b.dataset.n=x.n;b.onclick=function(){pickT(x)};tEl.appendChild(b)});
+defs.forEach(function(x){var b=document.createElement("button");b.className="item";b.dataset.l=x.l;b.onclick=function(){pickD(x)};dEl.appendChild(b)});
+render();
+}
+function pickT(x){if(checked)return;selT=(selT===x.n)?null:x.n;render()}
+function pickD(x){
+if(checked||selT===null)return;
+for(var k in map){if(map[k]===x.l)delete map[k]}
+map[selT]=x.l;selT=null;render();
+}
+function render(){
+var cnt=Object.keys(map).length;
+terms.forEach(function(x){
+var b=tEl.querySelector('[data-n="'+x.n+'"]');
+var m=map[x.n];
+b.className="item"+(selT===x.n?" sel":(m?" pair":""));
+var cls="";
+if(checked){cls=(m===x.a)?" ok":" bad"}
+if(checked)b.className="item"+cls;
+var extra="";
+if(checked&&m!==x.a){extra='<span class="fix">Дұрыс жауап: '+x.a+'</span>'}
+b.innerHTML="<b>"+x.n+"</b><span>"+x.t+extra+"</span>"+(m?'<span class="tag">→ '+m+'</span>':"");
+});
+defs.forEach(function(x){
+var b=dEl.querySelector('[data-l="'+x.l+'"]');
+var who=null;for(var k in map){if(map[k]===x.l)who=+k}
+b.className="item"+(who?" pair":"");
+if(checked&&who){var t=terms[who-1];b.className="item"+(t.a===x.l?" ok":" bad")}
+b.innerHTML="<b>"+x.l+"</b><span>"+x.t+"</span>"+(who?'<span class="tag">← '+who+'</span>':"");
+});
+document.getElementById("score").textContent="Жұпталды: "+cnt+" / 5";
+chk.disabled=checked||cnt<5;
+}
+chk.onclick=function(){
+checked=true;selT=null;render();
+var ok=terms.filter(function(x){return map[x.n]===x.a}).length;
+res.style.display="block";
+res.textContent=(ok===5?"🎉 Керемет! ":"")+"Нәтиже: "+ok+" / 5"+(ok<5?" — қателерді қызыл түспен белгіледім, дұрыс жауап жазылған.":"");
+};
+document.getElementById("reset").onclick=build;
+build();
+</script>
+</body>
+</html>

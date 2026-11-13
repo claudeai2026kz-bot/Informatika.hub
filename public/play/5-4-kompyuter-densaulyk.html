@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="kk">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Компьютерде өзіңе зиян келтірмей жұмыс істеу</title>
+<style>
+:root{--bg:#0f172a;--text:#f8fafc;--muted:#b9c4d6;--accent:#22d3ee;--accent2:#38bdf8;--line:#263652}
+*{box-sizing:border-box}
+html{height:100%}
+body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(135deg,#0b1224,#101a31 55%,#0b1730);background-color:#0b1224;color:var(--text);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.container{max-width:1050px;margin:auto;padding:28px 18px 60px}
+.hero{background:linear-gradient(135deg,#16223f,#0f2b46);border:1px solid #24486b;border-radius:22px;padding:26px}
+.badge{display:inline-block;background:#0b3950;color:#9eeeff;border:1px solid #16637c;padding:7px 12px;border-radius:999px;font-weight:700;font-size:13px}
+h1{margin:14px 0 8px;font-size:clamp(28px,5vw,46px)}
+.hero p{color:var(--muted);margin:6px 0 0;line-height:1.6}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px;margin-top:18px}
+.card{background:rgba(17,28,52,.96);border:1px solid var(--line);border-radius:18px;padding:18px;margin-top:16px}
+.grid .card{margin-top:0}
+.card h2{margin:0 0 10px;font-size:20px}
+.q{margin:14px 0;padding:14px;border:1px solid #263a59;border-radius:14px;background:#0d1830}
+.q p{margin:0 0 10px;line-height:1.55}
+.option{display:block;padding:10px 12px;border:1px solid #2c4161;border-radius:11px;margin:8px 0;cursor:pointer;background:#111f3b}
+.option:hover{border-color:#49d8f5;background:#13284a}
+input[type=text],textarea{width:100%;background:#0a1427;color:#fff;border:1px solid #355072;border-radius:10px;padding:11px 12px;font-size:15px;outline:none}
+textarea{min-height:120px;font-family:ui-monospace,Menlo,monospace}
+button{border:0;border-radius:11px;padding:11px 16px;font-weight:800;cursor:pointer;margin:6px 6px 0 0}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#062033}
+.btn2{background:#233654;color:#e8f7ff;border:1px solid #36547b}
+.result{margin-top:10px;font-weight:800}
+.ok{color:#61e58a}.bad{color:#ff7474}
+code,pre{font-family:ui-monospace,Menlo,monospace}
+pre{white-space:pre-wrap;background:#071120;border:1px solid #223855;border-radius:13px;padding:14px;overflow:auto;color:#eaf8ff;line-height:1.55}
+.kpi{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.kpi span{background:#0b2039;border:1px solid #234769;border-radius:12px;padding:9px 12px;color:#cdeefe}
+.scorebox{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;margin:16px 0;background:#0a1c33;border:1px solid #22517a;border-radius:14px;padding:12px 14px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.small{font-size:13px;color:var(--muted)}
+.chk{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid #2c4161;border-radius:11px;margin:8px 0;background:#111f3b;cursor:pointer}
+.chk input{margin-top:3px}
+footer{margin-top:28px;color:#8fa0b9;text-align:center;font-size:13px}
+@media (max-width:600px){.container{padding:16px 12px 40px}.hero{padding:20px}.card{padding:14px}}
+</style>
+</head>
+<body>
+<div class="container">
+<section class="hero">
+<span class="badge">5-сынып • Қауіпсіз жұмыс • Интерактив тапсырма</span>
+<h1>Компьютерде өзіңе зиян келтірмей жұмыс істеу</h1>
+<p>Дұрыс отыру, көз бен қолды қорғау, жұмыс режимі, жарық пен қашықтық, электр қауіпсіздігі және денсаулыққа арналған тапсырмалар.</p>
+<div class="kpi"><span>Автотексеру</span><span>Эргономика</span><span>Практикалық тапсырма</span><span>Өзіндік жұмыс</span></div>
+</section>
+<div class="scorebox"><div><b>Жинаған ұпай:</b> <span id="score">0</span> / 8</div><button class="btn2" onclick="resetAll()">Қайта бастау</button></div>
+
+<div class="grid">
+<section class="card">
+<h2>1. Дұрыс отыру</h2>
+<div class="q"><p><b>1.</b> Көз бен монитор арасындағы дұрыс қашықтық қанша?</p>
+<label class="option"><input type="radio" name="q1" value="a"> 10–20 см</label>
+<label class="option"><input type="radio" name="q1" value="b"> 50–70 см</label>
+<label class="option"><input type="radio" name="q1" value="c"> 150 см-ден артық</label>
+<button class="btn" onclick="checkRadio('q1','b','r1','k1')">Тексеру</button><div id="r1" class="result"></div></div>
+
+<div class="q"><p><b>2.</b> Дұрыс отырғанда тізе мен шынтақ бұрышы шамамен қанша болуы керек?</p>
+<label class="option"><input type="radio" name="q2" value="a"> 90° (немесе сәл артық)</label>
+<label class="option"><input type="radio" name="q2" value="b"> 30°</label>
+<label class="option"><input type="radio" name="q2" value="c"> Бұрыштың маңызы жоқ</label>
+<button class="btn" onclick="checkRadio('q2','a','r2','k2')">Тексеру</button><div id="r2" class="result"></div></div>
+</section>
+
+<section class="card">
+<h2>2. Көзді қорғау</h2>
+<p class="small">«20-20-20» ережесі: әр 20 минут сайын, 20 секунд бойы, шамамен 20 фут (6 метр) қашықтыққа қарау.</p>
+<div class="q"><p><b>3.</b> Көзге тыныштық беру үшін 20 минут жұмыстан кейін қанша секунд алысқа қарау керек? (санмен жаз)</p>
+<input id="t3" type="text" inputmode="numeric"><button class="btn" onclick="checkText('t3',['20'],'r3','k3')">Тексеру</button><div id="r3" class="result"></div></div>
+
+<div class="q"><p><b>4.</b> Монитор жарығы мен бөлме жарығына қатысты дұрыс жауап қайсы?</p>
+<label class="option"><input type="radio" name="q4" value="a"> Қараңғы бөлмеде жарық мониторда ғана болған жақсы</label>
+<label class="option"><input type="radio" name="q4" value="b"> Жарық экранға шағылыспай, бөлме мен монитор жарығы сәйкес болуы керек</label>
+<label class="option"><input type="radio" name="q4" value="c"> Экранға тікелей күн сәулесі түскені жақсы</label>
+<button class="btn" onclick="checkRadio('q4','b','r4','k4')">Тексеру</button><div id="r4" class="result"></div></div>
+</section>
+</div>
+
+<section class="card">
+<h2>3. Қолмен жұмыс және үзіліс</h2>
+<div class="q"><p><b>5.</b> Қолды (білек) қорғау үшін не істеу керек?</p>
+<label class="option"><input type="radio" name="q5" value="a"> Білекті үстелдің қатты жиегіне сүйеп, бір қалыпта ұзақ ұстау</label>
+<label class="option"><input type="radio" name="q5" value="b"> Білек түзу, қол босаң болсын, жиі жаттығу жасап тұру керек</label>
+<label class="option"><input type="radio" name="q5" value="c"> Тышқанды қатты қысып ұстау</label>
+<button class="btn" onclick="checkRadio('q5','b','r5','k5')">Тексеру</button><div id="r5" class="result"></div></div>
+
+<div class="q"><p><b>6.</b> 5-сынып оқушысы үшін компьютермен үздіксіз жұмыс уақытының ұсынылатын шегі шамамен қанша? (минут, санмен жаз)</p>
+<p class="small">Көрсеткіш: үздіксіз жұмыс 30 минуттан аспауы тиіс, кейін көз бен денеге үзіліс жасалады.</p>
+<input id="t6" type="text" inputmode="numeric"><button class="btn" onclick="checkText('t6',['30'],'r6','k6')">Тексеру</button><div id="r6" class="result"></div></div>
+</section>
+
+<section class="card">
+<h2>4. Электр қауіпсіздігі</h2>
+<p class="small">Дұрыс ережелерді белгіле, содан кейін «Тексеру» бас.</p>
+<label class="chk"><input type="checkbox" name="e" value="1"> Дымқыл қолмен розетка мен кабельге тимеймін</label>
+<label class="chk"><input type="checkbox" name="e" value="0"> Бұзылған сымды изолентамен орап, пайдалана беремін</label>
+<label class="chk"><input type="checkbox" name="e" value="1"> Компьютерді сусыннан алшақ ұстаймын</label>
+<label class="chk"><input type="checkbox" name="e" value="0"> Бір розеткаға көп құрылғыны қосамын</label>
+<label class="chk"><input type="checkbox" name="e" value="1"> Жөндеу алдында қуат сымын суырамын</label>
+<button class="btn" onclick="checkMulti()">Тексеру</button><div id="r7" class="result"></div>
+</section>
+
+<div class="grid">
+<section class="card">
+<h2>5. Мини-жоба: жұмыс орнын тексеру</h2>
+<p>Өз жұмыс орныңды 5 критерий бойынша бағала (отыру, қашықтық, жарық, қол күйі, үзіліс) және әрқайсысына «дұрыс / түзету керек» деп жаз. Қысқа ұсыныс ұсын.</p>
+<textarea placeholder="Бақылау нәтижесі..."></textarea>
+<button class="btn2" onclick="show('ans1')">Үлгі жауап</button>
+<pre id="ans1" style="display:none">1) Отыру: арқам орындықтың арқалығына тиеді — дұрыс.
+2) Қашықтық: монитор 40 см — түзету керек, 50–70 см-ге алшақтату.
+3) Жарық: экранға терезе жарығы шағылысады — түзету керек, жалюзи жабу.
+4) Қол күйі: білек түзу — дұрыс.
+5) Үзіліс: 1 сағат үзіліссіз отырамын — түзету керек, әр 30 минут сайын жаттығу жасау.</pre>
+</section>
+
+<section class="card">
+<h2>6. Жаттығу жоспары</h2>
+<p>Компьютердегі жұмыстан кейін жасауға болатын көз бен мойын, білек және арқаға арналған 3 қысқа жаттығуды құрастыр.</p>
+<textarea placeholder="3 жаттығуды жазыңыз..."></textarea>
+<button class="btn2" onclick="show('ans2')">Бір мүмкін шешім</button>
+<pre id="ans2" style="display:none">1) Көз: 10 рет жыпылықта, содан кейін алысқа 20 секунд қара.
+2) Мойын мен иық: иықты жоғары көтеріп, баяу түсір (8–10 рет).
+3) Білек: қолды алға созып, саусақты жұдырықтай жұм, ашу (10 рет).</pre>
+</section>
+</div>
+
+<section class="card">
+<h2>7. Жағдайлық есеп</h2>
+<div class="q"><p><b>8.</b> Айдар 3 сағат қатарынан ойын ойнап, көзі ауырып, басы айналып отыр. Ең дұрыс әрекет?</p>
+<label class="option"><input type="radio" name="q8" value="a"> Жұмысты тоқтатып, демалу, көзге үзіліс беру, қажет болса дәрігерге көрсету</label>
+<label class="option"><input type="radio" name="q8" value="b"> Тағы 1 сағат ойнап, сосын демалу</label>
+<label class="option"><input type="radio" name="q8" value="c"> Монитор жарығын арттыру</label>
+<button class="btn" onclick="checkRadio('q8','a','r8','k8')">Тексеру</button><div id="r8" class="result"></div></div>
+<p class="small">Автоұпай: 8 балл. Мини-жоба мен жаттығу жоспары мұғаліммен бағаланады.</p>
+</section>
+
+<footer>Информатика • 5-сынып • Қауіпсіз жұмыс • HTML интерактив тапсырмалар</footer>
+</div>
+<script>
+let score=0;const checked=new Set();
+function mark(id,ok,msg){const el=document.getElementById(id);el.className='result '+(ok?'ok':'bad');el.textContent=msg}
+function addScore(key,pts){if(!checked.has(key)){score+=pts;checked.add(key);document.getElementById('score').textContent=score}}
+function checkRadio(name,correct,out,key){
+  const x=document.querySelector('input[name="'+name+'"]:checked');
+  if(!x){mark(out,false,'Жауапты таңдаңыз.');return}
+  const ok=x.value===correct;
+  mark(out,ok,ok?'Дұрыс!':'Қате. Қайта ойланып көріңіз.');
+  if(ok)addScore(key,1)
+}
+function checkText(id,answers,out,key){
+  const v=document.getElementById(id).value.trim().toLowerCase().replace(/\s+/g,' ');
+  const ok=answers.some(a=>v===a);
+  mark(out,ok,ok?'Дұрыс!':'Қате. Жауапты қайта тексеріңіз.');
+  if(ok)addScore(key,1)
+}
+function checkMulti(){
+  const all=[...document.querySelectorAll('input[name="e"]')];
+  if(!all.some(i=>i.checked)){mark('r7',false,'Кемінде бір ережені белгілеңіз.');return}
+  const ok=all.every(i=>i.checked===(i.value==='1'));
+  mark('r7',ok,ok?'Дұрыс!':'Қате. Қауіпті әрекеттерді белгілемеңіз, дұрыс ережелерді ұмытпаңыз.');
+  if(ok)addScore('k7',1)
+}
+function show(id){const e=document.getElementById(id);e.style.display=e.style.display==='none'?'block':'none'}
+function resetAll(){location.reload()}
+</script>
+</body></html>

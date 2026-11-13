@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Рефлексия: Пайдаланушы интерфейсі</title>
+<style>
+:root{--bg:#f4f6fb;--card:#fff;--tx:#1b2333;--mut:#667089;--ac:#3b6cf6;--ac2:#e8eeff;--st:#f5b301;--off:#cfd5e3;--bd:#e1e6f0;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121620;--card:#1c2230;--tx:#e8ecf5;--mut:#9aa4bd;--ac:#7c9bff;--ac2:#25304d;--off:#3a4460;--bd:#2c344a}}
+:root[data-theme="dark"]{--bg:#121620;--card:#1c2230;--tx:#e8ecf5;--mut:#9aa4bd;--ac:#7c9bff;--ac2:#25304d;--off:#3a4460;--bd:#2c344a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.5}
+main{max-width:640px;margin:0 auto;padding:16px}
+header{text-align:center;padding:12px 0 4px}
+header h1{font-size:1.5rem;margin:.2em 0}
+header p{color:var(--mut);margin:0}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:16px;margin:14px 0}
+.card h2{font-size:1.05rem;margin:0 0 4px}
+.hint{color:var(--mut);font-size:.9rem;margin:0 0 10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:8px 14px;border-radius:999px;font-size:.95rem;cursor:pointer}
+.chip.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+#apps{display:grid;grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:10px}
+.app{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 6px;border:2px solid var(--bd);border-radius:14px;background:var(--card);color:var(--tx);font-size:.88rem;cursor:pointer}
+.app svg{width:56px;height:56px}
+.app.on{border-color:var(--ac);background:var(--ac2);font-weight:600}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid var(--bd)}
+.row:first-of-type{border-top:0}
+.row{flex-wrap:wrap}
+.pic{flex-basis:100%;order:5;font-size:.88rem;color:var(--mut)}
+.pic svg{display:block;width:100%;max-width:340px;margin-top:6px;border-radius:10px;border:1px solid var(--bd)}
+.pic b{color:var(--tx)}
+.row span.l{flex:1}
+.stars{display:flex;gap:2px}
+.stars button{background:none;border:0;font-size:1.8rem;line-height:1;color:var(--off);cursor:pointer;padding:2px}
+.stars button.on{color:var(--st)}
+input[type=number],textarea{width:100%;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx);font:inherit}
+textarea{min-height:80px;resize:vertical}
+.lvl{display:inline-block;margin-top:8px;padding:6px 14px;border-radius:999px;font-weight:600;background:var(--ac2);color:var(--ac)}
+.btn{width:100%;padding:13px;border:0;border-radius:12px;background:var(--ac);color:#fff;font-size:1rem;font-weight:600;cursor:pointer;margin-top:6px}
+.btn.sec{background:var(--ac2);color:var(--ac)}
+#res{display:none;white-space:pre-wrap}
+.bar{height:8px;background:var(--ac2);border-radius:99px;overflow:hidden;margin:10px 0}.bar i{display:block;height:100%;width:0;background:var(--ac);transition:width .3s}
+.badge{font-size:1.25rem;font-weight:700;text-align:center;margin-bottom:8px}
+.fx{position:fixed;top:-30px;font-size:22px;animation:fall 2.2s linear forwards;pointer-events:none;z-index:9}
+@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
+.hw{background:var(--ac2);border-radius:12px;padding:12px;font-size:.92rem}
+</style>
+</head>
+<body>
+<main>
+<header>
+<h1>⭐ Бес жұлдыз</h1>
+<p>7-сынып · Информатика · Пайдаланушы интерфейсі</p>
+</header>
+<div class="bar"><i id="pb"></i></div>
+
+<section class="card">
+<h2>1. Қай интерфейсті бағалайсың?</h2>
+<p class="hint">Күнде қолданатын қосымшаны таңда.</p>
+<div class="chips" id="apps"></div>
+</section>
+
+<section class="card">
+<h2>2. Эргономикаға баға қой</h2>
+<p class="hint">1–5 жұлдыз: интерфейс талаптарға сай ма?</p>
+<div id="crit"></div>
+</section>
+
+<section class="card">
+<h2>3. Өз түсінігің</h2>
+<div id="und"></div>
+</section>
+
+<section class="card">
+<h2>4. Өз ойың</h2>
+<p class="hint">«Бұл – ... интерфейс, себебі ...»</p>
+<textarea id="note" placeholder="Жауабыңды осы жерге жаз..."></textarea>
+</section>
+
+<button class="btn" id="go">Қорытынды көру</button>
+
+<section class="card" id="res"></section>
+<button class="btn sec" id="cp" style="display:none">Көшіріп алу</button>
+
+</main>
+
+<script>
+var S={app:"",c:{},u:0};
+var APPS=["WhatsApp","Kundelik","YouTube","Смартфон","Компьютер"];
+var CR=[["clr","Түсініктілік"],["spd","Жылдамдық"],["vis","Көрнекілік"]];
+function stars(el,key,get,set){
+  var box=document.createElement("div");box.className="stars";
+  for(var i=1;i<=5;i++){(function(n){
+    var b=document.createElement("button");b.textContent="★";b.setAttribute("aria-label",n+" жұлдыз");
+    b.onclick=function(){set(n);paint()};box.appendChild(b);
+  })(i)}
+  function paint(){var v=get();for(var j=0;j<5;j++)box.children[j].className=j<v?"on":""}
+  paint();el.appendChild(box);
+}
+var ap=document.getElementById("apps");
+var IC={
+"WhatsApp":'<svg viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="#25D366"/><path d="M32 12a19 19 0 0 0-16 29l-3 10 10-3a19 19 0 1 0 9-36z" fill="#fff"/><path d="M25 23c-2 1-3 4-1 8s6 8 11 9c3 1 5-1 5-3l-4-2-2 2c-3-1-6-4-7-7l2-2-2-5z" fill="#25D366"/></svg>',
+"Kundelik":'<svg viewBox="0 0 64 64"><rect width="64" height="64" rx="15" fill="#2f6fe4"/><rect x="17" y="13" width="31" height="38" rx="3" fill="#fff"/><rect x="13" y="17" width="6" height="4" rx="2" fill="#fff"/><rect x="13" y="28" width="6" height="4" rx="2" fill="#fff"/><rect x="13" y="39" width="6" height="4" rx="2" fill="#fff"/><path d="M24 23h18M24 31h18M24 39h11" stroke="#2f6fe4" stroke-width="3" stroke-linecap="round"/></svg>',
+"YouTube":'<svg viewBox="0 0 64 64"><rect x="3" y="13" width="58" height="38" rx="12" fill="#f00"/><path d="M26 23v18l16-9z" fill="#fff"/></svg>',
+"Смартфон":'<svg viewBox="0 0 64 64"><rect x="18" y="4" width="28" height="56" rx="6" fill="#3a4460"/><rect x="21" y="11" width="22" height="38" rx="2" fill="#8fb4ff"/><circle cx="32" cy="54" r="2.5" fill="#9aa4bd"/></svg>',
+"Компьютер":'<svg viewBox="0 0 64 64"><rect x="6" y="10" width="52" height="34" rx="4" fill="#3a4460"/><rect x="10" y="14" width="44" height="26" rx="2" fill="#8fb4ff"/><rect x="28" y="44" width="8" height="7" fill="#9aa4bd"/><rect x="18" y="51" width="28" height="4" rx="2" fill="#9aa4bd"/></svg>'};
+APPS.forEach(function(a){var b=document.createElement("button");b.className="app";b.innerHTML=IC[a]+"<span>"+a+"</span>";
+  b.onclick=function(){S.app=a;refresh();[].forEach.call(ap.children,function(x){x.className="app"});b.className="app on"};ap.appendChild(b)});
+var AD={
+"WhatsApp":{c:"#25D366",d:"#075e54",ic:["💬","📞","⚙️"],m:["Чаттар","Қоңыраулар","Баптау"],st:["Чатты ашу","Мәтін жазу","Жіберу ➤"],pal:["#075e54","#25D366","#dcf8c6","#ece5dd"],cmd:"send Айгерім"},
+"Kundelik":{c:"#2f6fe4",d:"#1e4fb5",ic:["📓","🔢","✉️"],m:["Күнделік","Бағалар","Хабарлар"],st:["Жүйеге кіру","Күнделікті ашу","Бағаны көру"],pal:["#2f6fe4","#f4f7ff","#2fb36b","#f0a020"],cmd:"show grades"},
+"YouTube":{c:"#f00",d:"#b00000",ic:["🏠","⚡","📺"],m:["Басты бет","Shorts","Жазылым"],st:["Іздеу","Бейнені таңдау","Ойнату ▶"],pal:["#f00","#ffffff","#0f0f0f","#cfd4dc"],cmd:"play video1"},
+"Смартфон":{c:"#3b6cf6",d:"#1d2538",ic:["📞","💬","📷"],m:["Қоңырау","Хабар","Камера"],st:["Белгіні табу","Басу","Қолданба ашылды"],pal:["#1d2538","#3b6cf6","#25D366","#f5b301"],cmd:"call mama"},
+"Компьютер":{c:"#2b579a",d:"#1b3a6b",ic:["📄","🏠","➕"],m:["Файл","Басты","Кірістіру"],st:["Мәтінді белгілеу","Қалың (B)","Өлшем 16"],pal:["#2b579a","#e9edf5","#ffffff","#c3cad9"],cmd:"bold text"}};
+function T(x,y,s,t,f,a,w){return '<text x="'+x+'" y="'+y+'" font-size="'+s+'" fill="'+(f||"#222")+'" text-anchor="'+(a||"start")+'" font-weight="'+(w||400)+'" font-family="system-ui,sans-serif">'+t+'</text>'}
+function R(x,y,w,h,r,f,s){return '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="'+r+'" fill="'+f+'"'+(s?' stroke="'+s+'"':'')+'/>'}
+function mk(a,k){var d=AD[a],i,x,o='<svg viewBox="0 0 240 150">'+R(0,0,240,150,0,"#f5f7fb");
+ if(k=="clr"){o+=R(0,0,240,24,0,d.d)+T(10,16,11,a,"#fff",0,700);
+  for(i=0;i<3;i++){x=18+i*72;o+=R(x,38,52,52,14,d.c)+T(x+26,72,26,d.ic[i],"#fff","middle")+T(x+26,106,10,d.m[i],"#222","middle",600)}
+  o+=T(120,disp(),9,"Белгі + жазу = түсінікті интерфейс","#667089","middle")}
+ else if(k=="spd"){o+=T(120,18,11,"Тапсырма: үш қадамда орындау","#222","middle",700);
+  for(i=0;i<3;i++){x=8+i*78;o+=R(x,30,62,66,10,"#fff","#d5dbe8")+R(x+22,36,18,18,9,d.c)+T(x+31,49,11,i+1,"#fff","middle",700)+T(x+31,76,9,d.st[i],"#222","middle",600);
+   if(i<2)o+=T(x+70,68,16,"›","#999","middle")}
+  o+=T(120,120,12,"Барлығы: 3 шерту ⚡",d.d,"middle",700)+T(120,138,9,"Қадам аз = жылдам жұмыс","#667089","middle")}
+ else if(k=="vis"){o+=T(120,18,11,"Түстер мен шрифт","#222","middle",700);
+  for(i=0;i<4;i++){x=32+i*58;o+=R(x-20,28,40,40,20,d.pal[i],"#cfd5e3")+T(x,82,7,d.pal[i],"#667089","middle")}
+  o+=T(20,126,38,"Aa",d.c,0,700)+T(84,108,10,"Шрифт: оқуға жеңіл")+T(84,124,10,"Түс: маңызды жерді көрсетеді")+T(84,140,10,"Өлшем: көзге ыңғайлы")}
+ else{o+=R(6,16,112,116,8,"#111")+T(14,32,9,"CLI","#7cfc00",0,700)+T(14,52,8,"&gt; "+d.cmd,"#9f9")+T(14,66,8,"&gt; _","#9f9")+
+  R(122,16,112,116,8,"#fff","#d5dbe8")+R(122,16,112,22,8,d.c)+T(178,31,9,a+" · GUI","#fff","middle",700)+T(178,78,28,d.ic[0],"#000","middle")+R(142,92,72,24,12,d.c)+T(178,108,10,"Басу","#fff","middle",600)+
+  T(62,144,7.5,"Мәтін, команданы жаттау керек","#667089","middle")+T(178,144,7.5,"Белгі, терезе, меңзер","#667089","middle")}
+ return o+'</svg>'}
+function disp(){return 130}
+var CAP={clr:["🔍","белгілер мен мәзір түсінікті ме?"],spd:["⚡","керек әрекетке неше шерту керек?"],vis:["🎨","түс, өлшем, шрифт көзге жағымды ма?"],u:["🖥️","бұл – GUI: терезе, белгі, меңзер бар."]};
+var PICS=[];
+function addPic(){}
+function refresh(){PICS.forEach(function(p){
+  if(!S.app){p[0].textContent="Алдымен жоғарыдан қосымшаны таңда.";return}
+  p[0].innerHTML=CAP[p[1]][0]+" <b>"+S.app+":</b> "+CAP[p[1]][1]+mk(S.app,p[1])})}
+var cr=document.getElementById("crit");
+CR.forEach(function(c){var r=document.createElement("div");r.className="row";
+  r.innerHTML='<span class="l">'+c[1]+'</span>';cr.appendChild(r);
+  stars(r,c[0],function(){return S.c[c[0]]||0},function(n){S.c[c[0]]=n});addPic(r,c[0])});
+var u=document.getElementById("und");
+var ur=document.createElement("div");ur.className="row";
+ur.innerHTML='<span class="l">CLI мен GUI-дің басты айырмашылығын түсіндім бе?</span>';u.appendChild(ur);
+stars(ur,"u",function(){return S.u},function(n){S.u=n});addPic(ur,"u");
+function avg(){var a=CR.map(function(c){return S.c[c[0]]||0});return (a[0]+a[1]+a[2])/3}
+setInterval(function(){var n=(S.app?1:0)+(S.c.clr?1:0)+(S.c.spd?1:0)+(S.c.vis?1:0)+(S.u?1:0);document.getElementById("pb").style.width=n*20+"%"},300);
+var res=document.getElementById("res"),cp=document.getElementById("cp");
+document.getElementById("go").onclick=function(){
+  var t="📋 Менің рефлексиям\n\n"+
+  "Қосымша: "+(S.app||"таңдалмады")+"\n"+
+  "Түсініктілік: "+(S.c.clr||0)+"/5\nЖылдамдық: "+(S.c.spd||0)+"/5\nКөрнекілік: "+(S.c.vis||0)+"/5\n"+
+  "Орташа баға: "+avg().toFixed(1)+"/5\n"+
+  "CLI мен GUI түсінігім: "+S.u+"/5\n"+
+  "Ойым: "+(document.getElementById("note").value.trim()||"—");
+  var v=avg(),bd=v>=4.5?"🏆 Эргономика шебері":v>=3?"🌟 Интерфейс зерттеушісі":"🔍 Жас зерттеуші";
+  var TP={clr:"белгілерге жазу қосып, мәзірді түсінікті ету",spd:"қадам санын азайтып, жұмысты жылдамдату",vis:"түс пен шрифтті көзге жағымды ету"};
+  var lo="clr";CR.forEach(function(c){if((S.c[c[0]]||0)<(S.c[lo]||0))lo=c[0]});
+  res.innerHTML='<div class="badge"></div><div></div>';res.children[0].textContent=bd;
+  res.children[1].textContent=t+"\n\n💡 Жақсарту ұсынысы: "+(S.app||"қосымша")+" — "+TP[lo];
+  for(var i=0;i<24;i++){var e=document.createElement("div");e.className="fx";e.textContent=["⭐","🎉","✨"][i%3];e.style.left=Math.random()*95+"%";e.style.animationDelay=Math.random()*.8+"s";document.body.appendChild(e);setTimeout(function(x){return function(){x.remove()}}(e),3200)}
+  res.style.display="block";cp.style.display="block";
+  res.scrollIntoView({behavior:"smooth"});
+};
+cp.onclick=function(){
+  try{navigator.clipboard.writeText(res.textContent);cp.textContent="Көшірілді ✓"}catch(e){cp.textContent="Мәтінді белгілеп көшіріңіз"}
+};
+</script>
+</body>
+</html>

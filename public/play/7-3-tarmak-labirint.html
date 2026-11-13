@@ -1,0 +1,35 @@
+<!DOCTYPE html><html lang="kk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Тармақ-лабиринт</title>
+<style>:root{--bg:#0b0720;--tx:#f4f0ff;--n1:#00e5ff;--n2:#ff2e93;--n3:#b6ff3b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:"Courier New",monospace;padding:14px}
+.w{max-width:620px;margin:0 auto}h1{color:var(--n1);text-shadow:0 0 12px var(--n1);margin:4px 0;font-size:1.6em}
+.hud{display:flex;justify-content:space-between;color:var(--n3);margin:8px 0}
+.map{display:flex;gap:6px;margin:8px 0}.map i{flex:1;height:10px;border-radius:5px;background:#2b2455}.map i.d{background:var(--n3);box-shadow:0 0 8px var(--n3)}.map i.c{background:var(--n2);box-shadow:0 0 8px var(--n2)}
+pre{background:#150f35;border:2px solid var(--n1);border-radius:10px;padding:14px;color:#e8f6ff;font-size:16px;box-shadow:0 0 16px #00e5ff55;overflow-x:auto}
+.opt{display:block;width:100%;margin:8px 0;padding:12px;background:#1d1648;color:var(--tx);border:2px solid var(--n2);border-radius:10px;font:inherit;font-size:16px;cursor:pointer;text-align:left}
+.opt:hover{background:#2a2060}.opt.ok{border-color:var(--n3);background:#173a1f}.opt.no{border-color:#ff4d4d;background:#401818}
+.msg{min-height:3em;margin:6px 0;color:var(--n1)}.nx{background:var(--n2);color:#fff;border:0;border-radius:10px;padding:12px 24px;font:inherit;font-size:17px;cursor:pointer;display:none}</style></head><body><div class="w">
+<h1>⚡ ТАРМАҚ-ЛАБИРИНТ</h1><div class="hud"><span id="lv"></span><span id="hp"></span><span id="sc"></span></div><div class="map" id="mp"></div>
+<p>Бағдарлама экранға не шығарады? Дұрыс тармақты таңда!</p><pre id="code"></pre><div id="ops"></div><div class="msg" id="m"></div><button class="nx" id="nx" onclick="next()">Келесі деңгей ▶</button></div>
+<script>
+var Q=[
+['x = 7\nif x > 5:\n    print("Үлкен")\nelse:\n    print("Кіші")',['Үлкен','Кіші','Қате'],0,'7 > 5 рас, сондықтан if блогы.'],
+['age = 15\nif age >= 18:\n    print("Кіре аласың")\nelse:\n    print("Әлі ерте")',['Кіре аласың','Әлі ерте','Екеуі де'],1,'15 >= 18 жалған, else орындалады.'],
+['t = -3\nif t > 20:\n    print("Жылы")\nelif t > 0:\n    print("Салқын")\nelse:\n    print("Суық")',['Жылы','Салқын','Суық'],2,'Алғашқы екі шарт жалған, else орындалады.'],
+['a = 4\nif a == 4:\n    print("A")\nprint("B")',['Тек A','A және B','Тек B'],1,'print("B") шегіністен тыс, ол әрқашан орындалады.'],
+['n = 10\nif n > 5 and n < 8:\n    print("Орта")\nelif n >= 8:\n    print("Үлкен")\nelse:\n    print("Кіші")',['Орта','Үлкен','Кіші'],1,'Бірінші шарт жалған (10 < 8 жалған), екіншісі рас.'],
+['s = 4\nif s == 5:\n    print("Өте жақсы")\nelif s == 4:\n    print("Жақсы")\nelse:\n    print("Қанағат")',['Өте жақсы','Жақсы','Қанағат'],1,'s == 4 рас.']];
+var i=0,hp=3,sc=0,done=false;
+function draw(){document.getElementById('lv').textContent='Деңгей '+(i+1)+'/'+Q.length;document.getElementById('hp').textContent='❤'.repeat(hp)||'💀';document.getElementById('sc').textContent='⭐ '+sc;
+document.getElementById('mp').innerHTML=Q.map(function(_,k){return '<i class="'+(k<i?'d':k==i?'c':'')+'"></i>'}).join('');
+document.getElementById('code').textContent=Q[i][0];document.getElementById('m').textContent='';document.getElementById('nx').style.display='none';done=false;
+document.getElementById('ops').innerHTML=Q[i][1].map(function(o,k){return '<button class="opt" onclick="pick('+k+',this)">'+o+'</button>'}).join('')}
+function pick(k,b){if(done)return;var q=Q[i],bs=document.querySelectorAll('.opt');
+if(k==q[2]){done=true;sc+=10;b.className='opt ok';document.getElementById('m').textContent='✅ Дұрыс! '+q[3];fin()}
+else{hp--;b.className='opt no';document.getElementById('m').textContent='❌ Қате. Қайта ойлан!';draw2();if(hp<=0){done=true;bs[q[2]].className='opt ok';document.getElementById('m').textContent='💀 Өмір бітті. Дұрыс жауап: '+q[1][q[2]]+'. '+q[3];var n=document.getElementById('nx');n.textContent='↻ Қайта ойнау';n.style.display='inline-block';n.onclick=function(){i=0;hp=3;sc=0;n.textContent='Келесі деңгей ▶';n.onclick=next;draw()}}}}
+function draw2(){document.getElementById('hp').textContent='❤'.repeat(hp)||'💀'}
+function fin(){draw2();document.getElementById('sc').textContent='⭐ '+sc;var n=document.getElementById('nx');n.style.display='inline-block';
+if(i==Q.length-1){n.textContent='🏆 Аяқтау';n.onclick=function(){document.getElementById('code').textContent='🏆 ЛАБИРИНТ ӨТІЛДІ!\nҰпай: '+sc+' / '+Q.length*10;document.getElementById('ops').innerHTML='';document.getElementById('m').textContent='Сен – тармақ шебері!';n.style.display='none'}}}
+function next(){i++;draw()}
+draw();
+</script></body></html>

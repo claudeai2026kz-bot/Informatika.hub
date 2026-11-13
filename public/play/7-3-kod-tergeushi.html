@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Код-тергеуші</title>
+<style>
+:root{--bg:#f6efe6;--fg:#2a1d12;--card:#ffffff;--mut:#7a6552;--ac:#c2410c;--gold:#f59e0b;--ok:#16a34a;--bad:#dc2626;--code:#1c1410;--line:#e5d5c3;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17110c;--fg:#f6ece1;--card:#251a12;--mut:#c0a98f;--ac:#fb923c;--code:#0d0905;--line:#443226}}
+:root[data-theme="dark"]{--bg:#17110c;--fg:#f6ece1;--card:#251a12;--mut:#c0a98f;--ac:#fb923c;--code:#0d0905;--line:#443226}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--fg);font:17px/1.45 Calibri,Arial,sans-serif}
+.w{max-width:660px;margin:0 auto;padding:14px}
+h1{font-size:24px;margin:6px 0 2px}.sub{color:var(--mut);margin-bottom:10px}
+.hud{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;flex-wrap:wrap}
+.pill{background:var(--gold);color:#2a1d12;font-weight:700;border-radius:999px;padding:3px 12px}
+.card{background:var(--card);border:2px solid var(--ac);border-radius:14px;padding:16px}
+.st{color:var(--ac);font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:.5px}
+.code{background:var(--code);border-radius:12px;padding:8px 0;margin:12px 0;overflow-x:auto}
+.ln{display:flex;font:15px/1.9 "Courier New",monospace;color:#fcd9a8;cursor:pointer;white-space:pre;padding:0 12px;border-left:4px solid transparent}
+.ln:hover{background:rgba(251,146,60,.18)}
+.ln i{color:#85746a;font-style:normal;width:26px;flex:none}
+.ln.ok{background:rgba(22,163,74,.3);border-left-color:var(--ok)}
+.ln.bad{background:rgba(220,38,38,.3);border-left-color:var(--bad)}
+.msg{font-weight:700;margin-top:8px}
+.btn{margin-top:12px;padding:11px 22px;border:0;border-radius:10px;background:var(--ac);color:#fff;font:700 16px Calibri,Arial,sans-serif;cursor:pointer}
+.big{font-size:22px;font-weight:700;color:var(--ac)}
+</style>
+</head>
+<body>
+<div class="w">
+<h1>🔎 Код-тергеуші</h1>
+<div class="sub">Әр істе бір жолда қате бар. Қате жолды тауып, басып көр!</div>
+<div id="app"></div>
+</div>
+<script>
+const K=[
+{g:"Файлды жол-жолымен оқып, экранға шығару",c:['with open("a.txt", "r") as f:','    for line in f','        print(line.strip())'],b:1,e:"for жолының соңында қос нүкте «:» жетіспейді."},
+{g:"Файлдағы жолдар санын шығару",c:['f = open("a.txt", "r")','lines = f.readlines()','print(len(lines))','f.close'],b:3,e:"close() – әдіс, сондықтан жақша ( ) керек: f.close()"},
+{g:"Жолдарды артық бос жолсыз шығару",c:['with open("a.txt", "r") as f:','    for line in f:','        print(line.strip)'],b:2,e:"strip – әдіс, жақшасы керек: line.strip()"},
+{g:"Файлдың бүкіл мәтінін оқып, экранға шығару",c:['with open("a.txt", "r") as f:','text = f.read()','print(text)'],b:1,e:"with ішіндегі жол ішке қарай (шегіністе) жазылуы керек: 4 бос орын."},
+{g:"Файлдағы ескі жолдарды сақтап, соңына жаңа жол қосу",c:['with open("log.txt", "w") as f:','    f.write("Жаңа жол\\n")'],b:0,e:"«w» ескіні өшіреді. Соңына қосу үшін «a» режимі керек."}
+];
+const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;");
+const app=document.getElementById("app");
+let i,xp,right,tries,done;
+function init(){i=0;xp=0;right=0;tries=0;done=false;show();}
+function show(){
+  const k=K[i];done=false;tries=0;
+  app.innerHTML=`<div class="hud"><span class="st">Іс ${i+1} / ${K.length}</span><span class="pill">🔍 ${xp} ұпай</span></div>
+  <div class="card"><div class="st">Мақсат</div><div>${esc(k.g)}</div>
+  <div class="code">${k.c.map((l,n)=>`<div class="ln" data-n="${n}"><i>${n+1}</i>${esc(l)}</div>`).join("")}</div>
+  <div class="msg" id="m">Қате жолды бас 👆</div><button class="btn" id="nx" style="display:none"></button></div>`;
+  app.querySelectorAll(".ln").forEach(el=>el.onclick=()=>pick(el));
+}
+function pick(el){
+  if(done)return;const k=K[i],n=+el.dataset.n,m=document.getElementById("m");
+  if(n===k.b){
+    done=true;const add=tries===0?20:10;xp+=add;if(tries===0)right++;el.classList.add("ok");
+    m.innerHTML=`✅ Дұрыс! +${add} ұпай<br><span style="font-weight:400">${esc(k.e)}</span>`;
+    const b=document.getElementById("nx");b.style.display="inline-block";b.textContent=i<K.length-1?"Келесі іс →":"Қорытынды";
+    b.onclick=()=>{i++;i<K.length?show():end();};
+  }else{tries++;el.classList.add("bad");m.textContent="❌ Бұл жол дұрыс. Басқа жолдан іздеп көр!";}
+}
+function end(){
+  const r=right>=5?"Бас детектив 🕵️":right>=4?"Детектив 🔎":right>=2?"Стажер 📓":"Жаңа агент 🌱";
+  app.innerHTML=`<div class="card" style="text-align:center"><div style="font-size:48px">🏅</div><div class="big">${r}</div>
+  <p>Бірінші талпыныста тапқан қате: <b>${right} / ${K.length}</b><br>Ұпай: <b>${xp}</b></p>
+  <p>${right>=4?"«Кітапхана билетіне» мөр бас!":"Қателерді қайталап көр – келесі жолы мөр аласың."}</p><button class="btn" id="re">Қайта ойнау</button></div>`;
+  document.getElementById("re").onclick=init;
+}
+init();
+</script>
+</body>
+</html>

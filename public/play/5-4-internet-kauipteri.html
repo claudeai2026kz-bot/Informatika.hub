@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="kk">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Интернетте жұмыс істеу қаншалықты қауіпті?</title>
+<style>
+:root{--bg:#0f172a;--text:#f8fafc;--muted:#b9c4d6;--accent:#22d3ee;--accent2:#38bdf8;--line:#263652}
+*{box-sizing:border-box}
+html{height:100%}
+body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(135deg,#0b1224,#101a31 55%,#0b1730);background-color:#0b1224;color:var(--text);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.container{max-width:1050px;margin:auto;padding:28px 18px 60px}
+.hero{background:linear-gradient(135deg,#16223f,#0f2b46);border:1px solid #24486b;border-radius:22px;padding:26px}
+.badge{display:inline-block;background:#0b3950;color:#9eeeff;border:1px solid #16637c;padding:7px 12px;border-radius:999px;font-weight:700;font-size:13px}
+h1{margin:14px 0 8px;font-size:clamp(28px,5vw,46px)}
+.hero p{color:var(--muted);margin:6px 0 0;line-height:1.6}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px;margin-top:18px}
+.card{background:rgba(17,28,52,.96);border:1px solid var(--line);border-radius:18px;padding:18px;margin-top:16px}
+.grid .card{margin-top:0}
+.card h2{margin:0 0 10px;font-size:20px}
+.q{margin:14px 0;padding:14px;border:1px solid #263a59;border-radius:14px;background:#0d1830}
+.q p{margin:0 0 10px;line-height:1.55}
+.option,.chk{display:block;padding:10px 12px;border:1px solid #2c4161;border-radius:11px;margin:8px 0;cursor:pointer;background:#111f3b}
+.chk{display:flex;gap:10px;align-items:flex-start}
+.chk input{margin-top:3px}
+.option:hover,.chk:hover{border-color:#49d8f5;background:#13284a}
+input[type=text],textarea{width:100%;background:#0a1427;color:#fff;border:1px solid #355072;border-radius:10px;padding:11px 12px;font-size:15px;outline:none}
+textarea{min-height:120px;font-family:ui-monospace,Menlo,monospace}
+button{border:0;border-radius:11px;padding:11px 16px;font-weight:800;cursor:pointer;margin:6px 6px 0 0}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#062033}
+.btn2{background:#233654;color:#e8f7ff;border:1px solid #36547b}
+.result{margin-top:10px;font-weight:800}
+.ok{color:#61e58a}.bad{color:#ff7474}
+code,pre{font-family:ui-monospace,Menlo,monospace}
+pre{white-space:pre-wrap;background:#071120;border:1px solid #223855;border-radius:13px;padding:14px;overflow:auto;color:#eaf8ff;line-height:1.55}
+.kpi{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.kpi span{background:#0b2039;border:1px solid #234769;border-radius:12px;padding:9px 12px;color:#cdeefe}
+.scorebox{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;margin:16px 0;background:#0a1c33;border:1px solid #22517a;border-radius:14px;padding:12px 14px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.small{font-size:13px;color:var(--muted)}
+.tbl{width:100%;border-collapse:collapse;font-size:14px;display:block;overflow-x:auto}
+.tbl th,.tbl td{border:1px solid #2c4161;padding:8px 10px;text-align:left}
+.tbl th{background:#0b2039;color:#cdeefe}
+footer{margin-top:28px;color:#8fa0b9;text-align:center;font-size:13px}
+@media (max-width:600px){.container{padding:16px 12px 40px}.hero{padding:20px}.card{padding:14px}}
+</style>
+</head>
+<body>
+<div class="container">
+<section class="hero">
+<span class="badge">5-сынып • Информатика • Интерактив тапсырма</span>
+<h1>Интернетте жұмыс істеу қаншалықты қауіпті?</h1>
+<p>Интернет өте пайдалы, бірақ онда қауіптер де бар. Қауіпті танып, дұрыс әрекет етуді үйренейік: құпиясөз, жеке мәлімет, жалған сілтеме, вирус және зорлық-зомбылықтан қорғану.</p>
+<div class="kpi"><span>Автотексеру</span><span>Жағдайлық есептер</span><span>Ережелер</span><span>Өзіндік жұмыс</span></div>
+</section>
+<div class="scorebox"><div><b>Жинаған ұпай:</b> <span id="score">0</span> / 8</div><button class="btn2" onclick="resetAll()">Қайта бастау</button></div>
+
+<section class="card">
+<h2>Интернеттегі негізгі қауіптер</h2>
+<table class="tbl">
+<tr><th>Қауіп</th><th>Не болады?</th><th>Қалай қорғанамыз?</th></tr>
+<tr><td>Вирус, зиянды бағдарлама</td><td>Файлдар бүлінеді, құрылғы баяулайды</td><td>Антивирус, жаңартулар, белгісіз файлды жүктемеу</td></tr>
+<tr><td>Алаяқтық (фишинг)</td><td>Жалған сайт құпиясөзді ұрлайды</td><td>Белгісіз сілтемені баспау, мекенжайды тексеру</td></tr>
+<tr><td>Жеке мәліметтің таралуы</td><td>Мекенжай, телефон бөтен адамға түседі</td><td>Жеке мәліметті бөтенге бермеу</td></tr>
+<tr><td>Кибербуллинг</td><td>Желіде қорлау, мазақтау</td><td>Жауап бермеу, дәлелді сақтау, үлкенге айту</td></tr>
+</table>
+</section>
+
+<div class="grid">
+<section class="card">
+<h2>1. Құпиясөз</h2>
+<div class="q"><p><b>1.</b> Қайсысы ең сенімді құпиясөз?</p>
+<label class="option"><input type="radio" name="q1" value="a"> 12345678</label>
+<label class="option"><input type="radio" name="q1" value="b"> Aidar2013 (өз есімің мен туған жылың)</label>
+<label class="option"><input type="radio" name="q1" value="c"> Қ7#mTu_92pLa (әріп, сан, белгі аралас, ұзын)</label>
+<button class="btn" onclick="checkRadio('q1','c','r1','k1')">Тексеру</button><div id="r1" class="result"></div></div>
+
+<div class="q"><p><b>2.</b> Құпиясөзді кімге айтуға болады?</p>
+<label class="option"><input type="radio" name="q2" value="a"> Досыма</label>
+<label class="option"><input type="radio" name="q2" value="b"> Тек ата-анама (ересек сенімді адамға)</label>
+<label class="option"><input type="radio" name="q2" value="c"> Ойында таныс болған адамға</label>
+<button class="btn" onclick="checkRadio('q2','b','r2','k2')">Тексеру</button><div id="r2" class="result"></div></div>
+</section>
+
+<section class="card">
+<h2>2. Жеке мәлімет</h2>
+<div class="q"><p><b>3.</b> Қайсысын интернетте бөтен адамға жазуға болады (қауіпсіз ақпарат)?</p>
+<label class="option"><input type="radio" name="q3" value="a"> Үйдің мекенжайы мен телефон нөмірі</label>
+<label class="option"><input type="radio" name="q3" value="b"> Сүйікті ойыным немесе мультфильмім</label>
+<label class="option"><input type="radio" name="q3" value="c"> Мектептің мекенжайы мен сабақ кестесі</label>
+<button class="btn" onclick="checkRadio('q3','b','r3','k3')">Тексеру</button><div id="r3" class="result"></div></div>
+
+<div class="q"><p><b>4.</b> Белгісіз адам «ақысыз сыйлық алу үшін» сілтемені басуды сұрады. Сілтемені ашу керек пе? (иә / жоқ)</p>
+<input id="t4" type="text"><button class="btn" onclick="checkText('t4',['жоқ'],'r4','k4')">Тексеру</button><div id="r4" class="result"></div></div>
+</section>
+</div>
+
+<section class="card">
+<h2>3. Қауіпсіз ережелерді таңда</h2>
+<div class="q"><p><b>5.</b> Дұрыс ережелерді белгіле:</p>
+<label class="chk"><input type="checkbox" name="m" value="1"> Антивирусты және жүйені жаңартып тұрамын</label>
+<label class="chk"><input type="checkbox" name="m" value="0"> Белгісіз электрондық поштадағы файлды бірден ашамын</label>
+<label class="chk"><input type="checkbox" name="m" value="1"> Сайтқа кірместен бұрын мекенжайының дұрыстығын қараймын</label>
+<label class="chk"><input type="checkbox" name="m" value="0"> Бір құпиясөзді барлық сайтқа қоямын</label>
+<label class="chk"><input type="checkbox" name="m" value="1"> Күмәнді жағдайда ата-анама немесе мұғалімге айтамын</label>
+<button class="btn" onclick="checkMulti()">Тексеру</button><div id="r5" class="result"></div></div>
+</section>
+
+<div class="grid">
+<section class="card">
+<h2>4. Жағдайлық есептер</h2>
+<div class="q"><p><b>6.</b> Желіде бейтаныс адам сені кездесуге шақырды. Не істейсің?</p>
+<label class="option"><input type="radio" name="q6" value="a"> Барамын, өйткені ол жақсы адам сияқты</label>
+<label class="option"><input type="radio" name="q6" value="b"> Жауап бермеймін, үлкенге айтамын, қажет болса қолданушыны бұғаттаймын</label>
+<label class="option"><input type="radio" name="q6" value="c"> Мекенжайымды жіберемін</label>
+<button class="btn" onclick="checkRadio('q6','b','r6','k6')">Тексеру</button><div id="r6" class="result"></div></div>
+
+<div class="q"><p><b>7.</b> Сыныптасың желіде сені мазақтап жазды. Ең дұрыс әрекет?</p>
+<label class="option"><input type="radio" name="q7" value="a"> Қарсы қорлайтын хабар жазу</label>
+<label class="option"><input type="radio" name="q7" value="b"> Хабарламаны өшіріп, ешкімге айтпау</label>
+<label class="option"><input type="radio" name="q7" value="c"> Скриншот сақтап, ата-анаға немесе мұғалімге айту</label>
+<button class="btn" onclick="checkRadio('q7','c','r7','k7')">Тексеру</button><div id="r7" class="result"></div></div>
+</section>
+
+<section class="card">
+<h2>5. Сенімді ақпарат</h2>
+<div class="q"><p><b>8.</b> Интернеттен табылған ақпаратқа қалай қарау керек?</p>
+<label class="option"><input type="radio" name="q8" value="a"> Барлығы шын, көрсем болды</label>
+<label class="option"><input type="radio" name="q8" value="b"> Бірнеше сенімді дереккөзден салыстырып тексеру</label>
+<label class="option"><input type="radio" name="q8" value="c"> Ең көп «лайк» жиналғанына сену</label>
+<button class="btn" onclick="checkRadio('q8','b','r8','k8')">Тексеру</button><div id="r8" class="result"></div></div>
+</section>
+</div>
+
+<div class="grid">
+<section class="card">
+<h2>6. Мини-жоба: қауіпсіздік ережелері</h2>
+<p>Интернетте қауіпсіз жұмыс істеуге арналған өз ережелеріңді жаз (кемінде 5 ереже).</p>
+<textarea placeholder="Менің ережелерім..."></textarea>
+<button class="btn2" onclick="show('ans1')">Үлгі жауап</button>
+<pre id="ans1" style="display:none">1) Құпиясөзді ешкімге айтпаймын (тек ата-анаға).
+2) Күмәнді сілтемені баспаймын.
+3) Жеке мәліметті бөтенге жазбаймын.
+4) Қорқытса немесе мазақтаса, үлкенге айтамын.
+5) Ақпаратты бірнеше дереккөзден тексеремін.</pre>
+</section>
+
+<section class="card">
+<h2>7. Өз құпиясөзіңді ойлап тап</h2>
+<p>Ұзын әрі есте сақтауға оңай құпиясөз құрудың жолын жаз (шын құпиясөзіңді жазба!). Бұған қандай белгілерді қосасың?</p>
+<textarea placeholder="Құру жолы..."></textarea>
+<button class="btn2" onclick="show('ans2')">Бір мүмкін шешім</button>
+<pre id="ans2" style="display:none">Қысқа сөйлем ойлап, әріптерін алу: «Менің мысығым 3 жаста» → М_мысық3жс!
+Ұзын болсын (12 таңбадан көп), әріп, сан және белгі қосылсын. Жеке мәлімет (есім, туған жыл) қолданылмасын. Әр сайтқа басқа құпиясөз қою керек.</pre>
+</section>
+</div>
+
+<p class="small" style="margin-top:16px">Автоұпай: 8 балл. Мини-жоба мен өзіндік жұмысты мұғалім бағалайды.</p>
+<footer>Информатика • 5-сынып • Интернет қауіпсіздігі • HTML интерактив тапсырмалар</footer>
+</div>
+<script>
+let score=0;const checked=new Set();
+function mark(id,ok,msg){const el=document.getElementById(id);el.className='result '+(ok?'ok':'bad');el.textContent=msg}
+function addScore(key,pts){if(!checked.has(key)){score+=pts;checked.add(key);document.getElementById('score').textContent=score}}
+function checkRadio(name,correct,out,key){
+  const x=document.querySelector('input[name="'+name+'"]:checked');
+  if(!x){mark(out,false,'Жауапты таңдаңыз.');return}
+  const ok=x.value===correct;
+  mark(out,ok,ok?'Дұрыс!':'Қате. Қайта ойланып көріңіз.');
+  if(ok)addScore(key,1)
+}
+function checkText(id,answers,out,key){
+  const v=document.getElementById(id).value.trim().toLowerCase().replace(/\s+/g,' ');
+  const ok=answers.some(a=>v===a);
+  mark(out,ok,ok?'Дұрыс!':'Қате. Жауапты қайта тексеріңіз.');
+  if(ok)addScore(key,1)
+}
+function checkMulti(){
+  const all=[...document.querySelectorAll('input[name="m"]')];
+  if(!all.some(i=>i.checked)){mark('r5',false,'Кемінде біреуін белгілеңіз.');return}
+  const ok=all.every(i=>i.checked===(i.value==='1'));
+  mark('r5',ok,ok?'Дұрыс!':'Қате. Қауіпті әрекеттерді белгілемеңіз, дұрыс ережелерді ұмытпаңыз.');
+  if(ok)addScore('k5',1)
+}
+function show(id){const e=document.getElementById(id);e.style.display=e.style.display==='none'?'block':'none'}
+function resetAll(){location.reload()}
+</script>
+</body></html>
