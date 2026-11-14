@@ -116,6 +116,8 @@ export async function importContent(db: PrismaClient) {
           title: e.title ?? `${topic.title}: ${LABEL[e.type] ?? e.type}`,
           typeId: type.id, gradeId: e.grade, quarterId: topic.quarterId, topicId: topic.id,
           externalUrl: e.url, published: true,
+          // Бейнесабақ сілтемесі (YouTube) сабақ бетінде ойнатқыш ретінде ашылады.
+          ...(e.type === "VIDEO" ? { videoUrl: e.url } : {}),
         },
       });
       added++;
