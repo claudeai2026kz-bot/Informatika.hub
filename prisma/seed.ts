@@ -33,7 +33,12 @@ async function main() {
     const q = await db.quarter.findUnique({ where: { gradeId_number: { gradeId: r.grade, number: r.quarter } } });
     if (!q) continue;
     const from = await db.topic.findFirst({ where: { quarterId: q.id, title: r.from } });
-    if (from && !(await db.topic.findFirst({ where: { quarterId: q.id, title: r.to } }))) await db.topic.update({ where: { id: from.id }, data: { title: r.to } });
+    if (from && !(await db.topic.findFirst({ where: { quarterId: q.id, title: r.to } }))) {
+      await db.topic.update({ where: { id: from.id }, data: { title: r.to } });
+      // Материал атауларындағы ескі тақырып атауын да жаңартамыз.
+      for (const m of await db.material.findMany({ where: { topicId: from.id, title: { startsWith: `${r.from}:` } } }))
+        await db.material.update({ where: { id: m.id }, data: { title: r.to + m.title.slice(r.from.length) } });
+    }
   }
 
   // Тақырыптар: бар болса өзгертілмейді, жоқтары қосылады.

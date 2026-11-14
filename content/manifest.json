@@ -2038,17 +2038,41 @@
     "grade": 6,
     "quarter": 2,
     "topic": "3D – редакторы",
-    "type": "KMZH",
-    "title": "3D – редакторы: ҚМЖ",
-    "file": "6-2/01_3D_–_редакторы_ҚМЖ.pdf"
+    "type": "PRESENTATION",
+    "file": "6-2/01_3D_–_редакторы_Презентация_2.pdf",
+    "remove": true
+  },
+  {
+    "grade": 6,
+    "quarter": 2,
+    "topic": "3D-редактор құралдары",
+    "type": "PRESENTATION",
+    "file": "6-2/02_3D_-редактор_құралдары_Презентация.pdf",
+    "remove": true
+  },
+  {
+    "grade": 6,
+    "quarter": 2,
+    "topic": "3D-редактор құралдары",
+    "type": "PRACTICE",
+    "file": "6-2/02_3D_-редактор_құралдары_Тапсырма_2.pdf",
+    "remove": true
   },
   {
     "grade": 6,
     "quarter": 2,
     "topic": "3D – редакторы",
     "type": "KMZH",
-    "title": "3D – редакторы: ҚМЖ 2",
+    "title": "3D – редакторы: ҚМЖ",
     "file": "6-2/01_3D_–_редакторы_ҚМЖ_2.pdf"
+  },
+  {
+    "grade": 6,
+    "quarter": 2,
+    "topic": "3D – редакторы",
+    "type": "KMZH",
+    "file": "6-2/01_3D_–_редакторы_ҚМЖ.pdf",
+    "remove": true
   },
   {
     "grade": 6,
@@ -2056,55 +2080,103 @@
     "topic": "3D – редакторы",
     "type": "PRESENTATION",
     "title": "3D – редакторы: презентация",
-    "file": "6-2/01_3D_–_редакторы_Презентация.pdf"
+    "file": "6-2/01_3D_–_редакторы_Презентация_3D_редакторлар.pdf"
   },
   {
     "grade": 6,
     "quarter": 2,
     "topic": "3D – редакторы",
     "type": "PRESENTATION",
-    "title": "3D – редакторы: презентация 2",
-    "file": "6-2/01_3D_–_редакторы_Презентация_2.pdf"
+    "file": "6-2/01_3D_–_редакторы_Презентация.pdf",
+    "remove": true
+  },
+  {
+    "grade": 6,
+    "quarter": 2,
+    "topic": "3D – редакторы",
+    "type": "VIDEO",
+    "title": "3D – редакторы: бейнесабақ",
+    "file": "6-2/01_3D_–_редакторы_Видео.mp4"
   },
   {
     "grade": 6,
     "quarter": 2,
     "topic": "3D – редакторы",
     "type": "PRACTICE",
-    "title": "3D – редакторы: жұмыс парағы",
-    "file": "6-2/01_3D_–_редакторы_Тапсырма.pdf"
+    "title": "3D – редакторы: қалыптастырушы бағалау (10 балл)",
+    "file": "6-2/01_3D_–_редакторы_Қалыптастырушы_бағалау.pdf"
   },
   {
     "grade": 6,
     "quarter": 2,
-    "topic": "3D -редактор құралдары",
+    "topic": "3D – редакторы",
+    "type": "PRACTICE",
+    "file": "6-2/01_3D_–_редакторы_Тапсырма.pdf",
+    "remove": true
+  },
+  {
+    "grade": 6,
+    "quarter": 2,
+    "topic": "3D – редакторы",
+    "type": "GAME_LINK",
+    "title": "3D – редакторы: Gamilab ойыны",
+    "url": "https://gamilab.com/play/7s4qbt"
+  },
+  {
+    "grade": 6,
+    "quarter": 2,
+    "topic": "3D – редакторы",
+    "type": "GAME_LINK",
+    "title": "3D – редакторы: Google Forms: рефлексия",
+    "url": "https://docs.google.com/forms/d/e/1FAIpQLSfe563giXsLSC7EPkPhUvCyL-pd5YBswKhEv24gyDlr7EoXOg/viewform"
+  },
+  {
+    "grade": 6,
+    "quarter": 2,
+    "topic": "3D-редактор құралдары",
     "type": "KMZH",
-    "title": "3D -редактор құралдары: ҚМЖ",
+    "title": "3D-редактор құралдары: ҚМЖ",
     "file": "6-2/02_3D_-редактор_құралдары_ҚМЖ.pdf"
   },
   {
     "grade": 6,
     "quarter": 2,
-    "topic": "3D -редактор құралдары",
+    "topic": "3D-редактор құралдары",
     "type": "PRESENTATION",
-    "title": "3D -редактор құралдары: презентация",
-    "file": "6-2/02_3D_-редактор_құралдары_Презентация.pdf"
+    "title": "3D-редактор құралдары: презентация",
+    "file": "6-2/02_3D-редактор_құралдары_Презентация.pdf"
   },
   {
     "grade": 6,
     "quarter": 2,
-    "topic": "3D -редактор құралдары",
+    "topic": "3D-редактор құралдары",
+    "type": "VIDEO",
+    "title": "3D-редактор құралдары: бейнесабақ",
+    "file": "6-2/02_3D-редактор_құралдары_Видео.mp4"
+  },
+  {
+    "grade": 6,
+    "quarter": 2,
+    "topic": "3D-редактор құралдары",
     "type": "PRACTICE",
-    "title": "3D -редактор құралдары: тапсырма",
+    "title": "3D-редактор құралдары: тапсырма",
     "file": "6-2/02_3D_-редактор_құралдары_Тапсырма.pdf"
   },
   {
     "grade": 6,
     "quarter": 2,
-    "topic": "3D -редактор құралдары",
-    "type": "PRACTICE",
-    "title": "3D -редактор құралдары: қалыптастырушы бағалау (10 балл)",
-    "file": "6-2/02_3D_-редактор_құралдары_Тапсырма_2.pdf"
+    "topic": "3D-редактор құралдары",
+    "type": "GAME_LINK",
+    "title": "3D-редактор құралдары: Gamilab ойыны",
+    "url": "https://gamilab.com/play/ym3wks"
+  },
+  {
+    "grade": 6,
+    "quarter": 2,
+    "topic": "3D-редактор құралдары",
+    "type": "GAME_LINK",
+    "title": "3D-редактор құралдары: Google Forms: рефлексия",
+    "url": "https://forms.gle/mo1Bxd5Yu2JPvWiF7"
   },
   {
     "grade": 6,
@@ -2120,15 +2192,23 @@
     "topic": "3D – конус, цилиндр және сфера құру",
     "type": "PRESENTATION",
     "title": "3D – конус, цилиндр және сфера құру: презентация",
-    "file": "6-2/03_3D_–_конус_цилиндр_және_сфера_құру_Презентация.pdf"
+    "file": "6-2/03_3D_–_конус_цилиндр_және_сфера_құру_Презентация_2.pdf"
   },
   {
     "grade": 6,
     "quarter": 2,
     "topic": "3D – конус, цилиндр және сфера құру",
     "type": "PRESENTATION",
-    "title": "3D – конус, цилиндр және сфера құру: презентация 2",
-    "file": "6-2/03_3D_–_конус_цилиндр_және_сфера_құру_Презентация_2.pdf"
+    "file": "6-2/03_3D_–_конус_цилиндр_және_сфера_құру_Презентация.pdf",
+    "remove": true
+  },
+  {
+    "grade": 6,
+    "quarter": 2,
+    "topic": "3D – конус, цилиндр және сфера құру",
+    "type": "VIDEO",
+    "title": "3D – конус, цилиндр және сфера құру: бейнесабақ",
+    "file": "6-2/03_3D_–_конус_цилиндр_және_сфера_құру_Видео.mp4"
   },
   {
     "grade": 6,
@@ -2143,8 +2223,24 @@
     "quarter": 2,
     "topic": "3D – конус, цилиндр және сфера құру",
     "type": "PRACTICE",
-    "title": "3D – конус, цилиндр және сфера құру: тапсырмалардың орындалуы (SketchUp)",
-    "file": "6-2/03_3D_–_конус_цилиндр_және_сфера_құру_Тапсырма_2.pdf"
+    "file": "6-2/03_3D_–_конус_цилиндр_және_сфера_құру_Тапсырма_2.pdf",
+    "remove": true
+  },
+  {
+    "grade": 6,
+    "quarter": 2,
+    "topic": "3D – конус, цилиндр және сфера құру",
+    "type": "GAME_LINK",
+    "title": "3D – конус, цилиндр және сфера құру: Gamilab ойыны",
+    "url": "https://gamilab.com/play/bb9gpj"
+  },
+  {
+    "grade": 6,
+    "quarter": 2,
+    "topic": "3D – конус, цилиндр және сфера құру",
+    "type": "GAME_LINK",
+    "title": "3D – конус, цилиндр және сфера құру: рефлексия",
+    "url": "/play/6-2-3-refleksiya.html"
   },
   {
     "grade": 6,
@@ -2173,10 +2269,50 @@
   {
     "grade": 6,
     "quarter": 2,
+    "topic": "Объектілердің 3D модельдері",
+    "type": "PRACTICE",
+    "title": "Объектілердің 3D модельдері: тапсырма",
+    "file": "6-2/04_Объектілердің_3D_модельдері_Тапсырма.pdf"
+  },
+  {
+    "grade": 6,
+    "quarter": 2,
+    "topic": "Объектілердің 3D модельдері",
+    "type": "GAME_LINK",
+    "title": "Объектілердің 3D модельдері: Gamilab ойыны",
+    "url": "https://gamilab.com/play/bb9gpj"
+  },
+  {
+    "grade": 6,
+    "quarter": 2,
+    "topic": "Объектілердің 3D модельдері",
+    "type": "GAME_LINK",
+    "title": "Объектілердің 3D модельдері: рефлексия",
+    "url": "/play/6-2-4-refleksiya.html"
+  },
+  {
+    "grade": 6,
+    "quarter": 2,
     "topic": "3D – баспасы",
     "type": "KMZH",
     "title": "3D – баспасы: ҚМЖ",
     "file": "6-2/05_3D_–_баспасы_ҚМЖ.pdf"
+  },
+  {
+    "grade": 6,
+    "quarter": 2,
+    "topic": "3D – баспасы",
+    "type": "PRESENTATION",
+    "title": "3D – баспасы: презентация",
+    "file": "6-2/05_3D_–_баспасы_Презентация.pdf"
+  },
+  {
+    "grade": 6,
+    "quarter": 2,
+    "topic": "3D – баспасы",
+    "type": "VIDEO",
+    "title": "3D – баспасы: бейнесабақ",
+    "file": "6-2/05_3D_–_баспасы_Видео.mp4"
   },
   {
     "grade": 6,
@@ -2190,9 +2326,17 @@
     "grade": 6,
     "quarter": 2,
     "topic": "3D – баспасы",
-    "type": "VIDEO",
-    "title": "3D – баспасы: бейнесабақ",
-    "file": "6-2/05_3D_–_баспасы_Видео.mp4"
+    "type": "GAME_LINK",
+    "title": "3D – баспасы: Gamilab ойыны",
+    "url": "https://gamilab.com/play/e11bef"
+  },
+  {
+    "grade": 6,
+    "quarter": 2,
+    "topic": "3D – баспасы",
+    "type": "GAME_LINK",
+    "title": "3D – баспасы: Wordwall: рефлексия",
+    "url": "https://wordwall.net/ru/resource/106278500?wwmethod=link"
   },
   {
     "assessment": "BZHB",

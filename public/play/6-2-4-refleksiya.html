@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Рефлексия: объектілердің 3D модельдері</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--text:#1b2a41;--muted:#5d6b82;--line:#d5deea;--accent:#3b5bdb;--acc-t:#fff;--sel:#e7ecff;--ok:#d9f2dc;--okb:#2f7d32;--bad:#fde0e0;--badb:#c62828;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121821;--card:#1c2533;--text:#e8eef7;--muted:#9db0c9;--line:#33425a;--accent:#8ea6ff;--acc-t:#0d1530;--sel:#24315a;--ok:#1d3a22;--okb:#6fcf75;--bad:#4a1f1f;--badb:#ef6b6b}}
+:root[data-theme="dark"]{--bg:#121821;--card:#1c2533;--text:#e8eef7;--muted:#9db0c9;--line:#33425a;--accent:#8ea6ff;--acc-t:#0d1530;--sel:#24315a;--ok:#1d3a22;--okb:#6fcf75;--bad:#4a1f1f;--badb:#ef6b6b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.45}
+main{max-width:760px;margin:0 auto;padding:16px}
+h1{font-size:1.35rem;margin:8px 0 4px}
+p.hint{color:var(--muted);margin:0 0 14px}
+section{background:var(--card);border:2px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+h2{font-size:1.05rem;margin:0 0 10px}
+.moods{display:flex;gap:8px;flex-wrap:wrap}
+.opt{flex:1 1 150px;background:var(--card);color:var(--text);border:2px solid var(--line);border-radius:10px;padding:10px;font:inherit;cursor:pointer;text-align:center}
+.opt .e{display:block;font-size:2rem}
+.opt.sel{background:var(--sel);border-color:var(--accent)}
+.st{display:flex;gap:10px;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding:8px 0;flex-wrap:wrap}
+.st:first-of-type{border-top:0}
+.yn{display:flex;gap:6px}
+.yn button{background:var(--card);color:var(--text);border:2px solid var(--line);border-radius:8px;padding:6px 10px;font:inherit;cursor:pointer}
+.yn button.sel{background:var(--sel);border-color:var(--accent)}
+.q{margin-bottom:10px}
+.q p{margin:0 0 6px;font-weight:600}
+.ans{display:flex;flex-direction:column;gap:6px}
+.ans button{text-align:left;background:var(--card);color:var(--text);border:2px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;cursor:pointer}
+.ans button.ok{background:var(--ok);border-color:var(--okb)}
+.ans button.bad{background:var(--bad);border-color:var(--badb)}
+label{display:block;font-weight:600;margin:8px 0 4px}
+textarea{width:100%;min-height:52px;border:2px solid var(--line);border-radius:8px;padding:8px;font:inherit;background:var(--bg);color:var(--text);resize:vertical}
+.go{background:var(--accent);color:var(--acc-t);border:0;border-radius:10px;padding:12px 18px;font:inherit;font-weight:700;cursor:pointer;width:100%}
+#res{display:none;text-align:center}
+#res .big{font-size:2.6rem}
+</style>
+</head>
+<body>
+<main>
+<h1>Рефлексия: Объектілердің 3D модельдері</h1>
+<p class="hint">6-сынып · 2-тоқсан · 4-сабақ. Сабақтың соңында өзіңді бағала.</p>
+<section>
+<h2>1. Бүгінгі сабақта көңіл-күйің қандай?</h2>
+<div class="moods" id="moods"></div>
+</section>
+<section>
+<h2>2. Өзіңді тексер: мен ...</h2>
+<div id="sts"></div>
+</section>
+<section>
+<h2>3. Шағын тексеріс (бір жауапты таңда)</h2>
+<div id="qs"></div>
+</section>
+<section>
+<h2>4. Ойыңды аяқта</h2>
+<label for="t1">Бүгін мен білдім ...</label><textarea id="t1"></textarea>
+<label for="t2">Мен енді істей аламын ...</label><textarea id="t2"></textarea>
+<label for="t3">Мен тағы білгім келеді ...</label><textarea id="t3"></textarea>
+</section>
+<button class="go" id="done">Аяқтау</button>
+<section id="res"></section>
+</main>
+<script>
+var STS=["Затты қарапайым пішіндерге бөле аламын", "SketchUp-та қарапайым объектінің (ыдыс, үстел) моделін құра аламын", "Модельді әр жағынан қарап, оған түс бере аламын"];
+var QS=[{"q": "Үстелдің 3D моделі қандай қарапайым пішіндерден тұрады?", "a": ["1 тақтай (қорап) және 4 аяқ", "Тек бір шар", "Екі конус"], "c": 0}, {"q": "Жазық пішінге көлем беретін құрал қайсы?", "a": ["Move", "Push/Pull", "Circle"], "c": 1}, {"q": "Модельге түс беретін құрал қайсы?", "a": ["Paint Bucket", "Rectangle", "Orbit"], "c": 0}];
+var MOODS=[["😀","Бәрі түсінікті"],["🙂","Аздап қиын болды"],["😕","Көмек керек"]];
+var mood=-1,st={},qa={};
+var mEl=document.getElementById("moods");
+MOODS.forEach(function(m,i){var b=document.createElement("button");b.className="opt";b.innerHTML='<span class="e">'+m[0]+'</span>'+m[1];b.onclick=function(){mood=i;[].forEach.call(mEl.children,function(c,j){c.className="opt"+(j===i?" sel":"")})};mEl.appendChild(b)});
+var sEl=document.getElementById("sts");
+STS.forEach(function(s,i){var d=document.createElement("div");d.className="st";d.innerHTML='<span>'+s+'</span><span class="yn"><button>✅ Иә</button><button>🤔 Әлі емес</button></span>';
+var bs=d.querySelectorAll("button");[].forEach.call(bs,function(b,k){b.onclick=function(){st[i]=k===0;bs[0].className=k===0?"sel":"";bs[1].className=k===1?"sel":""}});sEl.appendChild(d)});
+var qEl=document.getElementById("qs");
+QS.forEach(function(q,i){var d=document.createElement("div");d.className="q";d.innerHTML="<p>"+(i+1)+") "+q.q+"</p>";var a=document.createElement("div");a.className="ans";
+q.a.forEach(function(t,k){var b=document.createElement("button");b.textContent=t;b.onclick=function(){if(i in qa)return;qa[i]=k===q.c;b.className=k===q.c?"ok":"bad";if(k!==q.c)a.children[q.c].className="ok"};a.appendChild(b)});
+d.appendChild(a);qEl.appendChild(d)});
+document.getElementById("done").onclick=function(){
+var yes=Object.keys(st).filter(function(k){return st[k]}).length;
+var ok=Object.keys(qa).filter(function(k){return qa[k]}).length;
+var r=document.getElementById("res");r.style.display="block";
+r.innerHTML='<div class="big">'+(mood>=0?MOODS[mood][0]:"🎉")+'</div><h2>Жарайсың! Рефлексия аяқталды.</h2><p>Өзіңді тексер: '+yes+' / '+STS.length+' · Шағын тексеріс: '+ok+' / '+QS.length+'</p>'+(ok<QS.length||yes<STS.length?'<p class="hint">Түсініксіз жерін мұғалімнен сұра немесе бейнесабақты қайта қара.</p>':'');
+r.scrollIntoView({behavior:"smooth"});
+};
+</script>
+</body>
+</html>
