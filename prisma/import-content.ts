@@ -9,7 +9,7 @@ import { randomBytes } from "crypto";
  * Бір файл екі рет қосылмайды (тақырып + түр + файл атауы бойынша тексеріледі).
  */
 type Entry = { grade: number; quarter: number; topic: string; type: string; file?: string; url?: string; title?: string; replaces?: string; remove?: boolean };
-type AEntry = { assessment: "BZHB" | "TZHB"; grade: number; quarter: number; title: string; description?: string; file: string; preview?: string; answersFile?: string; answers?: string; criteria?: string; descriptors?: string; variant?: string };
+type AEntry = { assessment: "BZHB" | "TZHB"; grade: number; quarter: number; title: string; description?: string; file: string; preview?: string; answersFile?: string; answers?: string; criteria?: string; descriptors?: string; variant?: string; remove?: boolean };
 
 async function storeFile(rel: string) {
   const buf = await readFile(path.resolve("content", rel));
@@ -86,11 +86,27 @@ export async function importContent(db: PrismaClient) {
   let added = 0;
   for (const a of all) {
     if (!("assessment" in a)) continue;
+    if (a.remove) {
+      // "remove": true — ескі БЖБ/ТЖБ-ны (тоқсан + түр + атауы бойынша) өшіреді.
+      const old = await db.assessment.findMany({ where: { kind: a.assessment, title: a.title, quarter: { gradeId: a.grade, number: a.quarter } } });
+      for (const o of old) {
+        await db.assessment.delete({ where: { id: o.id } });
+        for (const fp of [o.filePath, o.previewPath, o.answersPath]) if (fp) await unstore(fp);
+      }
+      continue;
+    }
     try { if (await importAssessment(db, a)) added++; } catch (err) { console.error(`Импорт қатесі (${a.file}):`, err); }
   }
   const entries = all.filter((x): x is Entry => !("assessment" in x));
   // "remove": true — қате тақырыпқа түскен немесе қайталанған материалды өшіреді.
   let removed = 0;
+  // Сілтеме түріндегі материал (мысалы, ойын) сілтемесі бойынша өшіріледі.
+  for (const e of entries.filter((x) => x.remove && x.url && !x.file)) {
+    const r = await db.material.deleteMany({
+      where: { externalUrl: e.url, type: { key: e.type }, topic: { title: e.topic, quarter: { gradeId: e.grade, number: e.quarter } } },
+    });
+    removed += r.count;
+  }
   for (const e of entries.filter((x) => x.remove && x.file)) {
     const old = await db.material.findMany({
       where: { fileName: path.basename(e.file!), type: { key: e.type }, topic: { title: e.topic, quarter: { gradeId: e.grade, number: e.quarter } } },
