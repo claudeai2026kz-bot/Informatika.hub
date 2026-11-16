@@ -8,7 +8,7 @@ import { randomBytes } from "crypto";
  * content/manifest.json ішіндегі файлдарды (әкімші жіберген материалдар) тиісті тақырыпқа қосады.
  * Бір файл екі рет қосылмайды (тақырып + түр + файл атауы бойынша тексеріледі).
  */
-type Entry = { grade: number; quarter: number; topic: string; type: string; file?: string; url?: string; title?: string; replaces?: string; remove?: boolean };
+type Entry = { grade: number; quarter: number; topic: string; type: string; file?: string; url?: string; title?: string; replaces?: string; remove?: boolean; preview?: string };
 type AEntry = { assessment: "BZHB" | "TZHB"; grade: number; quarter: number; title: string; description?: string; file: string; preview?: string; answersFile?: string; answers?: string; criteria?: string; descriptors?: string; variant?: string; remove?: boolean };
 
 async function storeFile(rel: string) {
@@ -145,6 +145,14 @@ export async function importContent(db: PrismaClient) {
     if (existing) {
       // Манифесттегі атауы өзгерсе, сайттағы атауын да жаңартамыз.
       if (e.title && existing.title !== e.title) await db.material.update({ where: { id: existing.id }, data: { title: e.title } });
+      // Word/PowerPoint файлына PDF көрінісі кейін қосылса, бар материалға да жүктейміз.
+      if (e.preview && !existing.previewPath) {
+        try {
+          const pv = await storeFile(e.preview);
+          await db.material.update({ where: { id: existing.id }, data: { previewPath: pv.path } });
+          added++;
+        } catch (err) { console.error(`Импорт қатесі (${e.preview}):`, err); }
+      }
       continue;
     }
     try {
@@ -157,6 +165,7 @@ export async function importContent(db: PrismaClient) {
         title: e.title ?? `${topic.title}: ${LABEL[e.type] ?? e.type}`,
         typeId: type.id, gradeId: e.grade, quarterId: topic.quarterId, topicId: topic.id,
         filePath, fileName, fileMime: mime, fileSize: buf.length, published: true,
+        ...(e.preview ? { previewPath: (await storeFile(e.preview)).path } : {}),
       },
     });
     added++;
