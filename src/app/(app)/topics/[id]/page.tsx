@@ -13,6 +13,21 @@ import ConfirmButton from "@/components/admin/ConfirmButton";
 import { deleteMaterial } from "@/app/actions/admin";
 import PdfFrame from "@/components/PdfFrame";
 import { officeViewerUrl } from "@/lib/storage";
+import { getPublishedTopic } from "@/lib/catalog";
+
+async function loadTopicAdmin(id: number) {
+  const topic = await db.topic.findUnique({
+    where: { id },
+    include: {
+      quarter: true,
+      materials: { orderBy: { createdAt: "asc" }, include: { type: true } },
+      games: { where: { published: true }, select: { id: true, title: true } },
+    },
+  });
+  if (!topic) return null;
+  const siblings = await db.topic.findMany({ where: { quarterId: topic.quarterId }, orderBy: [{ order: "asc" }, { id: "asc" }], select: { id: true, title: true } });
+  return { topic, siblings };
+}
 
 import { getT } from "@/lib/i18n/server";
 const SECTIONS = [
@@ -36,16 +51,10 @@ export default async function TopicPage({ params, searchParams }: { params: Prom
   const { saved } = sp;
   const user = await getCurrentUser();
   const isAdmin = user?.role === "ADMIN";
-  const topic = await db.topic.findUnique({
-    where: { id },
-    include: {
-      quarter: true,
-      materials: { where: isAdmin ? {} : { published: true }, orderBy: { createdAt: "asc" }, include: { type: true } },
-      games: { where: { published: true }, select: { id: true, title: true } },
-    },
-  });
-  if (!topic) notFound();
-  const siblings = await db.topic.findMany({ where: { quarterId: topic.quarterId }, orderBy: [{ order: "asc" }, { id: "asc" }], select: { id: true, title: true } });
+  // Мұғалімдерге кэштелген нұсқа (дерекқорға жүктеме түспейді), әкімшіге — тікелей дерекқордан.
+  const data = isAdmin ? await loadTopicAdmin(id) : await getPublishedTopic(id);
+  if (!data) notFound();
+  const { topic, siblings } = data;
   const idx = siblings.findIndex((s) => s.id === id);
   const prev = siblings[idx - 1], next = siblings[idx + 1];
   const g = topic.quarter.gradeId, q = topic.quarter.number;

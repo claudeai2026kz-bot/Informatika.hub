@@ -1,6 +1,7 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { CATALOG_TAG } from "@/lib/catalog";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import type { GameType, Prisma } from "@prisma/client";
@@ -54,6 +55,7 @@ export async function setUserRole(userId: string, roleKey: "USER" | "ADMIN") {
   await db.user.update({ where: { id: userId }, data: { roleId: role.id } });
   await log(admin.id, `Рөл өзгертілді: ${role.name}`, userId);
   revalidatePath("/admin/users");
+  revalidateTag(CATALOG_TAG);
   return { ok: true };
 }
 
@@ -64,6 +66,7 @@ export async function setUserBlocked(userId: string, blocked: boolean) {
   if (blocked) await db.session.deleteMany({ where: { userId } });
   await log(admin.id, blocked ? "Пайдаланушы бұғатталды" : "Бұғат алынды", userId);
   revalidatePath("/admin/users");
+  revalidateTag(CATALOG_TAG);
   return { ok: true };
 }
 
@@ -88,6 +91,7 @@ export async function saveTopic(_: AdminState, fd: FormData): Promise<AdminState
   else await db.topic.create({ data });
   await log(admin.id, id ? "Тақырып өңделді" : "Тақырып қосылды", p.data.title);
   revalidatePath("/admin/topics");
+  revalidateTag(CATALOG_TAG);
   return { ok: id ? "Тақырып сақталды" : "Тақырып қосылды" };
 }
 
@@ -96,6 +100,7 @@ export async function deleteTopic(id: number) {
   const t = await db.topic.delete({ where: { id } });
   await log(admin.id, "Тақырып жойылды", t.title);
   revalidatePath("/admin/topics");
+  revalidateTag(CATALOG_TAG);
 }
 
 /* ================= Материалдар ================= */
@@ -159,6 +164,7 @@ export async function saveMaterial(_: AdminState, fd: FormData): Promise<AdminSt
   if (d.published && !existing?.published) await notifyAll("Жаңа материал қосылды", `${d.grade}-сынып: ${d.title}`, `/materials/${savedId}`);
   await log(admin.id, existing ? "Материал өңделді" : "Материал қосылды", d.title);
   revalidatePath("/admin/materials");
+  revalidateTag(CATALOG_TAG);
   const back = str(fd, "back");
   if (back.startsWith("/topics/")) { revalidatePath(back); redirect(`${back}?saved=1`); }
   redirect(`/admin/materials?saved=1`);
@@ -171,6 +177,7 @@ export async function toggleMaterialPublished(id: string) {
   if (!m.published) await notifyAll("Жаңа материал қосылды", `${m.gradeId}-сынып: ${m.title}`, `/materials/${id}`);
   await log(admin.id, m.published ? "Материал жариялаудан алынды" : "Материал жарияланды", m.title);
   revalidatePath("/admin/materials");
+  revalidateTag(CATALOG_TAG);
 }
 
 export async function deleteMaterial(id: string) {
@@ -179,6 +186,7 @@ export async function deleteMaterial(id: string) {
   await Promise.all([removeStored(m.filePath), removeStored(m.previewPath)]);
   await log(admin.id, "Материал жойылды", m.title);
   revalidatePath("/admin/materials");
+  revalidateTag(CATALOG_TAG);
   if (m.topicId) revalidatePath(`/topics/${m.topicId}`);
 }
 
@@ -238,6 +246,7 @@ export async function saveAssessment(_: AdminState, fd: FormData): Promise<Admin
   }
   await log(admin.id, existing ? "БЖБ/ТЖБ өңделді" : "БЖБ/ТЖБ қосылды", d.title);
   revalidatePath("/admin/assessments");
+  revalidateTag(CATALOG_TAG);
   redirect("/admin/assessments?saved=1");
 }
 
@@ -247,6 +256,7 @@ export async function deleteAssessment(id: string) {
   await Promise.all([removeStored(a.filePath), removeStored(a.previewPath), removeStored(a.answersPath)]);
   await log(admin.id, "БЖБ/ТЖБ жойылды", a.title);
   revalidatePath("/admin/assessments");
+  revalidateTag(CATALOG_TAG);
 }
 
 /* ================= Ойындар ================= */
@@ -270,6 +280,7 @@ export async function saveGame(payload: unknown, id?: string): Promise<AdminStat
   }
   await log(admin.id, id ? "Ойын өңделді" : "Ойын қосылды", d.title);
   revalidatePath("/admin/games");
+  revalidateTag(CATALOG_TAG);
   return { ok: "Ойын сақталды" };
 }
 
@@ -278,6 +289,7 @@ export async function deleteGame(id: string) {
   const g = await db.game.delete({ where: { id } });
   await log(admin.id, "Ойын жойылды", g.title);
   revalidatePath("/admin/games");
+  revalidateTag(CATALOG_TAG);
 }
 
 /* ================= Пікірлер ================= */
@@ -287,6 +299,7 @@ export async function setCommentHidden(id: string, hidden: boolean) {
   await db.comment.update({ where: { id }, data: { hidden } });
   await log(admin.id, hidden ? "Пікір жасырылды" : "Пікір қайта көрсетілді", id);
   revalidatePath("/admin/comments");
+  revalidateTag(CATALOG_TAG);
 }
 
 export async function deleteComment(id: string) {
@@ -294,4 +307,5 @@ export async function deleteComment(id: string) {
   await db.comment.delete({ where: { id } });
   await log(admin.id, "Пікір жойылды", id);
   revalidatePath("/admin/comments");
+  revalidateTag(CATALOG_TAG);
 }

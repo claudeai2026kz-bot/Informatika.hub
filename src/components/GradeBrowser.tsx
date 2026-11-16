@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ChevronRight, ClipboardCheck, Plus } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { getGradeQuarters, getQuarterTopics, getQuarterAssessments } from "@/lib/catalog";
 import { QUARTER_LABELS } from "@/lib/labels";
 import { TypeIcon } from "@/components/MaterialCard";
 import { getT } from "@/lib/i18n/server";
@@ -13,29 +14,19 @@ const rank = (k: string) => { const i = ORDER.indexOf(k); return i < 0 ? 99 : i;
 /** Сынып ішінде: тоқсандар → тақырыптар → БЖБ/ТЖБ. Сынып беті мен басты бетте қолданылады. */
 export default async function GradeBrowser({ g, qn, quarterHref }: { g: number; qn: number; quarterHref: (q: number) => string }) {
   const tr = await getT();
-  const quarters = await db.quarter.findMany({
-    where: { gradeId: g },
-    orderBy: { number: "asc" },
-    include: { _count: { select: { topics: true } } },
-  });
-  const current = quarters.find((q) => q.number === qn);
-  const topics = current
-    ? await db.topic.findMany({
-        where: { quarterId: current.id },
-        orderBy: [{ order: "asc" }, { id: "asc" }],
-        include: { materials: { where: { published: true }, select: { type: { select: { key: true } } } } },
-      })
-    : [];
-
   const user = await getCurrentUser();
   const isAdmin = user?.role === "ADMIN";
-  const assessments = current
-    ? await db.assessment.findMany({
-        where: { quarterId: current.id, ...(isAdmin ? {} : { published: true }) },
+  const quarters = await getGradeQuarters(g);
+  const current = quarters.find((q) => q.number === qn);
+  const topics = current ? await getQuarterTopics(current.id) : [];
+
+  // Әкімші жарияланбаған БЖБ/ТЖБ-ны да көреді, сондықтан оған кэштен емес, тікелей дерекқордан аламыз.
+  const assessments = !current ? [] : !isAdmin ? await getQuarterAssessments(current.id)
+    : await db.assessment.findMany({
+        where: { quarterId: current.id },
         orderBy: [{ kind: "asc" }, { createdAt: "asc" }],
         select: { id: true, kind: true, title: true, variant: true, published: true, topic: { select: { title: true } } },
-      })
-    : [];
+      });
 
   const sections = new Map<string, typeof topics>();
   for (const t of topics) {

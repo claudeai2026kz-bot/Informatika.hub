@@ -1,5 +1,6 @@
 "use server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { CATALOG_TAG } from "@/lib/catalog";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { prepareGame } from "@/lib/game-save";
@@ -22,6 +23,7 @@ export async function saveMyGame(payload: unknown, id?: string, classId?: string
       db.gameQuestion.createMany({ data: prep.questions.map((q) => ({ ...q, gameId: id })) }),
     ]);
     revalidatePath(`/games/${id}`);
+    revalidateTag(CATALOG_TAG);
     return { ok: "Ойын сақталды", id };
   }
   const count = await db.game.count({ where: { authorId: user.id } });
@@ -31,8 +33,10 @@ export async function saveMyGame(payload: unknown, id?: string, classId?: string
   if (classId && (await db.classroom.findFirst({ where: { id: classId, teacherId: user.id }, select: { id: true } }))) {
     await db.classGame.create({ data: { classId, gameId: g.id } });
     revalidatePath(`/classes/${classId}`);
+    revalidateTag(CATALOG_TAG);
   }
   revalidatePath("/games/my");
+  revalidateTag(CATALOG_TAG);
   return { ok: "Ойын сақталды", id: g.id };
 }
 
@@ -41,4 +45,5 @@ export async function deleteMyGame(id: string) {
   if (!user) return;
   await db.game.deleteMany({ where: { id, authorId: user.id } });
   revalidatePath("/games/my");
+  revalidateTag(CATALOG_TAG);
 }
