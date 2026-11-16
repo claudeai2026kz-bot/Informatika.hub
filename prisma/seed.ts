@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { CURRICULUM, REMOVED, RENAMED, SECTIONS } from "./curriculum";
 import { importContent } from "./import-content";
 import { importGames } from "./games";
+import { hashOf, loadSeedState } from "./seed-state";
 
 const db = new PrismaClient();
 
@@ -28,43 +29,56 @@ async function main() {
       await db.quarter.upsert({ where: { gradeId_number: { gradeId: g, number: q } }, update: {}, create: { gradeId: g, number: q } });
   }
 
-  // Атауы өзгерген тақырыптар: материалдары сақталып, жаңа атауға ауысады.
-  for (const r of RENAMED) {
-    const q = await db.quarter.findUnique({ where: { gradeId_number: { gradeId: r.grade, number: r.quarter } } });
-    if (!q) continue;
-    const from = await db.topic.findFirst({ where: { quarterId: q.id, title: r.from } });
-    if (from && !(await db.topic.findFirst({ where: { quarterId: q.id, title: r.to } }))) {
-      await db.topic.update({ where: { id: from.id }, data: { title: r.to } });
-      // Материал атауларындағы ескі тақырып атауын да жаңартамыз.
-      for (const m of await db.material.findMany({ where: { topicId: from.id, title: { startsWith: `${r.from}:` } } }))
-        await db.material.update({ where: { id: m.id }, data: { title: r.to + m.title.slice(r.from.length) } });
-    }
-  }
+  // Тақырыптар тізімі әр тоқсан үшін тек кодтағы тізім өзгергенде ғана қолданылады.
+  // Әйтпесе әкімші сайттан өзгерткен тақырыптар (атауы, реті, жойылғаны) сақталады.
+  const state = await loadSeedState(db);
+  const qKeys = new Set<string>([
+    ...Object.entries(CURRICULUM).flatMap(([g, qs]) => Object.keys(qs).map((q) => `${g}-${q}`)),
+    ...RENAMED.map((r) => `${r.grade}-${r.quarter}`),
+    ...REMOVED.map((r) => `${r.grade}-${r.quarter}`),
+  ]);
+  for (const k of qKeys) {
+    const [g, q] = k.split("-").map(Number);
+    const titles = (CURRICULUM as Record<string, Record<string, string[]>>)[String(g)]?.[String(q)] ?? [];
+    const section = SECTIONS[k] ?? null;
+    const renames = RENAMED.filter((r) => r.grade === g && r.quarter === q);
+    const removed = REMOVED.filter((r) => r.grade === g && r.quarter === q);
+    const hash = hashOf({ titles, section, renames, removed });
+    if (state.has(`q:${k}`, hash)) continue;
+    const quarter = await db.quarter.findUniqueOrThrow({ where: { gradeId_number: { gradeId: g, number: q } } });
 
-  // Тақырыптар: бар болса өзгертілмейді, жоқтары қосылады.
-  for (const [g, quarters] of Object.entries(CURRICULUM))
-    for (const [q, titles] of Object.entries(quarters)) {
-      const quarter = await db.quarter.findUniqueOrThrow({ where: { gradeId_number: { gradeId: Number(g), number: Number(q) } } });
-      const section = SECTIONS[`${g}-${q}`] ?? null;
-      for (const [i, title] of titles.entries()) {
-        const found = await db.topic.findFirst({ where: { quarterId: quarter.id, title } });
-        if (!found) await db.topic.create({ data: { quarterId: quarter.id, title, order: i + 1, section } });
-        else if (found.order !== i + 1 || found.section !== section) await db.topic.update({ where: { id: found.id }, data: { order: i + 1, section } });
+    // Атауы өзгерген тақырыптар: материалдары сақталып, жаңа атауға ауысады.
+    for (const r of renames) {
+      const from = await db.topic.findFirst({ where: { quarterId: quarter.id, title: r.from } });
+      if (from && !(await db.topic.findFirst({ where: { quarterId: quarter.id, title: r.to } }))) {
+        await db.topic.update({ where: { id: from.id }, data: { title: r.to } });
+        // Материал атауларындағы ескі тақырып атауын да жаңартамыз.
+        for (const m of await db.material.findMany({ where: { topicId: from.id, title: { startsWith: `${r.from}:` } } }))
+          await db.material.update({ where: { id: m.id }, data: { title: r.to + m.title.slice(r.from.length) } });
       }
     }
 
-  for (const r of REMOVED) {
-    const t = await db.topic.findFirst({
-      where: { title: r.title, quarter: { gradeId: r.grade, number: r.quarter } },
-      include: { _count: { select: { materials: true, assessments: true, games: true } } },
-    });
-    if (!t) continue;
-    if (t._count.materials + t._count.assessments + t._count.games === 0) await db.topic.delete({ where: { id: t.id } });
-    else console.log(`Өшірілмеді (материалы бар): ${r.title}`);
+    // Тақырыптар: бар болса өзгертілмейді, жоқтары қосылады.
+    for (const [i, title] of titles.entries()) {
+      const found = await db.topic.findFirst({ where: { quarterId: quarter.id, title } });
+      if (!found) await db.topic.create({ data: { quarterId: quarter.id, title, order: i + 1, section } });
+      else if (found.order !== i + 1 || found.section !== section) await db.topic.update({ where: { id: found.id }, data: { order: i + 1, section } });
+    }
+
+    for (const r of removed) {
+      const t = await db.topic.findFirst({
+        where: { title: r.title, quarterId: quarter.id },
+        include: { _count: { select: { materials: true, assessments: true, games: true } } },
+      });
+      if (!t) continue;
+      if (t._count.materials + t._count.assessments + t._count.games === 0) await db.topic.delete({ where: { id: t.id } });
+      else console.log(`Өшірілмеді (материалы бар): ${r.title}`);
+    }
+    await state.mark(`q:${k}`, hash);
   }
 
-  await importContent(db);
-  await importGames(db);
+  await importContent(db, state);
+  await importGames(db, state);
 
   // Бірінші әкімші тек осы жерде, ортаның айнымалылары арқылы жасалады.
   const email = process.env.ADMIN_EMAIL?.toLowerCase();

@@ -1,3 +1,4 @@
+import type { SeedState } from "./seed-state";
 import type { PrismaClient, GameType } from "@prisma/client";
 
 /**
@@ -463,10 +464,13 @@ export const GAMES: G[] = [
   },
 ];
 
-export async function importGames(db: PrismaClient) {
+export async function importGames(db: PrismaClient, state?: SeedState) {
   let added = 0;
   for (const g of [...GAMES, ...NEW_GAMES]) {
-    if (await db.game.findFirst({ where: { gradeId: g.grade, title: g.title } })) continue;
+    // Бір рет қосылған ойын әкімші өшірсе, қайта қосылмайды.
+    const key = `g:${g.grade}:${g.title}`;
+    if (state?.has(key)) continue;
+    if (await db.game.findFirst({ where: { gradeId: g.grade, title: g.title } })) { await state?.mark(key); continue; }
     const topic = g.topic
       ? await db.topic.findFirst({ where: { title: g.topic, quarter: { gradeId: g.grade, number: g.quarter } }, select: { id: true } })
       : null;
@@ -486,6 +490,7 @@ export async function importGames(db: PrismaClient) {
         timeLimit: g.timeLimit ?? null, published: true, questions: { create: questions },
       },
     });
+    await state?.mark(key);
     added++;
   }
   if (added) console.log(`Ойындар: ${added} жаңа ойын қосылды.`);

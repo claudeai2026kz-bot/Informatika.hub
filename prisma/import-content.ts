@@ -3,6 +3,7 @@ import { readFile, mkdir, writeFile, unlink } from "fs/promises";
 import { existsSync } from "fs";
 import path from "path";
 import { randomBytes } from "crypto";
+import { hashOf, type SeedState } from "./seed-state";
 
 /**
  * content/manifest.json ішіндегі файлдарды (әкімші жіберген материалдар) тиісті тақырыпқа қосады.
@@ -20,7 +21,7 @@ async function storeFile(rel: string) {
 
 async function importAssessment(db: PrismaClient, e: AEntry) {
   const quarter = await db.quarter.findFirst({ where: { gradeId: e.grade, number: e.quarter } });
-  if (!quarter) return false;
+  if (!quarter) return null;
   if (await db.assessment.findFirst({ where: { quarterId: quarter.id, kind: e.assessment, title: e.title } })) return false;
   const f = await storeFile(e.file);
   const pv = e.preview ? await storeFile(e.preview) : null;
@@ -79,10 +80,14 @@ async function store(buf: Buffer, ext: string, mime: string) {
   return rel;
 }
 
-export async function importContent(db: PrismaClient) {
+export async function importContent(db: PrismaClient, state?: SeedState) {
   const manifest = path.resolve("content/manifest.json");
   if (!existsSync(manifest)) return;
-  const all = JSON.parse(await readFile(manifest, "utf8")) as (Entry | AEntry)[];
+  // Әр жазба бір рет қана қолданылады (жазба өзгерсе — қайта). Сондықтан әкімші сайттан
+  // өшірген не өзгерткен материал келесі жаңартуда кері қайтып келмейді.
+  const keyOf = (x: Entry | AEntry) => `m:${hashOf(x)}`;
+  const all = (JSON.parse(await readFile(manifest, "utf8")) as (Entry | AEntry)[]).filter((x) => !state?.has(keyOf(x)));
+  const done = (x: Entry | AEntry) => state?.mark(keyOf(x));
   let added = 0;
   for (const a of all) {
     if (!("assessment" in a)) continue;
@@ -93,9 +98,14 @@ export async function importContent(db: PrismaClient) {
         await db.assessment.delete({ where: { id: o.id } });
         for (const fp of [o.filePath, o.previewPath, o.answersPath]) if (fp) await unstore(fp);
       }
+      await done(a);
       continue;
     }
-    try { if (await importAssessment(db, a)) added++; } catch (err) { console.error(`Импорт қатесі (${a.file}):`, err); }
+    try {
+      const r = await importAssessment(db, a);
+      if (r) added++;
+      if (r !== null) await done(a);
+    } catch (err) { console.error(`Импорт қатесі (${a.file}):`, err); }
   }
   const entries = all.filter((x): x is Entry => !("assessment" in x));
   // "remove": true — қате тақырыпқа түскен немесе қайталанған материалды өшіреді.
@@ -106,6 +116,7 @@ export async function importContent(db: PrismaClient) {
       where: { externalUrl: e.url, type: { key: e.type }, topic: { title: e.topic, quarter: { gradeId: e.grade, number: e.quarter } } },
     });
     removed += r.count;
+    await done(e);
   }
   for (const e of entries.filter((x) => x.remove && x.file)) {
     const old = await db.material.findMany({
@@ -116,6 +127,7 @@ export async function importContent(db: PrismaClient) {
       if (m.filePath && !(await db.material.findFirst({ where: { filePath: m.filePath } }))) await unstore(m.filePath);
       removed++;
     }
+    await done(e);
   }
   if (removed) console.log(`Мазмұн импорты: ${removed} ескі материал өшірілді.`);
   for (const e of entries) {
@@ -126,7 +138,7 @@ export async function importContent(db: PrismaClient) {
     if (!type) { console.log(`Түр табылмады: ${e.type}`); continue; }
     if (e.url) {
       if (e.replaces) await db.material.deleteMany({ where: { topicId: topic.id, typeId: type.id, externalUrl: e.replaces } });
-      if (await db.material.findFirst({ where: { topicId: topic.id, typeId: type.id, externalUrl: e.url } })) continue;
+      if (await db.material.findFirst({ where: { topicId: topic.id, typeId: type.id, externalUrl: e.url } })) { await done(e); continue; }
       await db.material.create({
         data: {
           title: e.title ?? `${topic.title}: ${LABEL[e.type] ?? e.type}`,
@@ -136,6 +148,7 @@ export async function importContent(db: PrismaClient) {
           ...(e.type === "VIDEO" ? { videoUrl: e.url } : {}),
         },
       });
+      await done(e);
       added++;
       continue;
     }
@@ -151,8 +164,9 @@ export async function importContent(db: PrismaClient) {
           const pv = await storeFile(e.preview);
           await db.material.update({ where: { id: existing.id }, data: { previewPath: pv.path } });
           added++;
-        } catch (err) { console.error(`Импорт қатесі (${e.preview}):`, err); }
+        } catch (err) { console.error(`Импорт қатесі (${e.preview}):`, err); continue; }
       }
+      await done(e);
       continue;
     }
     try {
@@ -168,6 +182,7 @@ export async function importContent(db: PrismaClient) {
         ...(e.preview ? { previewPath: (await storeFile(e.preview)).path } : {}),
       },
     });
+    await done(e);
     added++;
     } catch (err) {
       // Импорт қатесі сайттың жаңаруын тоқтатпауы керек.

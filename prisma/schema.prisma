@@ -540,3 +540,11 @@ model Duel {
   bMs       Int?
   createdAt DateTime @default(now())
 }
+
+/// Сайт жаңарғанда (seed) бір рет орындалған қадамдардың белгісі: әкімші сайттан
+/// өзгерткен/өшірген тақырып, материал, ойын келесі жаңартуда кері қайтып келмейді.
+model SeedState {
+  key       String   @id
+  hash      String
+  updatedAt DateTime @updatedAt
+}
