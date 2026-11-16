@@ -44,7 +44,8 @@ export default async function MaterialPage({ params }: { params: Promise<{ id: s
   const video = embedUrl(m.videoUrl);
   const isPdfLike = m.previewPath || m.fileMime === "application/pdf";
   const isImage = m.fileMime?.startsWith("image/");
-  const isMp4 = m.fileMime === "video/mp4";
+  const isMp4 = m.fileMime === "video/mp4" || m.fileMime === "video/webm";
+  const isAudio = m.fileMime?.startsWith("audio/");
   const fileSrc = `/api/files/material/${m.id}`;
   const office = !isPdfLike && !video ? await officeViewerUrl(m.filePath) : null;
 
@@ -81,6 +82,8 @@ export default async function MaterialPage({ params }: { params: Promise<{ id: s
               <div className="aspect-video"><iframe src={video} title={m.title} className="h-full w-full" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowFullScreen loading="lazy" /></div>
             ) : isMp4 ? (
               <video src={fileSrc} controls className="w-full aspect-video bg-black" preload="metadata" />
+            ) : isAudio ? (
+              <div className="grid place-items-center p-10 bg-sky-50/50"><audio src={fileSrc} controls preload="metadata" className="w-full max-w-xl" /></div>
             ) : isImage ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={fileSrc} alt={m.title} className="w-full" />

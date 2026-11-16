@@ -31,10 +31,10 @@ async function loadTopicAdmin(id: number) {
 
 import { getT } from "@/lib/i18n/server";
 const SECTIONS = [
-  { key: "PRESENTATION", label: "Презентация", icon: Presentation, color: "from-orange-100 to-orange-50 text-orange-500", mode: "file", accept: ".pptx,.ppt,.pdf" },
-  { key: "VIDEO", label: "Бейнесабақ", icon: PlayCircle, color: "from-rose-100 to-rose-50 text-rose-500", mode: "both", accept: ".mp4" },
-  { key: "PRACTICE", label: "Тапсырма", icon: ClipboardList, color: "from-emerald-100 to-emerald-50 text-emerald-600", mode: "file", accept: ".pdf,.docx,.doc,.pptx,.xlsx,.zip,.png,.jpg,.jpeg" },
-  { key: "KMZH", label: "ҚМЖ", icon: FileText, color: "from-sky-100 to-sky-50 text-sky-600", mode: "file", accept: ".docx,.doc,.pdf" },
+  { key: "PRESENTATION", label: "Презентация", icon: Presentation, color: "from-orange-100 to-orange-50 text-orange-500", mode: "file", accept: "" },
+  { key: "VIDEO", label: "Бейнесабақ", icon: PlayCircle, color: "from-rose-100 to-rose-50 text-rose-500", mode: "both", accept: "video/*" },
+  { key: "PRACTICE", label: "Тапсырма", icon: ClipboardList, color: "from-emerald-100 to-emerald-50 text-emerald-600", mode: "file", accept: "" },
+  { key: "KMZH", label: "ҚМЖ", icon: FileText, color: "from-sky-100 to-sky-50 text-sky-600", mode: "file", accept: "" },
   { key: "GAME_LINK", label: "Ойын", icon: Gamepad2, color: "from-lilac-100 to-lilac-100/40 text-lilac-500", mode: "url", accept: "" },
 ] as const;
 
@@ -64,7 +64,7 @@ export default async function TopicPage({ params, searchParams }: { params: Prom
   const items = topic.materials.filter((m) => m.type.key === active.key);
   const sel = items.find((m) => m.id === sp.m) ?? items[0];
   const selGame = !sel && active.key === "GAME_LINK" ? topic.games[0] : undefined;
-  const isPdfLike = sel && (sel.previewPath || sel.fileMime === "application/pdf" || sel.fileMime?.startsWith("image/"));
+  const isPdfLike = sel && (sel.previewPath || /^(application\/pdf|image\/|audio\/|video\/)/.test(sel.fileMime ?? ""));
   const office = sel && sel.filePath && !isPdfLike && active.key !== "VIDEO" ? await officeViewerUrl(sel.filePath) : null;
 
   return (
@@ -194,7 +194,8 @@ async function Preview({ m, office, isGame }: { m: PM; office: string | null; is
   const t = await getT();
   const video = embedUrl(m.videoUrl);
   if (video) return <div className="aspect-video bg-black"><iframe src={video} title={m.title} className="h-full w-full" allow="encrypted-media; picture-in-picture; fullscreen" allowFullScreen loading="lazy" /></div>;
-  if (m.fileMime === "video/mp4") return <video src={`/api/files/material/${m.id}`} controls preload="metadata" className="w-full aspect-video bg-black" />;
+  if (m.fileMime === "audio/mpeg") return <div className="grid place-items-center min-h-[240px] p-8 bg-sky-50/50"><audio src={`/api/files/material/${m.id}`} controls preload="metadata" className="w-full max-w-xl" /></div>;
+  if (m.fileMime === "video/mp4" || m.fileMime === "video/webm") return <video src={`/api/files/material/${m.id}`} controls preload="metadata" className="w-full aspect-video bg-black" />;
   if (isGame && m.externalUrl) return <GameHero title={m.title} href={m.externalUrl} external />;
   // eslint-disable-next-line @next/next/no-img-element
   if (!m.previewPath && m.fileMime?.startsWith("image/")) return <div className="grid place-items-center bg-sky-50/50 p-3"><img src={`/api/files/material/${m.id}`} alt={m.title} className="max-h-[75vh] w-auto rounded-xl" /></div>;

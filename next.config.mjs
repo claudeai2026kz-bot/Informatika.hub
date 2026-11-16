@@ -7,7 +7,7 @@ const securityHeaders = [
 ];
 const nextConfig = {
   poweredByHeader: false,
-  experimental: { serverActions: { bodySizeLimit: "60mb" } },
+  experimental: { serverActions: { bodySizeLimit: "500mb" }, middlewareClientMaxBodySize: "500mb" },
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },

@@ -31,8 +31,8 @@ export default function TopicUpload({ typeKey, label, mode, accept, grade, quart
         <label className="flex cursor-pointer flex-col items-center gap-1 rounded-xl border border-sky-200 bg-white p-4 text-center text-sm hover:border-sky-400">
           <Upload className="h-6 w-6 text-sky-500" />
           <span className="font-semibold">Файлды таңдау</span>
-          <span className="text-xs muted">{accept.replaceAll(".", "").toUpperCase().replaceAll(",", ", ")} · 50 МБ дейін</span>
-          <input name="file" type="file" accept={accept} className="mt-2 w-full text-xs file:mr-2 file:rounded-lg file:border-0 file:bg-sky-100 file:px-3 file:py-1.5 file:font-semibold file:text-sky-600" />
+          <span className="text-xs muted">Кез келген файл: PDF, Word, PowerPoint, Excel, сурет, бейне, аудио, архив…</span>
+          <input name="file" type="file" accept={accept || undefined} className="mt-2 w-full text-xs file:mr-2 file:rounded-lg file:border-0 file:bg-sky-100 file:px-3 file:py-1.5 file:font-semibold file:text-sky-600" />
         </label>
       )}
       {mode === "file" && typeKey !== "VIDEO" && (

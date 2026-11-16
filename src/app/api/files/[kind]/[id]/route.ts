@@ -41,7 +41,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ kind
         db.userHistory.create({ data: { userId: user.id, action: "DOWNLOAD", materialId: id } }),
       ]);
     } else {
-      path = m.previewPath ?? (m.fileMime === "application/pdf" || m.fileMime?.startsWith("image/") || m.fileMime === "video/mp4" ? m.filePath : null);
+      path = m.previewPath ?? (m.fileMime === "application/pdf" || /^(image|video|audio)\//.test(m.fileMime ?? "") ? m.filePath : null);
       name = m.fileName ?? "material";
     }
   } else if (kind === "assessment") {

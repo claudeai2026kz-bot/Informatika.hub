@@ -14,8 +14,15 @@ export function withDirectUploads(action: (s: State, fd: FormData) => Promise<St
       const signed = await signUpload(value.name, value.size);
       if (!signed) continue; // жергілікті сақтау
       if ("error" in signed) return { error: signed.error };
-      const res = await fetch(signed.url, { method: "PUT", body: value, headers: { "Content-Type": value.type || "application/octet-stream", "x-upsert": "false" } });
-      if (!res.ok) return { error: "Файлды жүктеу мүмкін болмады. Интернетті тексеріп, қайталап көріңіз." };
+      // Беттің ішінде іске қосылуы мүмкін түрлерді (HTML, SVG, JS) жай файл ретінде сақтаймыз.
+      const type = !value.type || /html|svg|xml|javascript/i.test(value.type) ? "application/octet-stream" : value.type;
+      const res = await fetch(signed.url, { method: "PUT", body: value, headers: { "Content-Type": type, "x-upsert": "false" } });
+      if (!res.ok) {
+        const body = await res.text().catch(() => "");
+        if (res.status === 413 || /maximum allowed size|too large|Payload too large/i.test(body))
+          return { error: `«${value.name}» (${Math.round(value.size / 1048576)} МБ) Supabase қоймасының бір файлға арналған шегінен үлкен. Supabase → Storage → Settings бөлімінде «Upload file size limit» мәнін көтеріңіз (тегін жоспарда ең көбі 50 МБ). Үлкен бейнені YouTube-қа салып, сілтемесін қосуға да болады.` };
+        return { error: "Файлды жүктеу мүмкін болмады. Интернетті тексеріп, қайталап көріңіз." };
+      }
       fd.set(key, `__uploaded:${JSON.stringify({ path: signed.path, name: value.name })}`);
     }
     return action(state, fd);

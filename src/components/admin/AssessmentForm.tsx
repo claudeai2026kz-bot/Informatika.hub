@@ -25,9 +25,9 @@ export default function AssessmentForm({ a, topics, preset }: { a: A; topics: To
       <div className="max-w-xs"><label className="label" htmlFor="variant">Нұсқа</label><input id="variant" name="variant" className="input" defaultValue={a?.variant ?? "1-нұсқа"} /></div>
       <fieldset className="rounded-xl border border-sky-100 p-4 space-y-4">
         <legend className="px-1 text-sm font-semibold">Файлдар</legend>
-        <div><label className="label" htmlFor="file">Тапсырма файлы {a ? "" : "*"}</label>{a?.fileName && <p className="text-xs muted mb-1">Қазіргі: <b>{a.fileName}</b></p>}<input id="file" name="file" type="file" accept=".pdf,.docx,.pptx,.zip" className={fileCls} /></div>
+        <div><label className="label" htmlFor="file">Тапсырма файлы {a ? "" : "*"}</label>{a?.fileName && <p className="text-xs muted mb-1">Қазіргі: <b>{a.fileName}</b></p>}<input id="file" name="file" type="file" className={fileCls} /></div>
         <div><label className="label" htmlFor="preview">Алдын ала қарауға арналған PDF (DOCX болса)</label><input id="preview" name="preview" type="file" accept=".pdf" className={fileCls} /></div>
-        <div><label className="label" htmlFor="answersFile">Жауаптар файлы</label>{a?.hasAnswersFile && <p className="text-xs muted mb-1">Жауаптар файлы бар</p>}<input id="answersFile" name="answersFile" type="file" accept=".pdf,.docx,.zip" className={fileCls} /></div>
+        <div><label className="label" htmlFor="answersFile">Жауаптар файлы</label>{a?.hasAnswersFile && <p className="text-xs muted mb-1">Жауаптар файлы бар</p>}<input id="answersFile" name="answersFile" type="file" className={fileCls} /></div>
       </fieldset>
       <div><label className="label" htmlFor="answers">Жауаптар (мәтін)</label><textarea id="answers" name="answers" rows={4} className="input font-mono text-sm" defaultValue={a?.answers ?? ""} /></div>
       <div><label className="label" htmlFor="criteria">Бағалау критерийлері</label><textarea id="criteria" name="criteria" rows={3} className="input" defaultValue={a?.criteria ?? ""} /></div>

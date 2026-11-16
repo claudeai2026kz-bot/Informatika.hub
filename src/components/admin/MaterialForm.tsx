@@ -29,9 +29,9 @@ export default function MaterialForm({ m, topics }: { m: M; topics: TopicOpt[] }
       <fieldset className="rounded-xl border border-sky-100 p-4 space-y-4">
         <legend className="px-1 text-sm font-semibold">Файлдар</legend>
         <div>
-          <label className="label" htmlFor="file">Негізгі файл (PDF, PPTX, DOCX, XLSX, ZIP, сурет, MP4 · 50 МБ дейін)</label>
+          <label className="label" htmlFor="file">Негізгі файл (кез келген түр: PDF, Word, PowerPoint, Excel, сурет, бейне, аудио, архив…)</label>
           {m?.fileName && <p className="text-xs muted mb-1">Қазіргі файл: <b>{m.fileName}</b>. Жаңасын жүктесеңіз, ауыстырылады.</p>}
-          <input id="file" name="file" type="file" accept=".pdf,.pptx,.docx,.xlsx,.zip,.png,.jpg,.jpeg,.webp,.mp4" className="block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-sky-100 file:px-3 file:py-2 file:font-semibold file:text-sky-600" />
+          <input id="file" name="file" type="file" className="block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-sky-100 file:px-3 file:py-2 file:font-semibold file:text-sky-600" />
         </div>
         <div>
           <label className="label" htmlFor="preview">Алдын ала қарауға арналған PDF (PPTX/DOCX үшін ұсынылады)</label>

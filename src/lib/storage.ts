@@ -36,7 +36,11 @@ async function sb(pathname: string, init: RequestInit = {}) {
 }
 const objPath = (rel: string) => rel.split("/").map(encodeURIComponent).join("/");
 
-export const MAX_FILE_MB = 50;
+/**
+ * Бір файлдың ең үлкен көлемі (МБ). Әдепкі 5000 МБ = Supabase-тің бір рет жүктеу шегі.
+ * Supabase жобасының өз шегі (тегін жоспарда 50 МБ) одан кіші болса, жүктеу кезінде түсінікті хабар шығады.
+ */
+export const MAX_FILE_MB = Number(process.env.MAX_FILE_MB) || 5000;
 
 type Kind = { ext: string; mime: string; check: (b: Buffer) => boolean };
 const zip = (b: Buffer) => b.length > 4 && b[0] === 0x50 && b[1] === 0x4b && b[2] === 0x03 && b[3] === 0x04;
@@ -55,9 +59,23 @@ const KINDS: Kind[] = [
   { ext: "jpeg", mime: "image/jpeg", check: (b) => b[0] === 0xff && b[1] === 0xd8 },
   { ext: "webp", mime: "image/webp", check: (b) => b.subarray(8, 12).toString() === "WEBP" },
   { ext: "mp4", mime: "video/mp4", check: (b) => b.subarray(4, 8).toString() === "ftyp" },
+  { ext: "gif", mime: "image/gif", check: (b) => b.subarray(0, 4).toString() === "GIF8" },
+  { ext: "webm", mime: "video/webm", check: (b) => b[0] === 0x1a && b[1] === 0x45 && b[2] === 0xdf && b[3] === 0xa3 },
+  { ext: "mp3", mime: "audio/mpeg", check: (b) => b.subarray(0, 3).toString() === "ID3" || (b[0] === 0xff && (b[1] & 0xe0) === 0xe0) },
 ];
 
-export const DOC_EXTS = ["pdf", "pptx", "ppt", "docx", "doc", "xlsx", "xls", "zip", "png", "jpg", "jpeg", "webp", "mp4"];
+/** Тізімде жоқ кез келген файл түрі де қабылданады: қауіпсіздік үшін «жүктелетін файл» ретінде беріледі. */
+const ANY = "*";
+const safeExt = (name: string) => { const e = path.extname(name).slice(1).toLowerCase(); return /^[a-z0-9]{1,10}$/.test(e) ? e : "bin"; };
+function kindFor(ext: string, allowed: string[]): Kind | null {
+  const k = KINDS.find((x) => x.ext === ext);
+  if (k) return allowed.includes(ext) || allowed.includes(ANY) ? k : null;
+  return allowed.includes(ANY) ? { ext, mime: "application/octet-stream", check: () => true } : null;
+}
+const sizeMsg = (maxMb: number) => `Файл көлемі ${maxMb >= 1024 ? `${Math.round(maxMb / 1024)} ГБ` : `${maxMb} МБ`}-тан аспауы керек`;
+
+/** Материалдар: кез келген файл түрі (белгілі түрлердің мазмұны бәрібір тексеріледі). */
+export const DOC_EXTS = [ANY];
 export const IMAGE_EXTS = ["png", "jpg", "jpeg", "webp"];
 
 export class UploadError extends Error {}
@@ -65,10 +83,10 @@ export class UploadError extends Error {}
 /** Файлдың кеңейтімін, көлемін және ішкі қолтаңбасын (magic bytes) тексеріп сақтайды. */
 export async function saveUpload(file: File, folder: string, allowed: string[] = DOC_EXTS, maxMb = MAX_FILE_MB) {
   if (!file || file.size === 0) throw new UploadError("Файл таңдалмаған");
-  if (file.size > maxMb * 1024 * 1024) throw new UploadError(`Файл көлемі ${maxMb} МБ-тан аспауы керек`);
-  const ext = path.extname(file.name).slice(1).toLowerCase();
-  const kind = KINDS.find((k) => k.ext === ext);
-  if (!kind || !allowed.includes(ext)) throw new UploadError(`Бұл файл түріне рұқсат жоқ. Рұқсат етілгені: ${allowed.join(", ")}`);
+  if (file.size > maxMb * 1024 * 1024) throw new UploadError(sizeMsg(maxMb));
+  const ext = safeExt(file.name);
+  const kind = kindFor(ext, allowed);
+  if (!kind) throw new UploadError(`Бұл файл түріне рұқсат жоқ. Рұқсат етілгені: ${allowed.join(", ")}`);
   const buf = Buffer.from(await file.arrayBuffer());
   if (!kind.check(buf)) throw new UploadError("Файлдың мазмұны оның кеңейтіміне сәйкес келмейді");
 
@@ -96,9 +114,9 @@ const UPLOADED = /^uploads\/\d+-[0-9a-f]{16}\.([a-z0-9]+)$/;
  */
 export async function signDirectUpload(fileName: string, size: number, allowed: string[] = DOC_EXTS, maxMb = MAX_FILE_MB) {
   if (!cloud) return null;
-  if (size > maxMb * 1024 * 1024) throw new UploadError(`Файл көлемі ${maxMb} МБ-тан аспауы керек`);
-  const ext = path.extname(fileName).slice(1).toLowerCase();
-  if (!KINDS.some((k) => k.ext === ext) || !allowed.includes(ext)) throw new UploadError(`Бұл файл түріне рұқсат жоқ. Рұқсат етілгені: ${allowed.join(", ")}`);
+  if (size > maxMb * 1024 * 1024) throw new UploadError(sizeMsg(maxMb));
+  const ext = safeExt(fileName);
+  if (!kindFor(ext, allowed)) throw new UploadError(`Бұл файл түріне рұқсат жоқ. Рұқсат етілгені: ${allowed.join(", ")}`);
   const rel = newPath("uploads", ext);
   const r = await sb(`object/upload/sign/${BUCKET}/${objPath(rel)}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
   if (!r.ok) {
@@ -115,8 +133,8 @@ export async function adoptDirectUpload(raw: string, allowed: string[] = DOC_EXT
   let info: { path?: string; name?: string };
   try { info = JSON.parse(raw); } catch { throw new UploadError("Файл деректері дұрыс емес"); }
   const m = cloud && typeof info.path === "string" ? UPLOADED.exec(info.path) : null;
-  const kind = m && KINDS.find((k) => k.ext === m[1]);
-  if (!m || !kind || !allowed.includes(kind.ext)) throw new UploadError("Бұл файл түріне рұқсат жоқ");
+  const kind = m && kindFor(m[1], allowed);
+  if (!m || !kind) throw new UploadError("Бұл файл түріне рұқсат жоқ");
   const rel = info.path!;
   const r = await sb(`object/authenticated/${BUCKET}/${objPath(rel)}`, { headers: { Range: "bytes=0-15" } });
   if (!r.ok && r.status !== 206) throw new UploadError("Жүктелген файл табылмады");
@@ -124,7 +142,7 @@ export async function adoptDirectUpload(raw: string, allowed: string[] = DOC_EXT
   const size = Number(r.headers.get("content-range")?.split("/")[1] ?? r.headers.get("content-length") ?? 0);
   if (!kind.check(head) || size <= 0 || size > maxMb * 1024 * 1024) {
     await removeStored(rel);
-    throw new UploadError(size > maxMb * 1024 * 1024 ? `Файл көлемі ${maxMb} МБ-тан аспауы керек` : "Файлдың мазмұны оның кеңейтіміне сәйкес келмейді");
+    throw new UploadError(size > maxMb * 1024 * 1024 ? sizeMsg(maxMb) : "Файлдың мазмұны оның кеңейтіміне сәйкес келмейді");
   }
   return { path: rel, name: cleanName(String(info.name ?? `file.${kind.ext}`)), mime: kind.mime, size };
 }
