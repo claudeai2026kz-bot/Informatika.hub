@@ -35,6 +35,13 @@ export default function TopicUpload({ typeKey, label, mode, accept, grade, quart
           <input name="file" type="file" accept={accept} className="mt-2 w-full text-xs file:mr-2 file:rounded-lg file:border-0 file:bg-sky-100 file:px-3 file:py-1.5 file:font-semibold file:text-sky-600" />
         </label>
       )}
+      {mode === "file" && typeKey !== "VIDEO" && (
+        <details className="rounded-xl border border-sky-100 bg-white px-4 py-3 text-sm">
+          <summary className="cursor-pointer font-semibold">PDF нұсқасы (міндетті емес)</summary>
+          <p className="mt-1 text-xs muted">Word/PowerPoint файлы онсыз да сайт ішінде ашылады. PDF нұсқасын қоссаңыз, ол телефонда да тезірек ашылады. Жүктеу батырмасы бәрібір түпнұсқаны береді.</p>
+          <input name="preview" type="file" accept=".pdf" className="mt-2 w-full text-xs file:mr-2 file:rounded-lg file:border-0 file:bg-sky-100 file:px-3 file:py-1.5 file:font-semibold file:text-sky-600" />
+        </details>
+      )}
       {mode !== "file" && (
         <div>
           <label className="label flex items-center gap-1"><Link2 className="h-4 w-4" /> {typeKey === "VIDEO" ? "YouTube сілтемесі" : "Ойын сілтемесі (Wordwall, Kahoot, Quizizz…)"}</label>

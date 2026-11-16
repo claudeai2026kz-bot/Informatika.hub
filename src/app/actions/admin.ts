@@ -87,11 +87,13 @@ export async function saveTopic(_: AdminState, fd: FormData): Promise<AdminState
   const qid = await quarterId(p.data.grade, p.data.quarter);
   const id = Number(fd.get("id")) || null;
   const data = { quarterId: qid, section: p.data.section ?? null, title: p.data.title, order: p.data.order };
-  if (id) await db.topic.update({ where: { id }, data });
-  else await db.topic.create({ data });
+  const saved = id ? await db.topic.update({ where: { id }, data }) : await db.topic.create({ data });
   await log(admin.id, id ? "Тақырып өңделді" : "Тақырып қосылды", p.data.title);
   revalidatePath("/admin/topics");
+  revalidatePath(`/grades/${p.data.grade}`);
   revalidateTag(CATALOG_TAG);
+  // Сынып бетінен қосылған жаңа тақырып бірден ашылады — әкімші сол жерде материал салады.
+  if (fd.get("open") === "1") redirect(`/topics/${saved.id}?new=1`);
   return { ok: id ? "Тақырып сақталды" : "Тақырып қосылды" };
 }
 
@@ -166,7 +168,8 @@ export async function saveMaterial(_: AdminState, fd: FormData): Promise<AdminSt
   revalidatePath("/admin/materials");
   revalidateTag(CATALOG_TAG);
   const back = str(fd, "back");
-  if (back.startsWith("/topics/")) { revalidatePath(back); redirect(`${back}?saved=1`); }
+  // Сабақ бетінен қосылса — жаңа материал өз бөлімінде бірден ашылып көрінеді.
+  if (back.startsWith("/topics/")) { revalidatePath(back); redirect(`${back}?s=${d.typeKey}&m=${savedId}&saved=1#tabs`); }
   redirect(`/admin/materials?saved=1`);
 }
 

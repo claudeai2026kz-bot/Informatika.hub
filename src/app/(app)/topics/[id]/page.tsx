@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return { title: t?.title ?? (await getT())("Сабақ") };
 }
 
-export default async function TopicPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ saved?: string; s?: string; m?: string }> }) {
+export default async function TopicPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ saved?: string; s?: string; m?: string; new?: string }> }) {
   const t = await getT();
   const id = Number((await params).id);
   if (!Number.isInteger(id)) notFound();
@@ -64,7 +64,7 @@ export default async function TopicPage({ params, searchParams }: { params: Prom
   const items = topic.materials.filter((m) => m.type.key === active.key);
   const sel = items.find((m) => m.id === sp.m) ?? items[0];
   const selGame = !sel && active.key === "GAME_LINK" ? topic.games[0] : undefined;
-  const isPdfLike = sel && (sel.previewPath || sel.fileMime === "application/pdf");
+  const isPdfLike = sel && (sel.previewPath || sel.fileMime === "application/pdf" || sel.fileMime?.startsWith("image/"));
   const office = sel && sel.filePath && !isPdfLike && active.key !== "VIDEO" ? await officeViewerUrl(sel.filePath) : null;
 
   return (
@@ -85,6 +85,7 @@ export default async function TopicPage({ params, searchParams }: { params: Prom
         </div>
       </header>
 
+      {isAdmin && sp.new && <div className="mt-4 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-base text-sky-700" role="status">{t("Тақырып қосылды ✓ Енді төмендегі бөлімдерді таңдап, презентация, бейнесабақ, тапсырма, ҚМЖ және ойын қосыңыз.")}</div>}
       {saved && <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-base text-emerald-700" role="status">{t("Материал қосылды ✓")}</div>}
 
       {/* Бөлім қойындылары */}
@@ -169,6 +170,7 @@ export default async function TopicPage({ params, searchParams }: { params: Prom
             </div>
           ))}
           {!items.length && !(active.key === "GAME_LINK" && topic.games.length) && <p className="rounded-2xl border-2 border-dashed border-sky-200 p-5 text-center text-base muted">{t("Әзірге материал жоқ")}</p>}
+          {isAdmin && active.key === "GAME_LINK" && <Link href="/admin/games/new" className="btn-ghost btn-sm w-full sm:w-auto"><Gamepad2 className="h-4 w-4" /> {t("Сайттың өз ойынын құру")}</Link>}
           {isAdmin && <div className="pt-1"><TopicUpload typeKey={active.key} label={active.label} mode={active.mode} accept={active.accept} grade={g} quarter={q} topicId={id} topicTitle={topic.title} /></div>}
         </aside>
       </section>
@@ -194,6 +196,8 @@ async function Preview({ m, office, isGame }: { m: PM; office: string | null; is
   if (video) return <div className="aspect-video bg-black"><iframe src={video} title={m.title} className="h-full w-full" allow="encrypted-media; picture-in-picture; fullscreen" allowFullScreen loading="lazy" /></div>;
   if (m.fileMime === "video/mp4") return <video src={`/api/files/material/${m.id}`} controls preload="metadata" className="w-full aspect-video bg-black" />;
   if (isGame && m.externalUrl) return <GameHero title={m.title} href={m.externalUrl} external />;
+  // eslint-disable-next-line @next/next/no-img-element
+  if (!m.previewPath && m.fileMime?.startsWith("image/")) return <div className="grid place-items-center bg-sky-50/50 p-3"><img src={`/api/files/material/${m.id}`} alt={m.title} className="max-h-[75vh] w-auto rounded-xl" /></div>;
   if (m.previewPath || m.fileMime === "application/pdf") return <PdfFrame src={`/api/files/material/${m.id}#view=FitH`} title={m.title} />;
   if (office) return <PdfFrame src={office} title={m.title} />;
   return (

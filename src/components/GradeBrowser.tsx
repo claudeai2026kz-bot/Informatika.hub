@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ChevronRight, ClipboardCheck, Plus } from "lucide-react";
+import { ChevronRight, ClipboardCheck, Plus, Pencil } from "lucide-react";
+import AddTopic from "@/components/admin/AddTopic";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getGradeQuarters, getQuarterTopics, getQuarterAssessments } from "@/lib/catalog";
@@ -85,6 +86,12 @@ export default async function GradeBrowser({ g, qn, quarterHref }: { g: number; 
               </ul>
             </section>
           ))
+        )}
+        {isAdmin && current && (
+          <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-start">
+            <div className="flex-1"><AddTopic grade={g} quarter={qn} order={topics.length} sections={[...new Set(topics.map((t) => t.section).filter((s): s is string => !!s))]} /></div>
+            {topics.length > 0 && <Link href={`/admin/topics?grade=${g}&quarter=${qn}`} className="btn-ghost"><Pencil className="h-4 w-4" /> {tr("Атауын, ретін өзгерту")}</Link>}
+          </div>
         )}
         <section className="mt-8 card p-5 sm:p-6 bg-gradient-to-br from-white to-lilac-100/40" id="assessments">
           <div className="flex items-center gap-3 mb-4">
